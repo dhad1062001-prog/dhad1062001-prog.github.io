@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rough-lake-4fd3.dhad1062001.workers.dev/sitemap.xml
