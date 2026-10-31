@@ -311,7 +311,7 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
     <div class="crumb">الإدارة ← الملفات المحملة</div>
     <div class="page-title"><div class="internal-head"><div><h2>الملفات المحملة</h2><p>جميع الملفات المرفوعة إلى المنصة مع المعاينة والتنزيل والتعديل والحذف.</p></div><div class="internal-actions"><span class="count-badge" id="filesCount">0 ملف</span></div></div></div>
     <div class="files-toolbar"><div class="callout-help">القائمة تُحمّل من قاعدة البيانات وتتمدد تلقائيًا مع زيادة الملفات.</div></div>
-    <div id="adminMaterialsFull" class="admin-files-grid"></div>
+    <div class="admin-card" style="margin:12px 0"><label><input id="selectAllAdminMaterials" type="checkbox" onchange="toggleAllAdminMaterials(this.checked)"> تحديد الكل</label> <span id="selectedAdminMaterialsCount">0 محدد</span> <button class="danger" type="button" onclick="deleteSelectedMaterials()">حذف المحدد</button></div><div id="adminMaterialsFull" class="admin-files-grid"></div>
   </div>
 </section>
 
@@ -414,6 +414,8 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
               <button class="primary" type="submit">رفع المادة</button>
               <div class="status" id="uploadStatus"></div>
             </form>
+            <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+            <section aria-labelledby="batchUploadTitle"><h3 id="batchUploadTitle">رفع عدة ملفات</h3><p class="callout-help">اختر ملفات متعددة، ثم حدّد الصف والفصل والقسم لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50MB.</p><div class="field"><label for="batchFilesInput">الملفات</label><input id="batchFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div><div id="batchFilesList" class="admin-list" aria-live="polite"><div class="empty">اختر ملفات لعرضها هنا.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="batchUploadButton" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button class="secondary" id="batchCancelButton" type="button" onclick="cancelMaterialBatch()" disabled>إلغاء الرفع</button></div><div class="status" id="batchUploadStatus" role="status" aria-live="polite"></div></section>
           </div>
           <div class="admin-card">
             <h3>آخر الملفات</h3>
@@ -1486,6 +1488,12 @@ async function showAdminPage(){
   scrollTop();
 }
 
+let materialBatchQueue=[];let materialBatchCancelRequested=false;let materialBatchRunning=false;
+function renderMaterialBatchQueue(){const h=document.getElementById('batchFilesList');if(!h)return;if(!materialBatchQueue.length){h.innerHTML='<div class="empty">اختر ملفات لعرضها هنا.</div>';return;}const opts=(rows,sel,label)=>'<option value="">'+label+'</option>'+rows.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(sel)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join('');h.innerHTML='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:760px"><thead><tr><th>الملف</th><th>الحجم والنوع</th><th>الصف</th><th>الفصل</th><th>القسم</th><th>الحالة</th></tr></thead><tbody>'+materialBatchQueue.map((x,i)=>'<tr data-batch-index="'+i+'"><td><input data-batch-title value="'+escapeHtml(x.title)+'" aria-label="عنوان الملف"></td><td>'+escapeHtml(x.file.name)+'<br>'+formatBytes(x.file.size)+' · '+escapeHtml(x.file.type||'غير معروف')+'</td><td><select data-batch-grade>'+opts(grades,x.gradeId,'اختر الصف')+'</select></td><td><select data-batch-semester>'+opts(semesters,x.semesterId,'اختر الفصل')+'</select></td><td><select data-batch-category>'+opts(categories,x.categoryId,'اختر القسم')+'</select></td><td data-batch-state>'+escapeHtml(x.state||'بانتظار الرفع')+'</td></tr>').join('')+'</tbody></table></div>';}
+function cancelMaterialBatch(){materialBatchCancelRequested=true;}
+function updateBatchRow(i,state){materialBatchQueue[i].state=state;const e=document.querySelector('[data-batch-index="'+i+'"] [data-batch-state]');if(e)e.textContent=state;}
+function initMaterialBatchUpload(){const input=document.getElementById('batchFilesInput');if(!input)return;input.addEventListener('change',()=>{for(const file of Array.from(input.files||[])){const duplicate=materialBatchQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||(window.__adminMaterials||[]).some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);if(duplicate&&!confirm('يوجد ملف بالاسم والحجم نفسيهما: «'+file.name+'». هل تضيفه رغم احتمال التكرار؟'))continue;materialBatchQueue.push({file,title:file.name.replace(/\.[^.]+$/,''),gradeId:'',semesterId:'',categoryId:'',state:'بانتظار الرفع'});}input.value='';renderMaterialBatchQueue();});}
+async function uploadMaterialBatch(){if(!isFileManager())return showInfo('صلاحية غير كافية','رفع الملفات متاح للمالك والمشرف فقط.');if(materialBatchRunning||!materialBatchQueue.length)return;const status=document.getElementById('batchUploadStatus');materialBatchRunning=true;materialBatchCancelRequested=false;document.getElementById('batchUploadButton').disabled=true;document.getElementById('batchCancelButton').disabled=false;let ok=0,failed=0;try{for(let i=0;i<materialBatchQueue.length;i++){if(materialBatchCancelRequested)break;const x=materialBatchQueue[i];if(x.state==='تم الرفع')continue;const r=document.querySelector('[data-batch-index="'+i+'"]');const title=r?.querySelector('[data-batch-title]')?.value.trim()||x.title;const gradeId=Number(r?.querySelector('[data-batch-grade]')?.value);const semesterId=Number(r?.querySelector('[data-batch-semester]')?.value);const categoryId=Number(r?.querySelector('[data-batch-category]')?.value);if(!gradeId||!semesterId||!categoryId){updateBatchRow(i,'فشل: أكمل التصنيف');failed++;continue;}if(x.file.size>50*1024*1024){updateBatchRow(i,'فشل: أكبر من 50MB');failed++;continue;}updateBatchRow(i,'جارٍ الرفع…');const ext=(x.file.name.split('.').pop()||'bin').toLowerCase();const path='grade-'+gradeId+'/semester-'+semesterId+'/category-'+categoryId+'/'+crypto.randomUUID()+'.'+ext;try{const {data,error}=await sb.storage.from(MATERIALS_BUCKET).upload(path,x.file,{contentType:x.file.type||'application/octet-stream',upsert:false});if(error)throw error;const {error:dbError}=await sb.from('materials').insert({title,description:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,file_path:data.path,file_name:x.file.name,file_type:x.file.type||null,file_size:x.file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null});if(dbError){await sb.storage.from(MATERIALS_BUCKET).remove([data.path]);throw dbError;}x.state='تم الرفع';updateBatchRow(i,'تم الرفع');ok++;}catch(e){x.state='فشل';updateBatchRow(i,'فشل: '+(e.message||'خطأ'));failed++;}}}finally{materialBatchRunning=false;document.getElementById('batchUploadButton').disabled=false;document.getElementById('batchCancelButton').disabled=true;showStatus(status,(materialBatchCancelRequested?'توقفت الدفعة بعد الملف الجاري. ':'')+'نجح '+ok+'، فشل '+failed+'؛ يمكن إعادة محاولة الملفات غير الناجحة.','info');await loadAdminMaterials();}}
 async function uploadMaterial(event){
   event.preventDefault();
   if(!isFileManager())return showInfo('صلاحية غير كافية','هذه العملية متاحة للمالك والمشرف فقط.');
@@ -1592,7 +1600,7 @@ async function loadAdminMaterials(){
  const count=document.getElementById('filesCount');if(count)count.textContent=data.length+' '+(data.length===1?'ملف':'ملفات');
  const pathText=m=>escapeHtml(m.grades?.name||'')+(m.track_name?' ← '+escapeHtml(m.track_name):'')+(m.field_name?' ← '+escapeHtml(m.field_name):'')+' ← '+escapeHtml(m.semesters?.name||'')+' ← '+escapeHtml(m.categories?.name||'');
  if(compact)compact.innerHTML=data.slice(0,8).map(m=>'<div class="admin-item"><div><b>'+escapeHtml(m.title)+'</b><small>'+pathText(m)+'</small></div><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button></div>').join('');
- if(full)full.innerHTML=data.map(m=>{const url=getMaterialUrl(m.file_path);return '<div class="admin-file-card"><b>'+escapeHtml(m.title)+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+pathText(m)+'<br>'+(m.file_size?formatBytes(m.file_size):'')+'</div><div class="admin-file-actions"><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button>'+(url?'<button class="download ui-shape" type="button" onclick="downloadAdminMaterial(\''+m.id+'\')">⬇ تنزيل</button>':'')+'<button class="edit ui-shape" onclick="editMaterial(\''+m.id+'\')">✏️ تعديل</button><button class="danger ui-shape" onclick="deleteMaterial(\''+m.id+'\')">🗑 حذف</button></div></div>';}).join('');
+ if(full)full.innerHTML=data.map(m=>{const url=getMaterialUrl(m.file_path);return '<div class="admin-file-card"><label><input type="checkbox" class="admin-material-select" value="'+escapeHtml(String(m.id))+'" onchange="updateSelectedMaterialCount()"> تحديد</label><b>'+escapeHtml(m.title)+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+pathText(m)+'<br>'+(m.file_size?formatBytes(m.file_size):'')+'</div><div class="admin-file-actions"><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button>'+(url?'<button class="download ui-shape" type="button" onclick="downloadAdminMaterial(\''+m.id+'\')">⬇ تنزيل</button>':'')+'<button class="edit ui-shape" onclick="editMaterial(\''+m.id+'\')">✏️ تعديل</button><button class="danger ui-shape" onclick="deleteMaterial(\''+m.id+'\')">🗑 حذف</button></div></div>';}).join('');
 }
 
 async function downloadAdminMaterial(id){
@@ -1637,22 +1645,11 @@ async function editMaterial(id){
   showInfo('تم التعديل','تم تحديث بيانات الملف بنجاح.');
 }
 
-async function deleteMaterial(id){
-  if(!isAdmin())return;
-
-  const m=(window.__adminMaterials||[]).find(x=>x.id===id);
-  if(!m)return;
-  if(!confirm('هل أنت متأكد من حذف هذه المادة؟'))return;
-
-  const {error:fileError}=await sb.storage.from(MATERIALS_BUCKET).remove([m.file_path]);
-  if(fileError)return showInfo('الحذف','تعذر حذف الملف من التخزين: '+fileError.message);
-
-  const {error:dbError}=await sb.from('materials').delete().eq('id',id);
-  if(dbError)return showInfo('الحذف','حُذف الملف من التخزين لكن تعذر حذف سجله: '+dbError.message);
-
-  await loadAdminMaterials();
-}
-
+function selectedAdminMaterialIds(){return Array.from(document.querySelectorAll('.admin-material-select:checked')).map(x=>x.value);}
+function updateSelectedMaterialCount(){const n=selectedAdminMaterialIds().length,e=document.getElementById('selectedAdminMaterialsCount'),a=document.getElementById('selectAllAdminMaterials'),boxes=Array.from(document.querySelectorAll('.admin-material-select'));if(e)e.textContent=n+' محدد';if(a){a.checked=boxes.length>0&&n===boxes.length;a.indeterminate=n>0&&n<boxes.length;}}
+function toggleAllAdminMaterials(v){document.querySelectorAll('.admin-material-select').forEach(x=>x.checked=v);updateSelectedMaterialCount();}
+async function deleteMaterial(id){if(!isAdmin())return;const m=(window.__adminMaterials||[]).find(x=>String(x.id)===String(id));if(!m)return;if(!confirm('هل تريد حذف «'+(m.title||m.file_name)+'»؟'))return;const {error}=await sb.from('materials').delete().eq('id',id);if(error)return showInfo('الحذف','تعذر حذف السجل، وبقي الملف في التخزين: '+error.message);const result=await sb.storage.from(MATERIALS_BUCKET).remove([m.file_path]);await loadAdminMaterials();if(result.error)return showInfo('الحذف','حُذف السجل لكن تعذر حذف الملف من التخزين: '+result.error.message);showInfo('الحذف','تم حذف الملف المحدد.');}
+async function deleteSelectedMaterials(){if(!isAdmin())return;const ids=selectedAdminMaterialIds();if(!ids.length)return showInfo('الحذف الجماعي','حدد ملفًا واحدًا على الأقل.');const rows=ids.map(id=>(window.__adminMaterials||[]).find(x=>String(x.id)===String(id))).filter(Boolean);const names=rows.map(x=>'• '+(x.title||x.file_name||x.id)).join('\n');if(!confirm('سيتم حذف الملفات المحددة ('+rows.length+'):\n\n'+names+'\n\nهل تريد المتابعة؟'))return;let db=0,storage=0,errors=[];for(const m of rows){const r=await sb.from('materials').delete().eq('id',m.id);if(r.error){errors.push((m.title||m.file_name)+': تعذر حذف السجل');continue;}db++;const f=await sb.storage.from(MATERIALS_BUCKET).remove([m.file_path]);if(f.error)errors.push((m.title||m.file_name)+': حُذف السجل وتعذر حذف ملف التخزين');else storage++;}await loadAdminMaterials();showInfo('نتيجة الحذف الجماعي','حُذف '+db+' سجل و'+storage+' ملف من التخزين.'+(errors.length?' تعذر إكمال '+errors.length+' عملية؛ راجع التفاصيل.':''));}
 async function doSearch(){
   const q=document.getElementById('searchInput').value.trim();
   if(!q)return showInfo('البحث','اكتب كلمة أو عبارة للبحث أولًا.');
@@ -2396,6 +2393,7 @@ function initUI(){
   restoreTheme();
   loadSavedConfig();
   initAdminSelectors();
+  initMaterialBatchUpload();
   if(window.__SUPABASE_LOADED__){
     buildClient();
     initSupabase();
