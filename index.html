@@ -1307,21 +1307,45 @@ async function probeStorageUrl(url){
     if([401,403].includes(Number(detail.statusCode)))return {available:false,status:Number(detail.statusCode)};
     return {available:false,status:check.status};
   }catch(e){return {available:false,status:0};}
+
 }
 
 async function resolveStorageFile(path,downloadName=''){
+  const rawPath=String(path||'').trim();
+
+  // Google Drive
+  const driveMatch=rawPath.match(/^drive:([A-Za-z0-9_-]+)$/);
+
+  if(driveMatch){
+    const fileId=driveMatch[1];
+
+    const url=downloadName
+      ? 'https://drive.google.com/uc?export=download&id='+encodeURIComponent(fileId)
+      : 'https://drive.google.com/file/d/'+encodeURIComponent(fileId)+'/view';
+
+    return {url,message:''};
+  }
+
+  // Supabase Storage
   if(!sb)return {url:'',message:'تعذر الاتصال بخدمة التخزين. حدّث الصفحة ثم حاول مجددًا.'};
-  const candidates=getStoragePathCandidates(path);
+
+  const candidates=getStoragePathCandidates(rawPath);
   if(!candidates.length)return {url:'',message:'مسار الملف فارغ أو بصيغة غير معروفة.'};
+
   let checked=false;
   let missing=false,denied=false,unverified=false;
+
   for(const candidate of candidates){
     let urls=[];
-    if(candidate.url){urls=[candidate.url];}
-    else{
+
+    if(candidate.url){
+      urls=[candidate.url];
+    }else{
       const bucket=sb.storage.from(candidate.bucket);
       const {data}=bucket.getPublicUrl(candidate.path);
+
       if(data?.publicUrl)urls.push(data.publicUrl);
+
       if(downloadName){
         try{
           const {data:signed,error}=await bucket.createSignedUrl(candidate.path,900,{download:true});
@@ -1334,18 +1358,34 @@ async function resolveStorageFile(path,downloadName=''){
         }catch(e){}
       }
     }
+
     for(const url of [...new Set(urls)]){
       checked=true;
       const probe=await probeStorageUrl(url);
-      if(probe.available)return {url:downloadName?appendDownloadName(url,downloadName):url,message:''};
+
+      if(probe.available){
+        return {
+          url:downloadName?appendDownloadName(url,downloadName):url,
+          message:''
+        };
+      }
+
       if(probe.status===404)missing=true;
       else if([401,403].includes(probe.status))denied=true;
       else unverified=true;
     }
   }
+
   if(denied)return {url:'',message:'تعذر الوصول إلى الملف. راجع صلاحيات القراءة وسياسات Storage للمستخدم الحالي.'};
+
   if(missing&&!unverified)return {url:'',message:'لا يوجد ملف في مساحة التخزين لهذا المسار. تواصل مع إدارة المنصة لاستعادة الملف أو التحقق من مساره الصحيح.'};
-  return {url:'',message:checked?'تعذر التحقق من الملف بسبب مشكلة اتصال أو استجابة غير متوقعة من Storage. أعد المحاولة لاحقًا.':'تعذر التحقق من الملف بسبب مشكلة اتصال أو صلاحيات التخزين.'};
+
+  return {
+    url:'',
+    message:checked
+      ? 'تعذر التحقق من الملف بسبب مشكلة اتصال أو استجابة غير متوقعة من Storage. أعد المحاولة لاحقًا.'
+      : 'تعذر التحقق من الملف بسبب مشكلة اتصال أو صلاحيات التخزين.'
+  };
 }
 
 function triggerFileDownload(url,filename){
@@ -1358,6 +1398,7 @@ function triggerFileDownload(url,filename){
   a.click();
   a.remove();
 }
+
 
 async function downloadHomeSectionFile(id){
   const row=[...homeSectionsPublic,...homeSectionsAdmin].find(item=>String(item.id)===String(id));
