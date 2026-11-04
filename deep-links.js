@@ -193,15 +193,30 @@
   }
   window.restoreDhadRouteFromLocation=restoreRoute;
 
-  // Restore the requested route only after the existing app and feature data have loaded.
+  // Open a requested material as soon as the Supabase client is available.
+  // Do not make the material wait for unrelated grade/semester/category lookups.
   const previousInit=window.initSupabase;
   if(typeof previousInit==='function'){
     window.initSupabase=async function(){
+      const directMaterialId=new URLSearchParams(location.search).get('material');
+      if(directMaterialId&&typeof sb!=='undefined'&&sb){
+        // Keep normal authentication and lookup initialization running in parallel.
+        const normalInit=(async()=>{
+          try{await previousInit();}
+          catch(error){console.error('Dhad background initialization:',error);}
+        })();
+        try{
+          await showMaterialDirectPage(directMaterialId);
+        }finally{
+          finishDirectBootScreen();
+        }
+        await normalInit;
+        return;
+      }
       try{
         await previousInit();
         if(typeof sb!=='undefined'&&sb){
-          const directMaterialEntry=new URLSearchParams(location.search).has('material');
-          if(!directMaterialEntry&&typeof loadDhadFeatureData==='function'&&!window.__DHAD_FEATURE_DATA_READY__){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;}
+          if(typeof loadDhadFeatureData==='function'&&!window.__DHAD_FEATURE_DATA_READY__){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;}
           await restoreRoute();
         }
       }finally{
