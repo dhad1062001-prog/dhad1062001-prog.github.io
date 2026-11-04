@@ -50,6 +50,7 @@ async function loadDhadFeatureData(){
     }
   }catch(error){console.warn('تعذر تحميل إعدادات الأقسام الإضافية من site_pages.',error);}
   renderDhadHomeCards();
+  window.__DHAD_FEATURE_DATA_READY__=true;
 }
 async function saveDhadFeatureRecord(key,value,title){
   if(!isOwner())return dhadFeatureStatus('إدارة هذا المحتوى متاحة لمالك المنصة فقط.','error'),false;
@@ -126,7 +127,7 @@ async function renderDhadAdditional(){
     const images=await Promise.all((item.images||[]).map(async img=>{const result=await resolveStorageFile(img.path);return result.url?'<button type="button" data-feature-image="'+escapeHtml(img.path)+'" data-feature-title="'+escapeHtml(item.title||'صورة تعليمية')+'"><img src="'+escapeHtml(result.url)+'" alt="'+escapeHtml(img.name||item.title||'صورة تعليمية')+'" loading="lazy"></button>':'';}));
     const description=item.description?'<div class="feature-card-meta">'+escapeHtml(item.description)+'</div>':'';
     const text=item.text?'<p>'+dhadLinkify(item.text)+'</p>':'';
-    return '<article class="feature-content-card"><h3>'+escapeHtml(item.title||'مورد تعليمي')+'</h3>'+description+text+(images.filter(Boolean).length?'<div class="feature-card-images">'+images.filter(Boolean).join('')+'</div>':'')+'</article>';
+    return '<article class="feature-content-card" id="dhad-additional-'+escapeHtml(item.id)+'" data-dhad-additional-item="'+escapeHtml(item.id)+'"><h3>'+escapeHtml(item.title||'مورد تعليمي')+'</h3>'+description+text+(images.filter(Boolean).length?'<div class="feature-card-images">'+images.filter(Boolean).join('')+'</div>':'')+'<div class="dhad-feature-share"><button class="secondary" type="button" onclick="shareDhadLink(\'additional\',\''+escapeHtml(item.id)+'\')">🔗 مشاركة هذا المورد</button></div></article>';
   }));
   list.innerHTML=cards.join('');
 }
@@ -139,7 +140,7 @@ async function renderDhadCalendar(){
   if(!items.length){list.innerHTML='<div class="empty">لا توجد صور تقويم منشورة حاليًا.</div>';return;}
   const cards=await Promise.all(items.map(async item=>{
     const result=await resolveStorageFile(item.imagePath);if(!result.url)return '';
-    return '<article class="calendar-item"><h3>'+escapeHtml(item.title||'التقويم الدراسي')+'</h3>'+(item.year?'<div class="feature-card-meta">'+escapeHtml(item.year)+'</div>':'')+(item.description?'<p>'+escapeHtml(item.description)+'</p>':'')+'<img src="'+escapeHtml(result.url)+'" alt="'+escapeHtml(item.title||'صورة التقويم')+'" loading="lazy" data-calendar-image="'+escapeHtml(item.id)+'"><div class="calendar-item-actions"><button class="preview" type="button" data-calendar-preview="'+escapeHtml(item.id)+'">فتح بحجم أكبر</button><button class="download" type="button" data-calendar-download="'+escapeHtml(item.id)+'">تنزيل الصورة</button></div></article>';
+    return '<article class="calendar-item" id="dhad-calendar-'+escapeHtml(item.id)+'" data-dhad-calendar-item="'+escapeHtml(item.id)+'"><h3>'+escapeHtml(item.title||'التقويم الدراسي')+'</h3>'+(item.year?'<div class="feature-card-meta">'+escapeHtml(item.year)+'</div>':'')+(item.description?'<p>'+escapeHtml(item.description)+'</p>':'')+'<img src="'+escapeHtml(result.url)+'" alt="'+escapeHtml(item.title||'صورة التقويم')+'" loading="lazy" data-calendar-image="'+escapeHtml(item.id)+'"><div class="calendar-item-actions"><button class="preview" type="button" data-calendar-preview="'+escapeHtml(item.id)+'">فتح بحجم أكبر</button><button class="download" type="button" data-calendar-download="'+escapeHtml(item.id)+'">تنزيل الصورة</button><button class="secondary" type="button" onclick="shareDhadLink(\'calendar\',\''+escapeHtml(item.id)+'\')">مشاركة التقويم</button></div></article>';
   }));
   list.innerHTML=cards.filter(Boolean).join('')||'<div class="empty">تعذر تحميل الصور من مساحة التخزين.</div>';
 }
@@ -149,7 +150,7 @@ async function renderDhadGames(){
   if(!games.length){list.innerHTML='<div class="empty">لم تُنشر ألعاب تعليمية بعد.</div>';return;}
   list.innerHTML=await Promise.all(games.map(async game=>{
     const cover=game.coverPath?await resolveStorageFile(game.coverPath):null;
-    return '<article class="feature-content-card">'+(cover?.url?'<img class="game-cover" src="'+escapeHtml(cover.url)+'" alt="'+escapeHtml(game.title||'غلاف اللعبة')+'" loading="lazy">':'')+'<h3>'+escapeHtml(game.title||'لعبة تعليمية')+'</h3>'+(game.description?'<p>'+escapeHtml(game.description)+'</p>':'')+'<div class="game-card-actions"><button class="primary" type="button" data-play-game="'+escapeHtml(game.id)+'">▶ ابدأ اللعب</button></div></article>';
+    return '<article class="feature-content-card" id="dhad-game-'+escapeHtml(game.id)+'" data-dhad-game-item="'+escapeHtml(game.id)+'">'+(cover?.url?'<img class="game-cover" src="'+escapeHtml(cover.url)+'" alt="'+escapeHtml(game.title||'غلاف اللعبة')+'" loading="lazy">':'')+'<h3>'+escapeHtml(game.title||'لعبة تعليمية')+'</h3>'+(game.description?'<p>'+escapeHtml(game.description)+'</p>':'')+'<div class="game-card-actions"><button class="primary" type="button" data-play-game="'+escapeHtml(game.id)+'">▶ ابدأ اللعب</button><button class="secondary" type="button" onclick="shareDhadLink(\'game\',\''+escapeHtml(game.id)+'\')">🔗 مشاركة اللعبة</button></div></article>';
   })).then(rows=>rows.join(''));
 }
 async function renderDhadCertificate(nameOverride){
@@ -315,17 +316,13 @@ function wireDhadFeatureEvents(){
   });
   document.getElementById('gameFiles')?.addEventListener('change',refreshGameMainOptions);
   document.getElementById('studentName')?.addEventListener('input',renderDhadCertificate);
-  window.addEventListener('hashchange',()=>{
-    const route=String(location.hash||'').replace(/^#/,'');
-    if(['games','additional','calendar','certificate'].includes(route)){const current=document.getElementById(route==='games'?'gamesPage':route==='additional'?'additionalPage':route==='calendar'?'calendarPage':'certificatePage');if(current?.style.display!=='block')showDhadFeaturePage(route,false);}
-    else if((route===''||route==='home')&&document.getElementById('home')?.style.display!=='block')goHome();
-    else if(route==='grades'&&document.getElementById('gradesHubPage')?.style.display!=='block')showGradesPage(false);
-  });
+  // يتم توحيد استعادة المسارات في deep-links.js بعد تحميل بيانات المنصة.
+
 }
 const dhadOriginalInitSupabase=initSupabase;
 initSupabase=async function(){
   await dhadOriginalInitSupabase();
-  if(sb){await loadDhadFeatureData();await renderDhadFeaturePages();try{renderFooterContactLinks(await getContactLinks());}catch(e){}}
+  if(sb){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}}
 };
 const dhadOriginalSaveContactLinks=saveContactLinks;
 saveContactLinks=async function(){await dhadOriginalSaveContactLinks();try{renderFooterContactLinks(await getContactLinks());}catch(e){}};
@@ -333,4 +330,4 @@ const dhadOriginalSaveSiteBranding=saveSiteBranding;
 saveSiteBranding=async function(){await dhadOriginalSaveSiteBranding();};
 document.addEventListener('DOMContentLoaded',()=>{wireDhadFeatureEvents();renderDhadHomeCards();renderDhadCertificate();});
 wireDhadFeatureEvents();renderDhadHomeCards();renderDhadCertificate();
-if(window.__SUPABASE_LOADED__&&sb)loadDhadFeatureData().then(async()=>{await renderDhadFeaturePages();try{renderFooterContactLinks(await getContactLinks());}catch(e){}});
+if(window.__SUPABASE_LOADED__&&sb)loadDhadFeatureData().then(async()=>{await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}});

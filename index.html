@@ -412,10 +412,10 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
               <div class="field"><label>القسم</label><select id="matCategory" required></select></div>
               <div class="field"><label>الملف</label><input type="file" id="matFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div>
               <button class="primary" type="submit">رفع المادة</button>
-              <div class="status" id="uploadStatus"></div>
+              <div class="status" id="uploadStatus"></div><div id="uploadedMaterialLink" class="dhad-uploaded-link" aria-live="polite"></div>
             </form>
             <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-            <section aria-labelledby="batchUploadTitle"><h3 id="batchUploadTitle">رفع عدة ملفات</h3><p class="callout-help">اختر ملفات متعددة، ثم حدّد الصف والفصل والقسم لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50MB.</p><div class="field"><label for="batchFilesInput">الملفات</label><input id="batchFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div><div id="batchFilesList" class="admin-list" aria-live="polite"><div class="empty">اختر ملفات لعرضها هنا.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="batchUploadButton" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button class="secondary" id="batchCancelButton" type="button" onclick="cancelMaterialBatch()" disabled>إلغاء الرفع</button></div><div class="status" id="batchUploadStatus" role="status" aria-live="polite"></div></section>
+            <section aria-labelledby="batchUploadTitle"><h3 id="batchUploadTitle">رفع عدة ملفات</h3><p class="callout-help">اختر ملفات متعددة، ثم حدّد الصف والفصل والقسم لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50MB.</p><div class="field"><label for="batchFilesInput">الملفات</label><input id="batchFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div><div id="batchFilesList" class="admin-list" aria-live="polite"><div class="empty">اختر ملفات لعرضها هنا.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="batchUploadButton" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button class="secondary" id="batchCancelButton" type="button" onclick="cancelMaterialBatch()" disabled>إلغاء الرفع</button></div><div class="status" id="batchUploadStatus" role="status" aria-live="polite"></div><div id="batchUploadedLinks" class="dhad-uploaded-link" aria-live="polite"></div></section>
           </div>
           <div class="admin-card">
             <h3>آخر الملفات</h3>
@@ -923,6 +923,7 @@ async function loadLookups(){
 
   renderGrades();
   fillAdminSelects();
+  window.__DHAD_LOOKUPS_READY__=true;
   return true;
 }
 
@@ -1077,7 +1078,7 @@ function showTrack(gradeId,trackIndex,push=true){
     renderSemesterCards(gradeId,trackIndex,null);
   }
 
-  setRoute('track/'+gradeId+'/'+trackIndex);
+  setRoute('track/'+gradeId+'/'+encodeURIComponent(track.name));
   scrollTop();
 }
 
@@ -1095,7 +1096,7 @@ function showField(gradeId,trackIndex,fieldIndex,push=true){
   document.getElementById('crumb').innerHTML=crumb(['الرئيسية',grade.name,track.name,field]);
   renderSemesterCards(gradeId,trackIndex,fieldIndex);
 
-  setRoute('field/'+gradeId+'/'+trackIndex+'/'+fieldIndex);
+  setRoute('field/'+gradeId+'/'+encodeURIComponent(track.name)+'/'+encodeURIComponent(field));
   scrollTop();
 }
 
@@ -1138,17 +1139,17 @@ function showSemester(gradeId,trackIndex,fieldIndex,semesterIndex,push=true){
       `).join('')}
     </div>`;
 
-  setRoute('semester/'+gradeId+'/'+(trackIndex??'none')+'/'+(fieldIndex??'none')+'/'+semester.id);
+  setRoute('semester/'+gradeId+'/'+(track?encodeURIComponent(track.name):'none')+'/'+(field?encodeURIComponent(field):'none')+'/'+semester.id);
   scrollTop();
 }
 
-async function loadMaterials(gradeId,semesterId,categoryIndex,trackIndex,fieldIndex){
+async function loadMaterials(gradeId,semesterId,categoryIndex,trackIndex,fieldIndex,push=true){
   const grade=grades.find(g=>Number(g.id)===Number(gradeId));
   const category=categories[categoryIndex];
   if(!grade||!category)return;
 
   const semesterIndex=semesters.findIndex(item=>Number(item.id)===Number(semesterId));
-  if(semesterIndex>=0)pushNav({type:'semester',gradeId,trackIndex,fieldIndex,semesterIndex});
+  if(push&&semesterIndex>=0)pushNav({type:'semester',gradeId,trackIndex,fieldIndex,semesterIndex});
 
   hideAll();
   document.getElementById('listingPage').style.display='block';
@@ -1209,7 +1210,7 @@ async function loadMaterials(gradeId,semesterId,categoryIndex,trackIndex,fieldIn
     }
   }
 
-  setRoute('category/'+gradeId+'/'+semesterId+'/'+category.id);
+  setRoute('category/'+gradeId+'/'+semesterId+'/'+category.id+'/'+(track?encodeURIComponent(track.name):'none')+'/'+(field?encodeURIComponent(field):'none'));
   scrollTop();
 }
 
@@ -1228,6 +1229,7 @@ function renderMaterialCollection(rows){
         </div>
         <div style="display:flex;gap:7px;flex-wrap:wrap">
           <button class="preview ui-shape" onclick="previewMaterial('${m.id}')">👁 معاينة</button>
+          <button class="secondary ui-shape" type="button" onclick="shareDhadLink('material','${m.id}')">🔗 مشاركة</button>
           ${url?'<button class="download ui-shape" type="button" onclick="downloadMaterial(\''+m.id+'\')">⬇ تنزيل</button>':''}
         </div>
       </div>`;
@@ -1423,7 +1425,7 @@ function openPreviewModal(title,html,downloadUrl='',materialId=''){
   const modal=document.getElementById('modal');
   if(!titleEl||!bodyEl||!modal)return;
   titleEl.textContent=title||'معاينة الملف';
-  const action=materialId?'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="download ui-shape" type="button" data-preview-material-download="'+escapeHtml(String(materialId))+'">⬇ تنزيل الملف الأصلي</button></div>':(downloadUrl?`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px"><a class="download ui-shape" target="_blank" rel="noopener noreferrer" href="${escapeHtml(downloadUrl)}">⬇ تنزيل الملف الأصلي</a></div>`:'');
+  const action=materialId?'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px"><button class="download ui-shape" type="button" data-preview-material-download="'+escapeHtml(String(materialId))+'">⬇ تنزيل الملف الأصلي</button><button class="secondary ui-shape" type="button" onclick="shareDhadLink(\'material\',\''+escapeHtml(String(materialId))+ '\')">🔗 مشاركة الرابط</button></div>':(downloadUrl?`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px"><a class="download ui-shape" target="_blank" rel="noopener noreferrer" href="${escapeHtml(downloadUrl)}">⬇ تنزيل الملف الأصلي</a></div>`:'');
   bodyEl.innerHTML=html+action;
   const downloadButton=bodyEl.querySelector('[data-preview-material-download]');
   if(downloadButton)downloadButton.addEventListener('click',()=>downloadMaterial(downloadButton.getAttribute('data-preview-material-download')));
@@ -1534,7 +1536,7 @@ function renderMaterialBatchQueue(){const h=document.getElementById('batchFilesL
 function cancelMaterialBatch(){materialBatchCancelRequested=true;}
 function updateBatchRow(i,state){materialBatchQueue[i].state=state;const e=document.querySelector('[data-batch-index="'+i+'"] [data-batch-state]');if(e)e.textContent=state;}
 function initMaterialBatchUpload(){const input=document.getElementById('batchFilesInput');if(!input)return;input.addEventListener('change',()=>{for(const file of Array.from(input.files||[])){const duplicate=materialBatchQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||(window.__adminMaterials||[]).some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);if(duplicate&&!confirm('يوجد ملف بالاسم والحجم نفسيهما: «'+file.name+'». هل تضيفه رغم احتمال التكرار؟'))continue;materialBatchQueue.push({file,title:file.name.replace(/\.[^.]+$/,''),gradeId:'',semesterId:'',categoryId:'',state:'بانتظار الرفع'});}input.value='';renderMaterialBatchQueue();});}
-async function uploadMaterialBatch(){if(!isFileManager())return showInfo('صلاحية غير كافية','رفع الملفات متاح للمالك والمشرف فقط.');if(materialBatchRunning||!materialBatchQueue.length)return;const status=document.getElementById('batchUploadStatus');materialBatchRunning=true;materialBatchCancelRequested=false;document.getElementById('batchUploadButton').disabled=true;document.getElementById('batchCancelButton').disabled=false;let ok=0,failed=0;try{for(let i=0;i<materialBatchQueue.length;i++){if(materialBatchCancelRequested)break;const x=materialBatchQueue[i];if(x.state==='تم الرفع')continue;const r=document.querySelector('[data-batch-index="'+i+'"]');const title=r?.querySelector('[data-batch-title]')?.value.trim()||x.title;const gradeId=Number(r?.querySelector('[data-batch-grade]')?.value);const semesterId=Number(r?.querySelector('[data-batch-semester]')?.value);const categoryId=Number(r?.querySelector('[data-batch-category]')?.value);if(!gradeId||!semesterId||!categoryId){updateBatchRow(i,'فشل: أكمل التصنيف');failed++;continue;}if(x.file.size>50*1024*1024){updateBatchRow(i,'فشل: أكبر من 50MB');failed++;continue;}updateBatchRow(i,'جارٍ الرفع…');const ext=(x.file.name.split('.').pop()||'bin').toLowerCase();const path='grade-'+gradeId+'/semester-'+semesterId+'/category-'+categoryId+'/'+crypto.randomUUID()+'.'+ext;try{const {data,error}=await sb.storage.from(MATERIALS_BUCKET).upload(path,x.file,{contentType:x.file.type||'application/octet-stream',upsert:false});if(error)throw error;const {error:dbError}=await sb.from('materials').insert({title,description:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,file_path:data.path,file_name:x.file.name,file_type:x.file.type||null,file_size:x.file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null});if(dbError){await sb.storage.from(MATERIALS_BUCKET).remove([data.path]);throw dbError;}x.state='تم الرفع';updateBatchRow(i,'تم الرفع');ok++;}catch(e){x.state='فشل';updateBatchRow(i,'فشل: '+(e.message||'خطأ'));failed++;}}}finally{materialBatchRunning=false;document.getElementById('batchUploadButton').disabled=false;document.getElementById('batchCancelButton').disabled=true;showStatus(status,(materialBatchCancelRequested?'توقفت الدفعة بعد الملف الجاري. ':'')+'نجح '+ok+'، فشل '+failed+'؛ يمكن إعادة محاولة الملفات غير الناجحة.','info');await loadAdminMaterials();}}
+async function uploadMaterialBatch(){if(!isFileManager())return showInfo('صلاحية غير كافية','رفع الملفات متاح للمالك والمشرف فقط.');if(materialBatchRunning||!materialBatchQueue.length)return;const status=document.getElementById('batchUploadStatus');materialBatchRunning=true;materialBatchCancelRequested=false;document.getElementById('batchUploadButton').disabled=true;document.getElementById('batchCancelButton').disabled=false;let ok=0,failed=0;try{for(let i=0;i<materialBatchQueue.length;i++){if(materialBatchCancelRequested)break;const x=materialBatchQueue[i];if(x.state==='تم الرفع')continue;const r=document.querySelector('[data-batch-index="'+i+'"]');const title=r?.querySelector('[data-batch-title]')?.value.trim()||x.title;const gradeId=Number(r?.querySelector('[data-batch-grade]')?.value);const semesterId=Number(r?.querySelector('[data-batch-semester]')?.value);const categoryId=Number(r?.querySelector('[data-batch-category]')?.value);if(!gradeId||!semesterId||!categoryId){updateBatchRow(i,'فشل: أكمل التصنيف');failed++;continue;}if(x.file.size>50*1024*1024){updateBatchRow(i,'فشل: أكبر من 50MB');failed++;continue;}updateBatchRow(i,'جارٍ الرفع…');const ext=(x.file.name.split('.').pop()||'bin').toLowerCase();const path='grade-'+gradeId+'/semester-'+semesterId+'/category-'+categoryId+'/'+crypto.randomUUID()+'.'+ext;try{const {data,error}=await sb.storage.from(MATERIALS_BUCKET).upload(path,x.file,{contentType:x.file.type||'application/octet-stream',upsert:false});if(error)throw error;const {data:savedMaterial,error:dbError}=await sb.from('materials').insert({title,description:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,file_path:data.path,file_name:x.file.name,file_type:x.file.type||null,file_size:x.file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();if(dbError||!savedMaterial?.id){await sb.storage.from(MATERIALS_BUCKET).remove([data.path]);throw dbError||new Error('لم يتم استرجاع معرّف المادة بعد الحفظ.');}x.materialId=savedMaterial.id;x.state='تم الرفع';updateBatchRow(i,'تم الرفع');ok++;}catch(e){x.state='فشل';updateBatchRow(i,'فشل: '+(e.message||'خطأ'));failed++;}}}finally{materialBatchRunning=false;document.getElementById('batchUploadButton').disabled=false;document.getElementById('batchCancelButton').disabled=true;showStatus(status,(materialBatchCancelRequested?'توقفت الدفعة بعد الملف الجاري. ':'')+'نجح '+ok+'، فشل '+failed+'؛ يمكن إعادة محاولة الملفات غير الناجحة.','info');renderBatchUploadedLinks();await loadAdminMaterials();}}
 async function uploadMaterial(event){
   event.preventDefault();
   if(!isFileManager())return showInfo('صلاحية غير كافية','هذه العملية متاحة للمالك والمشرف فقط.');
@@ -1580,7 +1582,7 @@ async function uploadMaterial(event){
   const fieldName=(tracks.length && fieldIndex!==null)
     ? tracks[trackIndex].fields[fieldIndex] : null;
 
-  const {error:dbError}=await sb.from('materials').insert({
+  const {data:savedMaterial,error:dbError}=await sb.from('materials').insert({
     title,
     description:description||null,
     grade_id:gradeId,
@@ -1594,15 +1596,16 @@ async function uploadMaterial(event){
     created_by:currentUser.id,
     track_name:trackName,
     field_name:fieldName
-  });
+  }).select('id').single();
 
-  if(dbError){
+  if(dbError||!savedMaterial?.id){
     await sb.storage.from(MATERIALS_BUCKET).remove([uploaded.path]);
-    showStatus(status,'تعذر حفظ بيانات المادة وتم حذف الملف تلقائيًا: '+dbError.message,'error');
+    showStatus(status,'تعذر حفظ بيانات المادة وتم حذف الملف تلقائيًا: '+(dbError?.message||'لم يتم استرجاع معرّف المادة بعد الحفظ.'),'error');
     return;
   }
 
-  showStatus(status,'تم رفع المادة بنجاح ✅','ok');
+  showStatus(status,'تم رفع المادة بنجاح ✅ وأُنشئ رابطها المباشر.','ok');
+  showUploadedMaterialLink('uploadedMaterialLink',savedMaterial.id,title);
   document.getElementById('uploadForm').reset();
   updateTrackFields();
   loadAdminMaterials();
@@ -1641,7 +1644,7 @@ async function loadAdminMaterials(){
  const count=document.getElementById('filesCount');if(count)count.textContent=data.length+' '+(data.length===1?'ملف':'ملفات');
  const pathText=m=>escapeHtml(m.grades?.name||'')+(m.track_name?' ← '+escapeHtml(m.track_name):'')+(m.field_name?' ← '+escapeHtml(m.field_name):'')+' ← '+escapeHtml(m.semesters?.name||'')+' ← '+escapeHtml(m.categories?.name||'');
  if(compact)compact.innerHTML=data.slice(0,8).map(m=>'<div class="admin-item"><div><b>'+escapeHtml(m.title)+'</b><small>'+pathText(m)+'</small></div><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button></div>').join('');
- if(full)full.innerHTML=data.map(m=>{const url=getMaterialUrl(m.file_path);return '<div class="admin-file-card"><label><input type="checkbox" class="admin-material-select" value="'+escapeHtml(String(m.id))+'" onchange="updateSelectedMaterialCount()"> تحديد</label><b>'+escapeHtml(m.title)+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+pathText(m)+'<br>'+(m.file_size?formatBytes(m.file_size):'')+'</div><div class="admin-file-actions"><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button>'+(url?'<button class="download ui-shape" type="button" onclick="downloadAdminMaterial(\''+m.id+'\')">⬇ تنزيل</button>':'')+'<button class="edit ui-shape" onclick="editMaterial(\''+m.id+'\')">✏️ تعديل</button><button class="danger ui-shape" onclick="deleteMaterial(\''+m.id+'\')">🗑 حذف</button></div></div>';}).join('');
+ if(full)full.innerHTML=data.map(m=>{const url=getMaterialUrl(m.file_path);return '<div class="admin-file-card"><label><input type="checkbox" class="admin-material-select" value="'+escapeHtml(String(m.id))+'" onchange="updateSelectedMaterialCount()"> تحديد</label><b>'+escapeHtml(m.title)+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+pathText(m)+'<br>'+(m.file_size?formatBytes(m.file_size):'')+'</div><div class="admin-file-actions"><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button>'+(url?'<button class="download ui-shape" type="button" onclick="downloadAdminMaterial(\''+m.id+'\')">⬇ تنزيل</button>':'')+(m.is_public?'<button class="secondary ui-shape" type="button" onclick="shareDhadLink(\'material\',\''+m.id+'\')">🔗 مشاركة الرابط</button>':'')+'<button class="edit ui-shape" onclick="editMaterial(\''+m.id+'\')">✏️ تعديل</button><button class="danger ui-shape" onclick="deleteMaterial(\''+m.id+'\')">🗑 حذف</button></div></div>';}).join('');
 }
 
 async function downloadAdminMaterial(id){
@@ -2021,7 +2024,7 @@ function renderPublicHomeSections(rows){
         (previewable?'<button type="button" class="preview" data-home-section-preview="'+escapeHtml(String(row.id))+'">👁 معاينة الملف</button>':'<button type="button" class="preview" data-home-section-open="'+escapeHtml(String(row.id))+'">فتح الملف</button>')+
         '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
     }
-    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+title+'</h3>'+body+'</article>';
+    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+title+'</h3>'+body+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   }).join('');
   container.innerHTML=markup;
   container.closest('.home-tiles-layout')?.classList.toggle('has-home-sections',Boolean(markup));
@@ -2451,4 +2454,5 @@ setTimeout(()=>{
 },8000);
 </script>
 <script src="features.js"></script>
+<script src="deep-links.js"></script>
 </body></html>
