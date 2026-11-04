@@ -1,6 +1,20 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+<script>
+(function(){
+  try{
+    const u=new URL(location.href);
+    const keys=['material','game','additional','calendar','homeSection'];
+    const route=keys.some(key=>u.searchParams.has(key))||(!!location.hash&&location.hash!=='#home');
+    if(!route)return;
+    window.__DHAD_DIRECT_ENTRY__=true;
+    const style=document.createElement('style');
+    style.textContent=`#dhadDirectBoot{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#fbf8f0;color:#202020;font-family:Cairo,Tahoma,Arial,sans-serif;opacity:1;visibility:visible;transition:opacity .2s ease,visibility .2s ease}body.dark #dhadDirectBoot{background:#15120f;color:#f9f1e4}#dhadDirectBoot.dhad-boot-hide{opacity:0;visibility:hidden}#dhadDirectBoot .dhad-boot-card{display:flex;flex-direction:column;align-items:center;gap:13px;padding:28px;text-align:center}#dhadDirectBoot .dhad-boot-mark{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#682737,#4a1824);color:#fff;font-family:serif;font-size:38px;font-weight:900;box-shadow:0 8px 24px rgba(104,39,55,.2)}#dhadDirectBoot .dhad-boot-spinner{width:27px;height:27px;border:3px solid rgba(104,39,55,.18);border-top-color:#682737;border-radius:50%;animation:dhadBootSpin .8s linear infinite}@keyframes dhadBootSpin{to{transform:rotate(360deg)}}#dhadDirectBoot strong{font-size:17px}#dhadDirectBoot small{font-size:12px;color:#756b62}`;
+    document.head.appendChild(style);
+  }catch(e){}
+})();
+</script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1545460871455296"
      crossorigin="anonymous"></script>
@@ -251,6 +265,13 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 </style>
 </head>
 <body>
+<script>
+if(window.__DHAD_DIRECT_ENTRY__){
+  const boot=document.createElement('div');boot.id='dhadDirectBoot';
+  boot.innerHTML='<div class="dhad-boot-card"><div class="dhad-boot-mark">ض</div><div class="dhad-boot-spinner" aria-hidden="true"></div><strong>نجهّز وجهتك في ضاد</strong><small>لحظات ونفتح المحتوى المطلوب مباشرة</small></div>';
+  document.body.appendChild(boot);
+}
+</script>
 <div class="top">
   <div class="nav">
     <a class="brand" href="index.html" onclick="goHome();return false" aria-label="الصفحة الرئيسية لمنصة ضاد">
@@ -896,26 +917,31 @@ async function loadLookups(){
   TRACK_CONFIG={};
   try{
     let trackRows=[];
-    for(let from=0;;from+=1000){
-      const {data,error}=await sb.from('materials').select('grade_id,track_name,field_name').eq('is_public',true).not('track_name','is',null).range(from,from+999);
-      if(error)throw error;
-      trackRows=trackRows.concat(data||[]);
-      if(!data||data.length<1000)break;
+    const directMaterialEntry=new URLSearchParams(location.search).has('material');
+    // لا حاجة إلى مسح جميع المواد المنشورة عند فتح رابط مادة بعينها؛
+    // بيانات المسارات تُحمّل عند تصفح الصفوف بالطريقة المعتادة فقط.
+    if(!directMaterialEntry){
+      for(let from=0;;from+=1000){
+        const {data,error}=await sb.from('materials').select('grade_id,track_name,field_name').eq('is_public',true).not('track_name','is',null).range(from,from+999);
+        if(error)throw error;
+        trackRows=trackRows.concat(data||[]);
+        if(!data||data.length<1000)break;
+      }
+      trackRows.forEach(row=>{
+        const gradeId=Number(row.grade_id);
+        const trackName=String(row.track_name||'').trim();
+        if(!gradeId||!trackName)return;
+        TRACK_CONFIG[gradeId]=TRACK_CONFIG[gradeId]||[];
+        let track=TRACK_CONFIG[gradeId].find(item=>item.name===trackName);
+        if(!track){track={name:trackName,fields:[]};TRACK_CONFIG[gradeId].push(track);}
+        const fieldName=String(row.field_name||'').trim();
+        if(fieldName&&!track.fields.includes(fieldName))track.fields.push(fieldName);
+      });
+      Object.values(TRACK_CONFIG).forEach(tracks=>tracks.sort((a,b)=>{
+        const ai=TRACK_ORDER_HINTS.indexOf(a.name),bi=TRACK_ORDER_HINTS.indexOf(b.name);
+        return (ai<0?999:ai)-(bi<0?999:bi)||a.name.localeCompare(b.name,'ar');
+      }));
     }
-    trackRows.forEach(row=>{
-      const gradeId=Number(row.grade_id);
-      const trackName=String(row.track_name||'').trim();
-      if(!gradeId||!trackName)return;
-      TRACK_CONFIG[gradeId]=TRACK_CONFIG[gradeId]||[];
-      let track=TRACK_CONFIG[gradeId].find(item=>item.name===trackName);
-      if(!track){track={name:trackName,fields:[]};TRACK_CONFIG[gradeId].push(track);}
-      const fieldName=String(row.field_name||'').trim();
-      if(fieldName&&!track.fields.includes(fieldName))track.fields.push(fieldName);
-    });
-    Object.values(TRACK_CONFIG).forEach(tracks=>tracks.sort((a,b)=>{
-      const ai=TRACK_ORDER_HINTS.indexOf(a.name),bi=TRACK_ORDER_HINTS.indexOf(b.name);
-      return (ai<0?999:ai)-(bi<0?999:bi)||a.name.localeCompare(b.name,'ar');
-    }));
   }catch(error){
     TRACK_CONFIG={};
     console.warn('تعذر تحميل بيانات المسارات من سجلات المواد المنشورة.',error);
@@ -2398,9 +2424,19 @@ async function initSupabase(){
 
     const ok=await loadLookups();
     if(ok){
-      hideAll();
-      document.getElementById('home').style.display='block';
-      await Promise.all([loadHomeSectionsPublic(),loadSiteBranding()]);
+      const requestedUrl=new URL(location.href);
+      const hasDirectQuery=['material','game','additional','calendar','homeSection'].some(key=>requestedUrl.searchParams.has(key));
+      const requestedHash=String(location.hash||'').replace(/^#/,'');
+      const hasDeepRoute=hasDirectQuery||(!!requestedHash&&requestedHash!=='home');
+      // لا نعرض الصفحة الرئيسية كوجهة مؤقتة إذا كان الزائر قد طلب رابطًا مباشرًا.
+      if(!hasDeepRoute){
+        hideAll();
+        document.getElementById('home').style.display='block';
+        await loadHomeSectionsPublic();
+      }else if(requestedUrl.searchParams.has('homeSection')){
+        await loadHomeSectionsPublic();
+      }
+      await loadSiteBranding();
     }
     setSetupStatus('تم الاتصال بـ Supabase بنجاح.','ok');
   }catch(e){

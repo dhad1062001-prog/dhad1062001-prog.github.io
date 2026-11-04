@@ -2,6 +2,12 @@
 (function(){
   'use strict';
   const DIRECT_KEYS=['material','game','additional','calendar','homeSection'];
+  const requestedAtBoot=new URL(location.href);
+  const hasDirectEntry=!!window.__DHAD_DIRECT_ENTRY__ || DIRECT_KEYS.some(key=>requestedAtBoot.searchParams.has(key)) || (!!location.hash&&location.hash!=='#home');
+  let bootScreen=document.getElementById('dhadDirectBoot');
+  function finishDirectBootScreen(){
+    if(bootScreen){bootScreen.classList.add('dhad-boot-hide');window.setTimeout(()=>{bootScreen?.remove();bootScreen=null;},220);}
+  }
   const baseHideAll=window.hideAll;
   const style=document.createElement('style');
   style.textContent=`
@@ -183,7 +189,7 @@
         const categoryIndex=(typeof categories!=='undefined'?categories:[]).findIndex(x=>String(x.id)===String(p[3]));
         if(categoryIndex>=0){const ti=p[4]&&p[4]!=='none'?resolveTrackIndex(Number(p[1]),p[4]):null;const fi=ti===null?null:resolveFieldIndex(Number(p[1]),ti,p[5]);await loadMaterials(Number(p[1]),Number(p[2]),categoryIndex,ti,fi,false);}return;
       }
-    }finally{window.__DHAD_ROUTE_RESTORING__=false;}
+    }finally{window.__DHAD_ROUTE_RESTORING__=false;finishDirectBootScreen();}
   }
   window.restoreDhadRouteFromLocation=restoreRoute;
 
@@ -191,10 +197,15 @@
   const previousInit=window.initSupabase;
   if(typeof previousInit==='function'){
     window.initSupabase=async function(){
-      await previousInit();
-      if(typeof sb!=='undefined'&&sb){
-        if(typeof loadDhadFeatureData==='function'&&!window.__DHAD_FEATURE_DATA_READY__){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;}
-        await restoreRoute();
+      try{
+        await previousInit();
+        if(typeof sb!=='undefined'&&sb){
+          const directMaterialEntry=new URLSearchParams(location.search).has('material');
+          if(!directMaterialEntry&&typeof loadDhadFeatureData==='function'&&!window.__DHAD_FEATURE_DATA_READY__){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;}
+          await restoreRoute();
+        }
+      }finally{
+        finishDirectBootScreen();
       }
     };
   }

@@ -322,7 +322,8 @@ function wireDhadFeatureEvents(){
 const dhadOriginalInitSupabase=initSupabase;
 initSupabase=async function(){
   await dhadOriginalInitSupabase();
-  if(sb){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}}
+  const directMaterialEntry=new URLSearchParams(location.search).has('material');
+  if(sb&&!directMaterialEntry){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}}
 };
 const dhadOriginalSaveContactLinks=saveContactLinks;
 saveContactLinks=async function(){await dhadOriginalSaveContactLinks();try{renderFooterContactLinks(await getContactLinks());}catch(e){}};
@@ -330,4 +331,4 @@ const dhadOriginalSaveSiteBranding=saveSiteBranding;
 saveSiteBranding=async function(){await dhadOriginalSaveSiteBranding();};
 document.addEventListener('DOMContentLoaded',()=>{wireDhadFeatureEvents();renderDhadHomeCards();renderDhadCertificate();});
 wireDhadFeatureEvents();renderDhadHomeCards();renderDhadCertificate();
-if(window.__SUPABASE_LOADED__&&sb)loadDhadFeatureData().then(async()=>{await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}});
+if(window.__SUPABASE_LOADED__&&sb&&!new URLSearchParams(location.search).has('material'))loadDhadFeatureData().then(async()=>{await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;try{renderFooterContactLinks(await getContactLinks());}catch(e){}});
