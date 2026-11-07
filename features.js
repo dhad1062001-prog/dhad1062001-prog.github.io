@@ -5,12 +5,13 @@
 const DHAD_FEATURE_SLUGS={homeCards:'dhad-home-cards-v1',additional:'dhad-additional-items-v1',calendar:'dhad-calendar-items-v1',games:'dhad-games-v1',certificate:'dhad-certificate-v1'};
 const DHAD_HOME_CARD_DEFAULTS=[
   {id:'grades',title:'الصفوف الدراسية',description:'جميع الصفوف والمناهج في مكان واحد',icon:'🎓',color:'#3986D9',size:'normal',order:1,visible:true,target:'grades',url:'',imagePath:''},
-  {id:'games',title:'ألعاب تعليمية تفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#E85B68',size:'normal',order:2,visible:true,target:'games',url:'',imagePath:''},
+  {id:'games',title:'استديو الألعاب التفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#E85B68',size:'normal',order:2,visible:true,target:'games',url:'',imagePath:''},
   {id:'additional',title:'التعليم الإضافي',description:'دروس وموارد إضافية لتعزيز مهاراتك',icon:'💡',color:'#35B6B0',size:'normal',order:3,visible:true,target:'additional',url:'',imagePath:''},
   {id:'calendar',title:'التقويم الدراسي',description:'تابع مواعيدك الدراسية بكل سهولة',icon:'🗓️',color:'#F0A23B',size:'normal',order:4,visible:true,target:'calendar',url:'',imagePath:''},
   {id:'certificate',title:'شهادات التقدير',description:'احصل على شهادتك بكل إنجاز',icon:'🏅',color:'#8764D8',size:'normal',order:5,visible:true,target:'certificate',url:'',imagePath:''}
 ];
 const DHAD_CERTIFICATE_DEFAULT={title:'شهادة تقدير',intro:'تُمنح هذه الشهادة بكل فخر واعتزاز إلى',body:'تقديرًا لجهوده المميزة وإبداعه واجتهاده في تعلّم اللغة العربية. مع تمنياتنا له بدوام التوفيق والنجاح.',footer:'مع خالص التقدير',school:'',teacher:'',color:'#D9A441',showBrand:true};
+const DHAD_CONTENT_STATUS_LABELS={draft:'مسودة',review:'قيد المراجعة',approved:'معتمد',published:'منشور',archived:'مؤرشف'};
 let dhadFeatureData={homeCards:JSON.parse(JSON.stringify(DHAD_HOME_CARD_DEFAULTS)),additional:[],calendar:[],games:[],certificate:{...DHAD_CERTIFICATE_DEFAULT}};
 let dhadGameExistingFiles=[];
 let dhadGameExistingMainPath='';
@@ -20,6 +21,8 @@ function dhadSafeColor(value,fallback='#20A486'){
   return /^#[0-9a-f]{6}$/i.test(color)?color:fallback;
 }
 function dhadClone(value){return JSON.parse(JSON.stringify(value));}
+function dhadFeatureStatusOf(item){const status=String(item?.status||'');return Object.hasOwn(DHAD_CONTENT_STATUS_LABELS,status)?status:(item?.active===false?'archived':'published');}
+function dhadFeatureIsPublished(item){return dhadFeatureStatusOf(item)==='published';}
 function dhadFeatureStatus(message,type='ok'){
   const el=document.getElementById('featureAdminStatus');
   if(el&&typeof showStatus==='function')showStatus(el,message,type);
@@ -111,7 +114,7 @@ async function uploadDhadFeatureFile(file,folder,relativePath=''){
   const path='dhad-content/'+folder+'/'+crypto.randomUUID()+'/'+safeParts.join('/');
   let type=file.type||'application/octet-stream';
   const ext=(file.name.split('.').pop()||'').toLowerCase();if(ext==='html'||ext==='htm')type='text/html';else if(ext==='css')type='text/css';else if(ext==='js')type='text/javascript';
-  const {data,error}=await sb.storage.from(MATERIALS_BUCKET).upload(path,file,{contentType:type,upsert:false});
+  const {data,error}=await window.uploadDhadStorageObject(path,file,{contentType:type,upsert:false});
   if(error){dhadFeatureStatus('تعذر رفع الملف إلى مساحة materials: '+error.message,'error');return '';}
   return data?.path||path;
 }
@@ -121,7 +124,7 @@ async function renderDhadFeaturePages(){
 }
 async function renderDhadAdditional(){
   const list=document.getElementById('additionalContent');if(!list)return;
-  const items=dhadFeatureData.additional.filter(item=>item&&item.active!==false).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  const items=dhadFeatureData.additional.filter(item=>item&&dhadFeatureIsPublished(item)).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   if(!items.length){list.innerHTML='<div class="empty">لم تُنشر موارد إضافية بعد.</div>';return;}
   const cards=await Promise.all(items.map(async item=>{
     const images=await Promise.all((item.images||[]).map(async img=>{const result=await resolveStorageFile(img.path);return result.url?'<button type="button" data-feature-image="'+escapeHtml(img.path)+'" data-feature-title="'+escapeHtml(item.title||'صورة تعليمية')+'"><img src="'+escapeHtml(result.url)+'" alt="'+escapeHtml(img.name||item.title||'صورة تعليمية')+'" loading="lazy"></button>':'';}));
@@ -136,7 +139,7 @@ function dhadLinkify(text){
 }
 async function renderDhadCalendar(){
   const list=document.getElementById('calendarGallery');if(!list)return;
-  const items=dhadFeatureData.calendar.filter(item=>item&&item.active!==false&&item.imagePath).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  const items=dhadFeatureData.calendar.filter(item=>item&&dhadFeatureIsPublished(item)&&item.imagePath).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   if(!items.length){list.innerHTML='<div class="empty">لا توجد صور تقويم منشورة حاليًا.</div>';return;}
   const cards=await Promise.all(items.map(async item=>{
     const result=await resolveStorageFile(item.imagePath);if(!result.url)return '';
@@ -146,11 +149,12 @@ async function renderDhadCalendar(){
 }
 async function renderDhadGames(){
   const list=document.getElementById('gamesGrid');if(!list)return;
-  const games=dhadFeatureData.games.filter(game=>game&&game.active!==false&&game.mainPath).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
+  const games=dhadFeatureData.games.filter(game=>game&&dhadFeatureIsPublished(game)&&game.mainPath).sort((a,b)=>Number(a.order||0)-Number(b.order||0));
   if(!games.length){list.innerHTML='<div class="empty">لم تُنشر ألعاب تعليمية بعد.</div>';return;}
   list.innerHTML=await Promise.all(games.map(async game=>{
     const cover=game.coverPath?await resolveStorageFile(game.coverPath):null;
-    return '<article class="feature-content-card" id="dhad-game-'+escapeHtml(game.id)+'" data-dhad-game-item="'+escapeHtml(game.id)+'">'+(cover?.url?'<img class="game-cover" src="'+escapeHtml(cover.url)+'" alt="'+escapeHtml(game.title||'غلاف اللعبة')+'" loading="lazy">':'')+'<h3>'+escapeHtml(game.title||'لعبة تعليمية')+'</h3>'+(game.description?'<p>'+escapeHtml(game.description)+'</p>':'')+'<div class="game-card-actions"><button class="primary" type="button" data-play-game="'+escapeHtml(game.id)+'">▶ ابدأ اللعب</button><button class="secondary" type="button" onclick="shareDhadLink(\'game\',\''+escapeHtml(game.id)+'\')">🔗 مشاركة اللعبة</button></div></article>';
+    const gameUrl=typeof getDhadDirectUrl==='function'?getDhadDirectUrl('game',game.id):'?game='+encodeURIComponent(String(game.id));
+    return '<article class="feature-content-card" id="dhad-game-'+escapeHtml(game.id)+'" data-dhad-game-item="'+escapeHtml(game.id)+'">'+(cover?.url?'<img class="game-cover" src="'+escapeHtml(cover.url)+'" alt="'+escapeHtml(game.title||'غلاف اللعبة')+'" loading="lazy">':'')+'<h3><a href="'+escapeHtml(gameUrl)+'" style="color:inherit;text-decoration:none">'+escapeHtml(game.title||'لعبة تعليمية')+'</a></h3>'+(game.description?'<p>'+escapeHtml(game.description)+'</p>':'')+'<div class="game-card-actions"><button class="primary" type="button" data-play-game="'+escapeHtml(game.id)+'">▶ ابدأ اللعب</button><button class="secondary" type="button" onclick="shareDhadLink(\'game\',\''+escapeHtml(game.id)+'\')">🔗 مشاركة اللعبة</button></div></article>';
   })).then(rows=>rows.join(''));
 }
 async function renderDhadCertificate(nameOverride){
@@ -227,27 +231,29 @@ async function renderDhadAdminLists(){
 function renderDhadAdminList(elementId,items,type){
   const list=document.getElementById(elementId);if(!list)return;
   if(!items?.length){list.innerHTML='<div class="empty">لا توجد عناصر محفوظة.</div>';return;}
-  list.innerHTML=items.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)).map(item=>'<div class="home-section-admin-item"><div><strong>'+escapeHtml(item.title||'محتوى دون عنوان')+'</strong><div class="home-section-admin-meta">الترتيب: '+Number(item.order||0)+' · '+(item.active===false?'مخفي عن الزوار':'ظاهر للزوار')+(type==='calendar'&&item.year?' · '+escapeHtml(item.year):'')+'</div></div><div class="home-section-admin-actions"><button type="button" class="secondary" data-feature-edit="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">تعديل</button><button type="button" class="'+(item.active===false?'primary':'edit')+'" data-feature-toggle="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">'+(item.active===false?'إظهار':'إخفاء')+'</button><button type="button" class="danger" data-feature-delete="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">حذف</button></div></div>').join('');
+  list.innerHTML=items.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)).map(item=>{const status=dhadFeatureStatusOf(item);return '<div class="home-section-admin-item"><div><strong>'+escapeHtml(item.title||'محتوى دون عنوان')+'</strong><div class="home-section-admin-meta">الحالة: '+DHAD_CONTENT_STATUS_LABELS[status]+' · الترتيب: '+Number(item.order||0)+(type==='calendar'&&item.year?' · '+escapeHtml(item.year):'')+'</div></div><div class="home-section-admin-actions"><button type="button" class="secondary" data-feature-edit="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">تعديل الحالة</button><button type="button" class="'+(status==='published'?'edit':'primary')+'" data-feature-toggle="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">'+(status==='published'?'أرشفة':'نشر')+'</button><button type="button" class="danger" data-feature-delete="'+type+'" data-feature-id="'+escapeHtml(item.id)+'">حذف</button></div></div>';}).join('');
 }
-function resetAdditionalForm(){document.getElementById('additionalForm')?.reset();document.getElementById('additionalId').value='';document.getElementById('additionalOrder').value=String(dhadFeatureData.additional.length+1);document.getElementById('additionalActive').checked=true;document.getElementById('additionalCurrentImages').textContent='';}
-function editAdditionalItem(id){const item=dhadFeatureData.additional.find(row=>row.id===id);if(!item)return;document.getElementById('additionalId').value=item.id;document.getElementById('additionalTitle').value=item.title||'';document.getElementById('additionalDescription').value=item.description||'';document.getElementById('additionalText').value=item.text||'';document.getElementById('additionalOrder').value=String(item.order||0);document.getElementById('additionalActive').checked=item.active!==false;document.getElementById('additionalCurrentImages').textContent=(item.images||[]).length?'الصور الحالية محفوظة؛ الصور الجديدة تُضاف إليها.':'';document.getElementById('additionalForm').scrollIntoView({behavior:'smooth',block:'start'});}
+function resetAdditionalForm(){document.getElementById('additionalForm')?.reset();document.getElementById('additionalId').value='';document.getElementById('additionalOrder').value=String(dhadFeatureData.additional.length+1);document.getElementById('additionalStatus').value='draft';document.getElementById('additionalCurrentImages').textContent='';}
+function editAdditionalItem(id){const item=dhadFeatureData.additional.find(row=>row.id===id);if(!item)return;document.getElementById('additionalId').value=item.id;document.getElementById('additionalTitle').value=item.title||'';document.getElementById('additionalDescription').value=item.description||'';document.getElementById('additionalText').value=item.text||'';document.getElementById('additionalOrder').value=String(item.order||0);document.getElementById('additionalStatus').value=dhadFeatureStatusOf(item);document.getElementById('additionalCurrentImages').textContent=(item.images||[]).length?'الصور الحالية محفوظة؛ الصور الجديدة تُضاف إليها.':'';document.getElementById('additionalForm').scrollIntoView({behavior:'smooth',block:'start'});}
 async function saveAdditionalItem(event){
   event.preventDefault();if(!isOwner())return showInfo('صلاحية غير كافية','إدارة التعليم الإضافي متاحة لمالك المنصة فقط.');
   const id=document.getElementById('additionalId').value||crypto.randomUUID();const old=dhadFeatureData.additional.find(row=>row.id===id);const order=Number(document.getElementById('additionalOrder').value||0);if(!Number.isInteger(order)||order<0)return dhadFeatureStatus('أدخل رقم ترتيب صحيحًا.','error');
   const images=[...(old?.images||[])];for(const file of Array.from(document.getElementById('additionalImages').files||[])){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)return dhadFeatureStatus('اختر صور PNG أو JPG أو WebP لا يتجاوز حجم كل منها 5 ميجابايت.','error');const path=await uploadDhadFeatureFile(file,'additional');if(!path)return;images.push({path,name:file.name});}
-  const item={id,title:document.getElementById('additionalTitle').value.trim(),description:document.getElementById('additionalDescription').value.trim(),text:document.getElementById('additionalText').value.trim(),images,order,active:document.getElementById('additionalActive').checked};
+  const status=document.getElementById('additionalStatus').value;if(!Object.hasOwn(DHAD_CONTENT_STATUS_LABELS,status))return dhadFeatureStatus('اختر حالة صحيحة للمحتوى.','error');
+  const item={id,title:document.getElementById('additionalTitle').value.trim(),description:document.getElementById('additionalDescription').value.trim(),text:document.getElementById('additionalText').value.trim(),images,order,status,active:status==='published'};
   const next=old?dhadFeatureData.additional.map(row=>row.id===id?item:row):[...dhadFeatureData.additional,item];
   if(await saveDhadFeatureRecord('additional',next,'محتوى التعليم الإضافي')){dhadFeatureData.additional=next;resetAdditionalForm();renderDhadAdminLists();await renderDhadAdditional();dhadFeatureStatus('تم حفظ المحتوى التعليمي.','ok');}
 }
-function resetCalendarForm(){document.getElementById('calendarForm')?.reset();document.getElementById('calendarId').value='';document.getElementById('calendarOrder').value=String(dhadFeatureData.calendar.length+1);document.getElementById('calendarActive').checked=true;document.getElementById('calendarCurrentImage').textContent='';}
-function editCalendarItem(id){const item=dhadFeatureData.calendar.find(row=>row.id===id);if(!item)return;document.getElementById('calendarId').value=item.id;document.getElementById('calendarTitle').value=item.title||'';document.getElementById('calendarDescription').value=item.description||'';document.getElementById('calendarYear').value=item.year||'';document.getElementById('calendarOrder').value=String(item.order||0);document.getElementById('calendarActive').checked=item.active!==false;document.getElementById('calendarCurrentImage').textContent=item.imagePath?'الصورة الحالية محفوظة. رفع صورة جديدة يستبدل الصورة المعروضة ويترك الملف السابق محفوظًا.':'';document.getElementById('calendarForm').scrollIntoView({behavior:'smooth',block:'start'});}
+function resetCalendarForm(){document.getElementById('calendarForm')?.reset();document.getElementById('calendarId').value='';document.getElementById('calendarOrder').value=String(dhadFeatureData.calendar.length+1);document.getElementById('calendarStatus').value='draft';document.getElementById('calendarCurrentImage').textContent='';}
+function editCalendarItem(id){const item=dhadFeatureData.calendar.find(row=>row.id===id);if(!item)return;document.getElementById('calendarId').value=item.id;document.getElementById('calendarTitle').value=item.title||'';document.getElementById('calendarDescription').value=item.description||'';document.getElementById('calendarYear').value=item.year||'';document.getElementById('calendarOrder').value=String(item.order||0);document.getElementById('calendarStatus').value=dhadFeatureStatusOf(item);document.getElementById('calendarCurrentImage').textContent=item.imagePath?'الصورة الحالية محفوظة. رفع صورة جديدة يستبدل الصورة المعروضة ويترك الملف السابق محفوظًا.':'';document.getElementById('calendarForm').scrollIntoView({behavior:'smooth',block:'start'});}
 async function saveCalendarItem(event){
   event.preventDefault();if(!isOwner())return showInfo('صلاحية غير كافية','إدارة التقويم متاحة لمالك المنصة فقط.');
   const id=document.getElementById('calendarId').value||crypto.randomUUID();const old=dhadFeatureData.calendar.find(row=>row.id===id);const file=document.getElementById('calendarImage').files?.[0];let imagePath=old?.imagePath||'';
   if(file){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)return dhadFeatureStatus('اختر صورة PNG أو JPG أو WebP لا يتجاوز حجمها 8 ميجابايت.','error');imagePath=await uploadDhadFeatureFile(file,'calendar');if(!imagePath)return;}
   if(!imagePath)return dhadFeatureStatus('اختر صورة للتقويم قبل الحفظ.','error');
   const order=Number(document.getElementById('calendarOrder').value||0);if(!Number.isInteger(order)||order<0)return dhadFeatureStatus('أدخل رقم ترتيب صحيحًا.','error');
-  const item={id,title:document.getElementById('calendarTitle').value.trim(),description:document.getElementById('calendarDescription').value.trim(),year:document.getElementById('calendarYear').value.trim(),imagePath,order,active:document.getElementById('calendarActive').checked};const next=old?dhadFeatureData.calendar.map(row=>row.id===id?item:row):[...dhadFeatureData.calendar,item];
+  const status=document.getElementById('calendarStatus').value;if(!Object.hasOwn(DHAD_CONTENT_STATUS_LABELS,status))return dhadFeatureStatus('اختر حالة صحيحة للتقويم.','error');
+  const item={id,title:document.getElementById('calendarTitle').value.trim(),description:document.getElementById('calendarDescription').value.trim(),year:document.getElementById('calendarYear').value.trim(),imagePath,order,status,active:status==='published'};const next=old?dhadFeatureData.calendar.map(row=>row.id===id?item:row):[...dhadFeatureData.calendar,item];
   if(await saveDhadFeatureRecord('calendar',next,'صور التقويم الدراسي')){dhadFeatureData.calendar=next;resetCalendarForm();renderDhadAdminLists();await renderDhadCalendar();dhadFeatureStatus('تم حفظ صورة التقويم.','ok');}
 }
 function refreshGameMainOptions(){
@@ -258,8 +264,8 @@ function refreshGameMainOptions(){
   select.innerHTML='<option value="">اختر ملف HTML الرئيسي</option>'+options.map(item=>'<option value="'+escapeHtml(item.value)+'">'+escapeHtml(item.label)+'</option>').join('')+oldFiles.map(file=>'<option value="old:'+escapeHtml(file.path)+'">ملف محفوظ: '+escapeHtml(file.relativePath||file.path.split('/').pop())+'</option>').join('');
   if(dhadGameExistingMainPath&&!newFiles.length)select.value='old:'+dhadGameExistingMainPath;
 }
-function resetGameForm(){document.getElementById('gameForm')?.reset();document.getElementById('gameId').value='';document.getElementById('gameOrder').value=String(dhadFeatureData.games.length+1);document.getElementById('gameActive').checked=true;dhadGameExistingFiles=[];dhadGameExistingMainPath='';refreshGameMainOptions();}
-function editGameItem(id){const game=dhadFeatureData.games.find(row=>row.id===id);if(!game)return;document.getElementById('gameId').value=game.id;document.getElementById('gameTitle').value=game.title||'';document.getElementById('gameDescription').value=game.description||'';document.getElementById('gameOrder').value=String(game.order||0);document.getElementById('gameActive').checked=game.active!==false;dhadGameExistingFiles=game.files||[];dhadGameExistingMainPath=game.mainPath||'';refreshGameMainOptions();document.getElementById('gameForm').scrollIntoView({behavior:'smooth',block:'start'});}
+function resetGameForm(){document.getElementById('gameForm')?.reset();document.getElementById('gameId').value='';document.getElementById('gameOrder').value=String(dhadFeatureData.games.length+1);document.getElementById('gameStatus').value='draft';dhadGameExistingFiles=[];dhadGameExistingMainPath='';refreshGameMainOptions();}
+function editGameItem(id){const game=dhadFeatureData.games.find(row=>row.id===id);if(!game)return;document.getElementById('gameId').value=game.id;document.getElementById('gameTitle').value=game.title||'';document.getElementById('gameDescription').value=game.description||'';document.getElementById('gameOrder').value=String(game.order||0);document.getElementById('gameStatus').value=dhadFeatureStatusOf(game);dhadGameExistingFiles=game.files||[];dhadGameExistingMainPath=game.mainPath||'';refreshGameMainOptions();document.getElementById('gameForm').scrollIntoView({behavior:'smooth',block:'start'});}
 async function saveGameItem(event){
   event.preventDefault();if(!isOwner())return showInfo('صلاحية غير كافية','إدارة الألعاب متاحة لمالك المنصة فقط.');
   const id=document.getElementById('gameId').value||crypto.randomUUID();const old=dhadFeatureData.games.find(row=>row.id===id);let files=[...(old?.files||[])];const selected=Array.from(document.getElementById('gameFiles').files||[]);let uploaded=[];
@@ -271,7 +277,8 @@ async function saveGameItem(event){
   if(!files.some(file=>file.path===mainPath))files.push({path:mainPath,relativePath:mainPath.split('/').pop(),name:mainPath.split('/').pop(),type:'text/html'});
   let coverPath=old?.coverPath||'';const cover=document.getElementById('gameCover').files?.[0];if(cover){if(!['image/png','image/jpeg','image/webp'].includes(cover.type)||cover.size>5*1024*1024)return dhadFeatureStatus('غلاف اللعبة يجب أن يكون PNG أو JPG أو WebP وبحجم لا يتجاوز 5 ميجابايت.','error');coverPath=await uploadDhadFeatureFile(cover,'game-covers');if(!coverPath)return;}
   const order=Number(document.getElementById('gameOrder').value||0);if(!Number.isInteger(order)||order<0)return dhadFeatureStatus('أدخل رقم ترتيب صحيحًا.','error');
-  const game={id,title:document.getElementById('gameTitle').value.trim(),description:document.getElementById('gameDescription').value.trim(),coverPath,files,mainPath,order,active:document.getElementById('gameActive').checked};const next=old?dhadFeatureData.games.map(row=>row.id===id?game:row):[...dhadFeatureData.games,game];
+  const status=document.getElementById('gameStatus').value;if(!Object.hasOwn(DHAD_CONTENT_STATUS_LABELS,status))return dhadFeatureStatus('اختر حالة صحيحة للعبة.','error');
+  const game={id,title:document.getElementById('gameTitle').value.trim(),description:document.getElementById('gameDescription').value.trim(),coverPath,files,mainPath,order,status,active:status==='published'};const next=old?dhadFeatureData.games.map(row=>row.id===id?game:row):[...dhadFeatureData.games,game];
   if(await saveDhadFeatureRecord('games',next,'الألعاب التعليمية')){dhadFeatureData.games=next;resetGameForm();renderDhadAdminLists();await renderDhadGames();dhadFeatureStatus('تم حفظ اللعبة وملفاتها.','ok');}
 }
 async function playDhadGame(id){
@@ -286,7 +293,7 @@ async function mutateFeatureItem(type,id,action){
   if(!isOwner())return showInfo('صلاحية غير كافية','هذه العملية متاحة لمالك المنصة فقط.');
   const key=type==='additional'?'additional':type==='calendar'?'calendar':'games';let rows=[...dhadFeatureData[key]];const item=rows.find(row=>row.id===id);if(!item)return;
   if(action==='edit'){if(type==='additional')editAdditionalItem(id);else if(type==='calendar')editCalendarItem(id);else editGameItem(id);return;}
-  if(action==='toggle')rows=rows.map(row=>row.id===id?{...row,active:row.active===false}:row);
+  if(action==='toggle')rows=rows.map(row=>row.id===id?{...row,status:dhadFeatureStatusOf(row)==='published'?'archived':'published',active:dhadFeatureStatusOf(row)!=='published'}:row);
   if(action==='delete'){if(!confirm('هل تريد حذف «'+(item.title||'هذا المحتوى')+'» من الموقع؟ تبقى الملفات الأصلية محفوظة في مساحة التخزين.'))return;rows=rows.filter(row=>row.id!==id);}
   if(await saveDhadFeatureRecord(key,rows,type==='calendar'?'صور التقويم':type==='games'?'الألعاب التعليمية':'محتوى التعليم الإضافي')){dhadFeatureData[key]=rows;renderDhadAdminLists();if(type==='additional')await renderDhadAdditional();if(type==='calendar')await renderDhadCalendar();if(type==='games')await renderDhadGames();dhadFeatureStatus(action==='toggle'?'تم تحديث حالة الظهور.':'تم حذف العنصر من القائمة.','ok');}
 }

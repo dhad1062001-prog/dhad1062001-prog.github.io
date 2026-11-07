@@ -3,6 +3,7 @@
   'use strict';
   const DIRECT_KEYS=['material','game','additional','calendar','homeSection'];
   const requestedAtBoot=new URL(location.href);
+  const baseMetadata={title:document.title,description:document.querySelector('meta[name="description"]')?.content||'',canonical:document.querySelector('link[rel="canonical"]')?.href||location.origin+location.pathname};
   const hasDirectEntry=!!window.__DHAD_DIRECT_ENTRY__ || DIRECT_KEYS.some(key=>requestedAtBoot.searchParams.has(key)) || (!!location.hash&&location.hash!=='#home');
   let bootScreen=document.getElementById('dhadDirectBoot');
   function finishDirectBootScreen(){
@@ -14,7 +15,14 @@
     #dhadMaterialDirectPage .dhad-direct-card{background:var(--panel,#fff);border:1px solid var(--line,#e5e7eb);border-radius:20px;padding:clamp(16px,3vw,28px);box-shadow:0 10px 30px rgba(0,0,0,.05)}
     #dhadMaterialDirectPage .dhad-direct-meta{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
     #dhadMaterialDirectPage .dhad-direct-meta span{background:var(--soft,#f4f4f0);border:1px solid var(--line,#e5e7eb);border-radius:999px;padding:6px 11px;font-size:.9rem}
-    #dhadMaterialDirectPage .dhad-direct-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+    #dhadMaterialDirectPage .dhad-direct-layout{display:grid;direction:ltr;grid-template-columns:minmax(0,1fr) minmax(220px,280px);gap:18px;align-items:start}
+    #dhadMaterialDirectPage .dhad-direct-card{direction:rtl}
+    #dhadMaterialDirectPage .dhad-direct-download{position:sticky;top:72px;display:grid;gap:10px}
+    #dhadMaterialDirectPage .dhad-direct-download h3{margin:0 0 2px;font-size:1.1rem}
+    #dhadMaterialDirectPage .dhad-direct-download button{width:100%;min-height:46px}
+    #dhadMaterialDirectPage .dhad-direct-description{line-height:2;white-space:pre-wrap;overflow-wrap:anywhere}
+    #dhadMaterialDirectPage .dhad-direct-description:empty{display:none}
+    @media(max-width:760px){#dhadMaterialDirectPage .dhad-direct-layout{grid-template-columns:1fr}#dhadMaterialDirectPage .dhad-direct-download{position:static;grid-row:2}}
     #dhadMaterialDirectPage .dhad-direct-actions button{min-height:44px}
     .dhad-feature-share{display:flex;justify-content:flex-start;margin-top:12px}
     .dhad-uploaded-link{margin-top:10px}
@@ -29,7 +37,7 @@
     if(document.getElementById('dhadMaterialDirectPage'))return;
     const section=document.createElement('section');
     section.className='content-page';section.id='dhadMaterialDirectPage';section.style.display='none';
-    section.innerHTML=`<div class="panel"><button class="back" type="button" onclick="goHomeAndClearDirectLink()">↩ العودة إلى ضاد</button><div class="crumb">الرئيسية ← المادة التعليمية</div><div class="page-title"><h2 id="dhadDirectMaterialTitle">المادة التعليمية</h2><p>رابط مباشر من منصة ضاد</p></div><div class="dhad-direct-card"><div id="dhadDirectMaterialStatus" class="empty">جاري تحميل بيانات المادة...</div><div id="dhadDirectMaterialBody"></div></div></div>`;
+    section.innerHTML=`<div class="panel"><button class="back" type="button" onclick="goHomeAndClearDirectLink()">↩ العودة إلى ضاد</button><div class="crumb">الرئيسية ← المادة التعليمية</div><div class="page-title"><h2 id="dhadDirectMaterialTitle">المادة التعليمية</h2><p>رابط مباشر من منصة ضاد</p></div><div class="dhad-direct-layout"><article class="dhad-direct-card"><div id="dhadDirectMaterialStatus" class="empty">جاري تحميل بيانات المادة...</div><div id="dhadDirectMaterialBody"></div></article><aside class="dhad-direct-card dhad-direct-download" aria-label="تنزيل المادة"><h3>تنزيل ومعاينة</h3><button id="dhadDirectDownloadButton" class="primary" type="button">⬇ تنزيل الملف</button><button id="dhadDirectPreviewButton" class="preview" type="button">👁 معاينة الملف</button><button id="dhadDirectShareButton" class="secondary" type="button">🔗 مشاركة الرابط</button></aside></div></div>`;
     const listing=document.getElementById('listingPage');
     if(listing?.parentNode)listing.parentNode.insertBefore(section,listing.nextSibling);else document.body.appendChild(section);
   }
@@ -47,6 +55,7 @@
       DIRECT_KEYS.forEach(key=>{if(url.searchParams.has(key)){url.searchParams.delete(key);changed=true;}});
       if(changed)history.replaceState(null,'',url.pathname+url.search+url.hash);
     }catch(e){}
+    restoreBaseMetadata();
     if(typeof originalSetRoute==='function')return originalSetRoute(route);
   };
 
@@ -101,8 +110,31 @@
   };
   function safeText(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 
+  function setMeta(selector,value){const element=document.querySelector(selector);if(element)element.setAttribute('content',value);}
+  function restoreBaseMetadata(){
+    document.title=baseMetadata.title;
+    setMeta('meta[name="description"]',baseMetadata.description);
+    setMeta('meta[property="og:title"]',baseMetadata.title);
+    setMeta('meta[property="og:description"]',baseMetadata.description);
+    setMeta('meta[property="og:url"]',baseMetadata.canonical);
+    const canonical=document.querySelector('link[rel="canonical"]');if(canonical)canonical.href=baseMetadata.canonical;
+  }
+  function setDirectMetadata(kind,id,itemTitle,itemDescription,fallback){
+    const title=(itemTitle||fallback||'محتوى تعليمي')+' | ضاد – منصة اللغة العربية';
+    const description=String(itemDescription||fallback||'محتوى تعليمي من منصة ضاد للغة العربية.').replace(/\s+/g,' ').trim().slice(0,160);
+    const url=directUrl(kind,id);
+    document.title=title;
+    setMeta('meta[name="description"]',description);
+    setMeta('meta[property="og:title"]',title);
+    setMeta('meta[property="og:description"]',description);
+    setMeta('meta[property="og:url"]',url);
+    const canonical=document.querySelector('link[rel="canonical"]');if(canonical)canonical.href=url;
+  }
+  function setMaterialMetadata(data){setDirectMetadata('material',data.id,data.title,data.description,'تنزيل '+(data.file_name||'مادة تعليمية')+' من منصة ضاد.');}
+
   window.goHomeAndClearDirectLink=function(){
     try{const url=new URL(location.href);DIRECT_KEYS.forEach(key=>url.searchParams.delete(key));history.replaceState(null,'',url.pathname+url.search+url.hash);}catch(e){}
+    restoreBaseMetadata();
     if(typeof goHome==='function')goHome();
   };
 
@@ -119,17 +151,28 @@
       if(error)throw error;
       if(!data){status.textContent='هذه المادة غير متاحة للعامة أو لم تعد موجودة.';return;}
       window.__materials=[data];
+      setMaterialMetadata(data);
       const grade=(typeof grades!=='undefined'?grades:[]).find(x=>String(x.id)===String(data.grade_id));
       const semester=(typeof semesters!=='undefined'?semesters:[]).find(x=>String(x.id)===String(data.semester_id));
       const category=(typeof categories!=='undefined'?categories:[]).find(x=>String(x.id)===String(data.category_id));
       const meta=[grade?.name, data.track_name, data.field_name, semester?.name, category?.name].filter(Boolean);
       document.getElementById('dhadDirectMaterialTitle').textContent=data.title||'مادة تعليمية';
       status.textContent='تم العثور على المادة التعليمية.';
-      body.innerHTML=(data.description?'<p>'+safeText(data.description)+'</p>':'')+
+      body.innerHTML=(data.description?'<p class="dhad-direct-description">'+safeText(data.description)+'</p>':'')+
         '<div class="dhad-direct-meta">'+meta.map(x=>'<span>'+safeText(x)+'</span>').join('')+'<span>'+safeText((data.file_type||'ملف').split('/').pop().toUpperCase())+'</span></div>'+
         '<p><b>اسم الملف:</b> '+safeText(data.file_name||data.title||'ملف')+'</p>'+
-        '<div class="dhad-direct-actions"><button class="primary" type="button" onclick="downloadMaterial(\''+safeText(data.id)+'\')">⬇ تنزيل الملف</button><button class="preview" type="button" onclick="previewMaterial(\''+safeText(data.id)+'\')">👁 معاينة الملف</button><button class="secondary" type="button" onclick="shareDhadLink(\'material\',\''+safeText(data.id)+'\')">🔗 مشاركة الرابط</button></div>';
+        (data.file_size?'<p><b>حجم الملف:</b> '+safeText(formatFileSize(data.file_size))+'</p>':'');
+      document.getElementById('dhadDirectDownloadButton').onclick=()=>downloadMaterial(data.id);
+      document.getElementById('dhadDirectPreviewButton').onclick=()=>previewMaterial(data.id);
+      document.getElementById('dhadDirectShareButton').onclick=()=>shareDhadLink('material',data.id);
     }catch(error){console.error('Dhad direct material route:',error);status.textContent='تعذر تحميل المادة. تحقق من الاتصال ثم أعد المحاولة.';}
+  }
+
+  function formatFileSize(bytes){
+    const size=Number(bytes);if(!Number.isFinite(size)||size<=0)return '';
+    const units=['بايت','كيلوبايت','ميغابايت','غيغابايت'];let value=size,index=0;
+    while(value>=1024&&index<units.length-1){value/=1024;index++;}
+    return (index===0?Math.round(value):value.toFixed(value>=10?0:1))+' '+units[index];
   }
 
   async function restoreRoute(){
@@ -144,6 +187,7 @@
       const calendar=url.searchParams.get('calendar');
       const homeSection=url.searchParams.get('homeSection');
       if(material){await showMaterialDirectPage(material);return;}
+      restoreBaseMetadata();
       if(homeSection){
         const row=(typeof homeSectionsPublic!=='undefined'?homeSectionsPublic:[]).find(x=>String(x.id)===String(homeSection)&&x.is_active);
         if(row){if(typeof hideAll==='function')hideAll();document.getElementById('home').style.display='block';const target=document.getElementById('homeSectionPublic_'+homeSection);target?.scrollIntoView({behavior:'smooth',block:'center'});if(target){target.style.outline='2px solid var(--accent,#20a486)';target.style.outlineOffset='5px';}}
@@ -159,9 +203,12 @@
         if(typeof loadDhadFeatureData==='function'&&!window.__DHAD_FEATURE_DATA_READY__){await loadDhadFeatureData();await renderDhadFeaturePages();window.__DHAD_FEATURE_DATA_READY__=true;}
         else if(typeof renderDhadFeaturePages==='function')await renderDhadFeaturePages();
         if(kind==='games'){
-          const gameRow=(dhadFeatureData.games||[]).find(x=>String(x.id)===String(id)&&x.active!==false);
-          if(gameRow)await playDhadGame(id);else document.getElementById('gamesGrid').insertAdjacentHTML('afterbegin','<div class="empty">هذه اللعبة غير متاحة أو لم تعد منشورة.</div>');
+          const gameRow=(dhadFeatureData.games||[]).find(x=>String(x.id)===String(id)&&dhadFeatureIsPublished(x));
+          if(gameRow){setDirectMetadata('game',id,gameRow.title,gameRow.description,'لعبة تعليمية من منصة ضاد.');await playDhadGame(id);}else document.getElementById('gamesGrid').insertAdjacentHTML('afterbegin','<div class="empty">هذه اللعبة غير متاحة أو لم تعد منشورة.</div>');
         }else{
+          const rows=kind==='additional'?(dhadFeatureData.additional||[]):(dhadFeatureData.calendar||[]);
+          const directItem=rows.find(x=>String(x.id)===String(id)&&dhadFeatureIsPublished(x));
+          if(directItem)setDirectMetadata(kind==='additional'?'additional':'calendar',id,directItem.title,directItem.description||directItem.year,kind==='additional'?'مورد تعليمي من منصة ضاد.':'تقويم دراسي من منصة ضاد.');
           const selector=kind==='additional'?'[data-dhad-additional-item]':'[data-dhad-calendar-item]';
           const target=Array.from(document.querySelectorAll(selector)).find(el=>el.getAttribute(kind==='additional'?'data-dhad-additional-item':'data-dhad-calendar-item')===String(id));
           if(target){target.scrollIntoView({behavior:'smooth',block:'center'});target.style.outline='2px solid var(--accent,#20a486)';target.style.outlineOffset='5px';}
