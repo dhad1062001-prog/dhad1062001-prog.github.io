@@ -275,13 +275,17 @@ function normalizeContactAdminUrl(key,value){
 }
 async function saveContactLinksEditor(){
  if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return contactLinksStatus('تعديل روابط التواصل متاح لمالك المنصة فقط.','error');
- const rows=adminContactLinks.map(x=>{
-  const key=x.key,title=document.querySelector('[data-contact-title="'+key+'"]').value.trim(),raw=document.querySelector('[data-contact-url="'+key+'"]').value.trim(),sort_order=Math.max(0,Number(document.querySelector('[data-contact-order="'+key+'"]').value)||0);
-  return {key,title:title||x.title,url:normalizeContactAdminUrl(key,raw),sort_order,updated_by:currentUser.id,updated_at:new Date().toISOString()};
- });
+ let rows;
+ try{
+  rows=adminContactLinks.map(x=>{
+   const key=x.key,title=document.querySelector('[data-contact-title="'+key+'"]').value.trim(),raw=document.querySelector('[data-contact-url="'+key+'"]').value.trim(),sort_order=Math.max(0,Number(document.querySelector('[data-contact-order="'+key+'"]').value)||0);
+   return {key,title:title||x.title,url:normalizeContactAdminUrl(key,raw),sort_order,updated_by:currentUser.id,updated_at:new Date().toISOString()};
+  });
+ }catch(error){return contactLinksStatus(error.message||'تحقق من الروابط المدخلة.','error');}
  $('contactLinksSave').disabled=true;contactLinksStatus('جارٍ حفظ روابط التواصل…');
  try{
-  for(const row of rows){const {error}=await client.from('site_contact_links').upsert(row,{onConflict:'key'});if(error)throw error;}
+  const {error}=await client.from('site_contact_links').upsert(rows,{onConflict:'key'});
+  if(error)throw error;
   contactLinksStatus('تم حفظ روابط التواصل بنجاح.','ok');
  }catch(error){console.error(error);contactLinksStatus('تعذر حفظ روابط التواصل: '+(error.message||'خطأ غير معروف'),'error');}
  finally{$('contactLinksSave').disabled=false;}
