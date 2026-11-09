@@ -72,3 +72,14 @@ table td{color:#E9EDE5!important;border-color:#59654D!important}
   .hero-wrap,.page-hero{background:#20291C!important}
   .foot{padding-bottom:24px}
 }
+
+
+/* Copyright strip: muted gold text on olive background */
+.footer-bottom{
+  background:#2D3829!important;
+  color:#D2B574!important;
+  border-top:1px solid #59654D!important;
+  font-weight:800!important;
+  padding:14px 18px!important;
+}
+.footer-bottom a{color:#D2B574!important}
