@@ -480,6 +480,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
           <button class="active" type="button">▣ لوحة التحكم</button>
           <button type="button" onclick="document.getElementById('uploadForm')?.scrollIntoView({behavior:'smooth'})">＋ رفع مادة</button>
           <button type="button" onclick="showFilesPage()">▤ الملفات المحملة</button>
+          <button type="button" onclick="document.getElementById('dhadAdminAnalytics')?.scrollIntoView({behavior:'smooth',block:'start'})">▥ الإحصائيات</button>
           <button type="button" class="owner-only-control" onclick="showSitePagesPage()">▦ صفحات الموقع</button>
           <button type="button" class="owner-only-control" onclick="showHomeSectionsPage()">▧ أقسام الصفحة الرئيسية</button>
           <button type="button" class="owner-only-control" onclick="showTeacherSuppliesAdmin()">▤ إدارة لوازم المعلمين</button>
@@ -496,6 +497,27 @@ if(window.__DHAD_DIRECT_ENTRY__){
           <div class="stat-card"><div class="stat-label">الفصول</div><div class="stat-value" id="statSemesters">—</div></div>
           <div class="stat-card"><div class="stat-label">المستخدمون</div><div class="stat-value" id="statUsers">—</div></div>
         </div>
+        <section id="dhadAdminAnalytics" class="admin-card" style="margin:16px 0;padding:18px;border:1px solid var(--line,#ddd);border-radius:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><h3 style="margin:0 0 5px">إحصائيات المنصة</h3><p style="margin:0;color:var(--muted)">الزيارات والتنزيلات ومشاهدات الملفات — للإدارة فقط</p></div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="dhadAnalyticsRange" aria-label="الفترة الزمنية للإحصائيات" style="min-width:130px;padding:9px;border-radius:10px"><option value="7">آخر 7 أيام</option><option value="30" selected>آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option><option value="365">آخر سنة</option></select>
+              <button class="secondary" type="button" onclick="loadDhadAdminAnalytics()">تحديث الإحصائيات</button>
+            </div>
+          </div>
+          <div id="dhadAnalyticsStatus" class="status" role="status" aria-live="polite" style="margin:12px 0"></div>
+          <div class="admin-stats" style="margin-top:12px">
+            <div class="stat-card"><div class="stat-label">مشاهدات الصفحات</div><div class="stat-value" id="dhadAnalyticsPageViews">—</div></div>
+            <div class="stat-card"><div class="stat-label">زوار تقديريون</div><div class="stat-value" id="dhadAnalyticsVisitors">—</div></div>
+            <div class="stat-card"><div class="stat-label">مرات بدء التنزيل</div><div class="stat-value" id="dhadAnalyticsDownloads">—</div></div>
+            <div class="stat-card"><div class="stat-label">مشاهدات الملفات</div><div class="stat-value" id="dhadAnalyticsMaterialViews">—</div></div>
+          </div>
+          <div class="admin-grid" style="margin-top:14px">
+            <div class="admin-card"><h4>الأكثر تنزيلًا ومشاهدة</h4><div id="dhadAnalyticsTopMaterials">لا توجد بيانات بعد.</div></div>
+            <div class="admin-card"><h4>الصفحات الأكثر زيارة</h4><div id="dhadAnalyticsTopPages">لا توجد بيانات بعد.</div></div>
+          </div>
+          <div class="admin-card" style="margin-top:14px"><h4>الأداء اليومي</h4><div id="dhadAnalyticsDaily" style="overflow:auto">لا توجد بيانات بعد.</div></div>
+        </section>
         <div class="admin-grid">
           <div class="admin-card">
             <h3>إضافة مادة</h3>
@@ -1278,7 +1300,7 @@ async function loadMaterials(gradeId,semesterId,categoryIndex,trackIndex,fieldIn
   box.innerHTML='<div class="empty">جاري تحميل المواد...</div>';
 
   const {data,error}=await sb.from('materials')
-    .select('id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name')
+    .select('id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name,download_count')
     .eq('grade_id',gradeId)
     .eq('semester_id',semesterId)
     .eq('category_id',category.id)
@@ -1336,7 +1358,7 @@ function renderMaterialCollection(rows){
         <div>
           <b>${escapeHtml(m.title)}</b>
           ${(m.content_summary||m.description)?'<div style="margin-top:6px;color:var(--muted)">'+escapeHtml(m.content_summary||m.description)+'</div>':''}
-          <div style="margin-top:6px"><span class="tag ui-shape">${escapeHtml(ext)}</span></div>
+          <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="tag ui-shape">${escapeHtml(ext)}</span><small class="dhad-download-count" data-material-count="${escapeHtml(String(m.id))}">⬇ مرات بدء التنزيل: <span data-count-value>${Number(m.download_count||0).toLocaleString('ar')}</span></small></div>
         </div>
         <div style="display:flex;gap:7px;flex-wrap:wrap">
           <button class="primary ui-shape" type="button" onclick="openMaterialInfoPage('${m.id}')">التفاصيل ←</button>
@@ -1764,10 +1786,10 @@ async function fetchAllAdminMaterials(){
   let all=[];
   for(let from=0;;from+=1000){
     let {data,error}=await sb.from('materials')
-      .select('id,title,description,content_summary,learning_objectives,target_audience,page_count,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,grades(name),semesters(name),categories(name)')
+      .select('id,title,description,content_summary,learning_objectives,target_audience,page_count,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,download_count,grades(name),semesters(name),categories(name)')
       .order('created_at',{ascending:false}).range(from,from+999);
     if(error&&/content_summary|learning_objectives|target_audience|page_count/i.test(String(error.message||''))){
-      const fallback=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,grades(name),semesters(name),categories(name)').order('created_at',{ascending:false}).range(from,from+999);
+      const fallback=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,download_count,grades(name),semesters(name),categories(name)').order('created_at',{ascending:false}).range(from,from+999);
       data=fallback.data;error=fallback.error;
     }
     if(error)return {data:null,error};
@@ -1858,7 +1880,7 @@ async function doSearch(){
   document.getElementById('materials').innerHTML='<div class="empty">جاري البحث...</div>';
 
   const pattern='%'+q.replace(/[\\%_]/g,'\\$&')+'%';
-  const select='id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name,category_id,grade_id';
+  const select='id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name,category_id,grade_id,download_count';
   try{
     const results=await Promise.all(['title','description','file_name'].map(column=>sb.from('materials').select(select).eq('is_public',true).ilike(column,pattern).order('created_at',{ascending:false}).limit(100)));
     const failed=results.find(result=>result.error);
@@ -1906,7 +1928,7 @@ async function showCategorySearch(categoryId,categoryName){
   document.getElementById('listCrumb').innerHTML=crumb(['الرئيسية','بحث',categoryName||'القسم']);
   const target=document.getElementById('materials');
   target.innerHTML='<div class="empty">جاري تحميل مواد القسم...</div>';
-  const {data,error}=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name,category_id,grade_id').eq('is_public',true).eq('category_id',categoryId).order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,track_name,field_name,category_id,grade_id,download_count').eq('is_public',true).eq('category_id',categoryId).order('created_at',{ascending:false}).limit(100);
   if(error){target.innerHTML='<div class="empty">تعذر تحميل المواد لهذا القسم. '+escapeHtml(error.message)+'</div>';return;}
   target.innerHTML=renderMaterialCollection(data||[]);
   setRoute('category-search/'+categoryId);
@@ -2290,7 +2312,7 @@ function renderPublicHomeSections(rows){
         '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
     }
     const linked=(homeSectionMaterialMap[String(row.id)]||[]).slice(0,Math.max(1,Math.min(50,Number(row.display_limit||6))));
-    const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'</div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
+    const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'<small class="dhad-download-count" data-material-count="'+escapeHtml(String(m.id))+'">⬇ مرات بدء التنزيل: <span data-count-value>'+Number(m.download_count||0).toLocaleString('ar')+'</span></small></div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
     return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+title+'</h3>'+body+linkedMarkup+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   }).join('');
   container.innerHTML=markup;
@@ -2462,7 +2484,7 @@ async function loadHomeSectionRelations(adminMode=false,sectionIds=[]){
       if(adminMode)homeSectionMaterialAdminMap=targetMap;else homeSectionMaterialMap=targetMap;
       return;
     }
-    const {data:materials,error:materialsError}=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,grade_id,semester_id,category_id,is_public').in('id',materialIds).eq('is_public',true);
+    const {data:materials,error:materialsError}=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,grade_id,semester_id,category_id,is_public,download_count').in('id',materialIds).eq('is_public',true);
     if(materialsError)throw materialsError;
     const byId=new Map((materials||[]).map(x=>[String(x.id),x]));
     relations.forEach(link=>{
@@ -2811,10 +2833,10 @@ async function loadHomeLatestMaterials(){
   const el=document.getElementById('homeLatestMaterials');
   if(!el||!sb)return;
   try{
-    const {data,error}=await sb.from('materials').select('id,title,file_type,created_at').eq('is_public',true).order('created_at',{ascending:false}).limit(4);
+    const {data,error}=await sb.from('materials').select('id,title,file_type,created_at,download_count').eq('is_public',true).order('created_at',{ascending:false}).limit(4);
     if(error)throw error;
     if(!data?.length){el.innerHTML='<div class="home-empty">لا توجد مواد منشورة حاليًا.</div>';return;}
-    el.innerHTML=data.map(m=>`<button class="latest-item" onclick="openMaterialInfoPage('${m.id}')"><span><b>${escapeHtml(m.title||'مادة تعليمية')}</b><small>${escapeHtml((m.file_type||'ملف').split('/').pop().toUpperCase())}</small></span><span class="latest-arrow">←</span></button>`).join('');
+    el.innerHTML=data.map(m=>`<button class="latest-item" onclick="openMaterialInfoPage('${m.id}')"><span><b>${escapeHtml(m.title||'مادة تعليمية')}</b><small>${escapeHtml((m.file_type||'ملف').split('/').pop().toUpperCase())} · ⬇ <span class="dhad-download-count" data-material-count="${escapeHtml(String(m.id))}"><span data-count-value>${Number(m.download_count||0).toLocaleString('ar')}</span></span></small></span><span class="latest-arrow">←</span></button>`).join('');
     window.__homeLatestMaterials=data;
     const old=window.__materials; window.__materials=data; window.setTimeout(()=>{window.__materials=old;},0);
   }catch(e){
@@ -2933,4 +2955,5 @@ setTimeout(()=>{
 </script>
 <script src="features.js"></script>
 <script src="deep-links.js"></script>
+<script src="analytics.js"></script>
 </body></html>
