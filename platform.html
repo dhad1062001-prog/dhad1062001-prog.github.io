@@ -330,25 +330,27 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
   <link rel="stylesheet" href="olive-theme.css?v=20261109">
 
 <style id="dhad-grades-olive-compact">
-/* هوية ضاد الزيتية والذهبية مع بطاقات صفوف أصغر وأكثر تناسقًا */
-#gradesHubPage .page-title{border-color:#59654D;background:radial-gradient(circle at 8% 100%,rgba(195,164,95,.12),transparent 11rem),linear-gradient(120deg,#2D3829,#20291C);box-shadow:0 14px 34px rgba(0,0,0,.2)}
-#gradesHubPage .page-title:after{inset:0;background:radial-gradient(circle at 92% 20%,rgba(195,164,95,.14),transparent 8rem),linear-gradient(90deg,transparent,rgba(195,164,95,.035));opacity:1}
-#gradesHubPage .page-title h2{color:#C3A45F}
+/* بطاقات الصفوف بهوية ضاد الهادئة وترتيب عمودي متدرج */
+#gradesHubPage .page-title{border-color:#59654D;background:linear-gradient(120deg,#2D3829,#20291C);box-shadow:0 12px 28px rgba(0,0,0,.16)}
+#gradesHubPage .page-title:after{inset:0;background:linear-gradient(90deg,transparent,rgba(195,164,95,.035));opacity:1}
+#gradesHubPage .page-title h2{color:#C8CEBF}
 #gradesHubPage .page-title p{color:#C8CEBF;line-height:1.9}
-#gradesHubPage .grades{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px}
-#gradesHubPage .grade{position:relative;isolation:isolate;min-height:132px;padding:14px;border:1px solid #59654D;border-radius:17px;overflow:hidden;background:linear-gradient(145deg,#34412F,#2D3829 70%,#20291C);color:#FFFFFF;box-shadow:0 9px 22px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;text-align:right;transition:transform .2s,box-shadow .2s,border-color .2s}
-#gradesHubPage .grade:before{content:"";position:absolute;z-index:0;inset:auto auto -58px -42px;width:145px;height:145px;border:1px solid rgba(195,164,95,.2);border-radius:50%;background:radial-gradient(circle,rgba(195,164,95,.12) 0 42%,transparent 43%);transform:none;transition:transform .25s}
-#gradesHubPage .grade:after{content:"";position:absolute;z-index:0;inset:13px 13px auto auto;width:7px;height:7px;border-radius:50%;background:#C3A45F;box-shadow:-12px 12px 0 rgba(195,164,95,.48),-24px 0 0 rgba(195,164,95,.2)}
-#gradesHubPage .grade:hover{transform:translateY(-3px);border-color:#C3A45F;box-shadow:0 14px 28px rgba(0,0,0,.25)}
-#gradesHubPage .grade:hover:before{transform:scale(1.06)}
+#gradesHubPage .grades{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,minmax(112px,auto));grid-auto-columns:minmax(0,1fr);gap:11px;margin-top:18px;align-items:stretch}
+#gradesHubPage .grade{position:relative;isolation:isolate;min-width:0;min-height:126px;padding:13px;border:1px solid #59654D;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#34412F,#2D3829);color:#FFFFFF;box-shadow:0 7px 18px rgba(0,0,0,.13);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;text-align:right;transition:transform .2s,box-shadow .2s,border-color .2s}
+#gradesHubPage .grade:before{content:"";position:absolute;z-index:0;inset:auto auto -48px -38px;width:125px;height:125px;border:1px solid rgba(195,164,95,.12);border-radius:50%;background:radial-gradient(circle,rgba(195,164,95,.045) 0 42%,transparent 43%)}
+#gradesHubPage .grade:after{content:"";position:absolute;z-index:0;inset:12px 12px auto auto;width:6px;height:6px;border-radius:50%;background:#A99565;box-shadow:-11px 11px 0 rgba(169,149,101,.32)}
+#gradesHubPage .grade:hover{transform:translateY(-2px);border-color:#A99565;box-shadow:0 11px 22px rgba(0,0,0,.2)}
 #gradesHubPage .grade>*{position:relative;z-index:1}
-#gradesHubPage .grade .circle{width:44px;height:44px;margin:0 0 auto;border:1px solid rgba(195,164,95,.65);border-radius:14px;background:linear-gradient(145deg,#D3B873,#C3A45F);color:#20291C;font-size:22px;box-shadow:0 5px 13px rgba(0,0,0,.18)}
-#gradesHubPage .grade .name{margin-top:10px;color:#FFFFFF;font-size:16px;line-height:1.45;font-weight:900}
-#gradesHubPage .grade .sub{margin-top:2px;color:#C8CEBF;font-size:11px}
-#gradesHubPage .grade:focus-visible{outline:3px solid #C3A45F;outline-offset:3px}
-@media(max-width:1080px){#gradesHubPage .grades{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:760px){#gradesHubPage .panel{padding-inline:18px}#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}#gradesHubPage .grade{min-height:120px;padding:12px;border-radius:15px}}
-@media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#gradesHubPage .grade{min-height:112px;padding:11px;border-radius:14px}#gradesHubPage .grade .circle{width:39px;height:39px;border-radius:12px;font-size:20px}#gradesHubPage .grade .name{margin-top:8px;font-size:15px}#gradesHubPage .grade .sub{font-size:10px}#gradesHubPage .page-title{padding:20px}}
+#gradesHubPage .grade .circle{width:42px;height:42px;margin:0 0 auto;border:1px solid rgba(169,149,101,.3);border-radius:13px;background:#3B4634;color:#D2C49F;font-size:21px;box-shadow:none}
+#gradesHubPage .grade .name{margin-top:9px;color:#FFFFFF;font-size:15px;line-height:1.45;font-weight:850}
+#gradesHubPage .grade .sub{margin-top:2px;color:#C8CEBF;font-size:10px}
+#gradesHubPage .grade.kindergarten-grade{grid-row:span 2;min-height:263px;justify-content:center;align-items:center;text-align:center;background:linear-gradient(155deg,#34412F,#20291C);border-color:rgba(169,149,101,.38)}
+#gradesHubPage .grade.kindergarten-grade .circle{width:52px;height:52px;font-size:26px}
+#gradesHubPage .grade.kindergarten-grade .name{font-size:17px}
+#gradesHubPage .grade:focus-visible{outline:3px solid #A99565;outline-offset:3px}
+@media(max-width:1080px){#gradesHubPage .grades{grid-auto-columns:minmax(145px,1fr)}}
+@media(max-width:760px){#gradesHubPage .panel{padding-inline:18px}#gradesHubPage .grades{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none;grid-auto-columns:auto;gap:9px}#gradesHubPage .grade{min-height:116px;padding:11px}#gradesHubPage .grade.kindergarten-grade{grid-row:span 2;min-height:241px}}
+@media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#gradesHubPage .grade{min-height:108px;padding:10px;border-radius:14px}#gradesHubPage .grade .circle{width:37px;height:37px;border-radius:11px;font-size:19px}#gradesHubPage .grade .name{font-size:14px}#gradesHubPage .grade.kindergarten-grade{min-height:224px}#gradesHubPage .grade.kindergarten-grade .circle{width:46px;height:46px}}
 @media(prefers-reduced-motion:reduce){#gradesHubPage .grade{transition:none!important}}
 </style>
 
@@ -1121,14 +1123,23 @@ function renderGrades(){
   const icons=['🎨','✏️','📖','🔤','🖋️','📚','🧠','🏫','🪶','📝','📜','🎓','🏅'];
   const colors=['g1','g2','g3','g4','g5','g6','g7','g8','g9','g10','g11','g12','g13'];
   const el=document.getElementById('grades');
-
-  el.innerHTML=grades.map((g,i)=>`
-    <button class="grade ui-shape" onclick="showGrade(${g.id})">
+  const gradeRank=(name)=>{
+    const n=String(name||'').replace(/[\u0640\s]/g,'');
+    if(n.includes('رياضالأطفال')||n.includes('روضة'))return 6.5;
+    const words=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحاديعشر','الثانيعشر','التوجيهي'];
+    const index=words.findIndex(w=>n.includes(w));
+    return index<0?999:index+1;
+  };
+  const displayGrades=[...grades].sort((a,b)=>gradeRank(a.name)-gradeRank(b.name));
+  el.innerHTML=displayGrades.map((g,i)=>{
+    const isKindergarten=gradeRank(g.name)===6.5;
+    return `
+    <button class="grade ui-shape${isKindergarten?' kindergarten-grade':''}" onclick="showGrade(${g.id})">
       <span class="circle ${colors[i%colors.length]}">${icons[i%icons.length]}</span>
       <span class="name">${escapeHtml(g.name)}</span>
       ${g.id===13?'<span class="sub">(التوجيهي)</span>':''}
-    </button>
-  `).join('') || '<div class="empty">لا توجد صفوف.</div>';
+    </button>`;
+  }).join('') || '<div class="empty">لا توجد صفوف.</div>';
 }
 
 function fillAdminSelects(){
