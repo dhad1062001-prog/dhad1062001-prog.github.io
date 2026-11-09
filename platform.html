@@ -375,6 +375,86 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 @media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}#gradesHubPage .grade .circle{width:42px!important;height:42px!important;min-width:42px!important;font-size:20px!important;border-radius:13px!important}#gradesHubPage .grade .name{font-size:13px!important}}
 </style>
 
+
+<style id="dhad-internal-olive-brand">
+/* توحيد الصفحات الداخلية: الصفوف والفصول والتصنيفات والملفات */
+#gradesHubPage .grade,
+#gradesHubPage .grade:nth-child(n),
+#terms .track-card,#terms .field-card,#terms .term,
+.category-list-preview .cat{
+  --grade-accent:#C3A45F!important;
+  --tile-accent:#C3A45F!important;
+  --cat-accent:#C3A45F!important;
+  color:#FFFFFF!important;
+  background:radial-gradient(circle at 92% 12%,rgba(195,164,95,.12),transparent 7rem),linear-gradient(145deg,#34412F,#2D3829)!important;
+  border:1px solid #59654D!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.2)!important;
+}
+#gradesHubPage .grade .circle,
+#terms .preview-icon,.cat-icon{
+  color:#20291C!important;
+  background:linear-gradient(145deg,#E4C982,#C3A45F)!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+}
+#gradesHubPage .grade .name,#terms .preview-label,
+.category-list-preview .cat,.cat-label{color:#FFFFFF!important}
+#gradesHubPage .grade .sub{color:#C8CEBF!important}
+#gradesHubPage .grade:before,#gradesHubPage .grade:after,
+#terms .track-card:after,#terms .field-card:after,#terms .term:after{
+  border-color:rgba(195,164,95,.2)!important;
+  box-shadow:0 0 0 13px rgba(195,164,95,.04),0 0 0 27px rgba(195,164,95,.025)!important;
+}
+#gradesHubPage .grade:hover,#terms .track-card:hover,#terms .field-card:hover,
+#terms .term:hover,.category-list-preview .cat:hover{
+  border-color:#C3A45F!important;
+  background:linear-gradient(145deg,#3A4934,#2D3829)!important;
+  color:#FFFFFF!important;
+}
+.content-page .page-title{
+  background:linear-gradient(145deg,#34412F,#2D3829)!important;
+  border-color:#59654D!important;
+}
+.content-page .page-title h2{color:#E4C982!important}
+.content-page .page-title p{color:#C8CEBF!important}
+.section-mini-title{
+  background:#34412F!important;color:#E4C982!important;border-color:#59654D!important;
+}
+.section-mini-title:before{color:#C3A45F!important}
+#listingPage .material,.materials .material,.material{
+  background:linear-gradient(145deg,#34412F,#2D3829)!important;
+  color:#FFFFFF!important;border-color:#59654D!important;
+}
+#listingPage .material b,.material b{color:#FFFFFF!important}
+#listingPage .material small,.material small{color:#C8CEBF!important}
+#listingPage .tag,.tag{background:rgba(195,164,95,.16)!important;color:#E4C982!important;border:1px solid rgba(195,164,95,.24)!important}
+#listingPage .open,#listingPage .primary,.materials .primary,.material .primary,
+#listingPage .download,.materials .download,.material .download{
+  background:linear-gradient(135deg,#E4C982,#C3A45F)!important;color:#20291C!important;
+}
+#listingPage .preview,.materials .preview,.material .preview{
+  background:#59654D!important;color:#FFFFFF!important;
+}
+#listingPage .secondary,.materials .secondary,.material .secondary{
+  background:#34412F!important;color:#FFFFFF!important;border:1px solid #C3A45F!important;
+}
+#listingPage .empty,.category-list-preview+.empty,.content-page .empty{
+  background:#2D3829!important;color:#C8CEBF!important;border-color:#59654D!important;
+}
+.feature-content-card,.calendar-item,.feature-page .panel,
+.game-player,.home-description-content{
+  background:linear-gradient(145deg,#34412F,#2D3829)!important;
+  color:#FFFFFF!important;border-color:#59654D!important;
+}
+.feature-content-card h3,.calendar-item h3{color:#E4C982!important}
+.feature-content-card p,.feature-card-meta,.calendar-item p{color:#C8CEBF!important}
+.feature-content-card img,.calendar-item img{background:#20291C!important}
+.feature-content-card button,.calendar-item button{border-color:#C3A45F!important}
+@media(max-width:760px){
+ #gradesHubPage .grade{min-height:150px!important}
+ #terms .track-card,#terms .field-card,#terms .term{background:linear-gradient(145deg,#34412F,#2D3829)!important}
+}
+</style>
+
 </head>
 <body>
 <script>
