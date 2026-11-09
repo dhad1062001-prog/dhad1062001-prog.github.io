@@ -528,11 +528,25 @@ if(window.__DHAD_DIRECT_ENTRY__){
               <div class="field"><label>الأهداف التعليمية (اختياري)</label><textarea id="matObjectives" placeholder="ما المهارات أو المعارف التي يدعمها الملف؟"></textarea></div>
               <div class="field"><label>الفئة المستهدفة (اختياري)</label><input id="matAudience" placeholder="مثال: طلبة الصف السادس أو معلمو اللغة العربية"></div>
               <div class="field"><label>عدد الصفحات (اختياري)</label><input id="matPageCount" type="number" min="1" step="1" placeholder="مثال: 12"></div>
-              <div class="field"><label>الصف</label><select id="matGrade" required></select></div>
+              <div class="field"><label for="matPrimarySection">القسم الرئيسي للملف</label><select id="matPrimarySection" required>
+                <option value="school_grades" selected>الصفوف الدراسية</option>
+                <option value="curricula">المناهج الدراسية</option>
+                <option value="teacher_supplies">لوازم المعلمين</option>
+                <option value="interactive_games">الألعاب التفاعلية</option>
+                <option value="supplementary_education">التعليم الإضافي</option>
+              </select><small class="callout-help">اختر القسم الأساسي الذي ينتمي إليه الملف. يمكن ربطه بأقسام أخرى اختيارية.</small></div>
+              <div class="field"><label for="matAdditionalSections">أقسام إضافية (اختياري)</label><select id="matAdditionalSections" multiple size="5">
+                <option value="school_grades">الصفوف الدراسية</option>
+                <option value="curricula">المناهج الدراسية</option>
+                <option value="teacher_supplies">لوازم المعلمين</option>
+                <option value="interactive_games">الألعاب التفاعلية</option>
+                <option value="supplementary_education">التعليم الإضافي</option>
+              </select><small class="callout-help">يمكن اختيار أكثر من قسم. لن يتكرر رفع الملف؛ سيظهر في الأقسام المحددة.</small></div>
+              <div class="field" id="matGradeField"><label id="matGradeLabel">الصف أو المرحلة</label><select id="matGrade"></select></div>
               <div class="field" id="trackWrap" style="display:none"><label>المسار</label><select id="matTrack"></select></div>
               <div class="field" id="fieldWrap" style="display:none"><label>الحقل</label><select id="matField"></select></div>
-              <div class="field"><label>الفصل الدراسي</label><select id="matSemester" required></select></div>
-              <div class="field"><label>القسم التعليمي</label><select id="matCategory" required></select></div>
+              <div class="field" id="matSemesterField"><label id="matSemesterLabel">الفصل الدراسي</label><select id="matSemester"></select></div>
+              <div class="field" id="matCategoryField"><label id="matCategoryLabel">المادة/التصنيف</label><select id="matCategory"></select></div>
               <div class="field"><label for="matHomeSections">أقسام الصفحة الرئيسية (اختياري)</label><select id="matHomeSections" multiple size="4" aria-describedby="matHomeSectionsHelp"></select><small id="matHomeSectionsHelp" class="callout-help">يمكنك اختيار قسم أو أكثر ليظهر الملف ضمنها، مثل «لوازم المعلمين». لا يؤثر ذلك في تصنيفه الدراسي.</small></div>
               <div class="field"><label>الملف</label><input type="file" id="matFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div>
               <button class="primary" type="submit">رفع المادة</button>
@@ -1085,13 +1099,32 @@ function fillAdminSelects(){
   const c=document.getElementById('matCategory');
   if(!a||!b||!c)return;
 
-  a.innerHTML=grades.map(g=>`<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
-  b.innerHTML=semesters.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
-  c.innerHTML=categories.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  a.innerHTML='<option value="">اختر الصف أو المرحلة</option>'+grades.map(g=>`<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+  b.innerHTML='<option value="">اختر الفصل الدراسي</option>'+semesters.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+  c.innerHTML='<option value="">اختر المادة أو التصنيف</option>'+categories.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
   updateTrackFields();
+  updateUploadSectionFields();
 }
 
 function getTracksForGrade(gradeId){return TRACK_CONFIG[Number(gradeId)]||[];}
+
+function updateUploadSectionFields(){
+  const primary=document.getElementById('matPrimarySection')?.value||'school_grades';
+  const academicRequired=primary==='school_grades'||primary==='curricula';
+  const grade=document.getElementById('matGrade');
+  const semester=document.getElementById('matSemester');
+  const category=document.getElementById('matCategory');
+  const gradeLabel=document.getElementById('matGradeLabel');
+  const semesterLabel=document.getElementById('matSemesterLabel');
+  const categoryLabel=document.getElementById('matCategoryLabel');
+  if(grade)grade.required=academicRequired;
+  if(semester)semester.required=academicRequired;
+  if(category)category.required=academicRequired;
+  if(gradeLabel)gradeLabel.textContent=academicRequired?(primary==='curricula'?'الصف أو المرحلة':'الصف'):'الصف أو المرحلة (اختياري)';
+  if(semesterLabel)semesterLabel.textContent=academicRequired?'الفصل الدراسي':'الفصل الدراسي (اختياري)';
+  if(categoryLabel)categoryLabel.textContent=primary==='curricula'?'المادة/التصنيف':academicRequired?'القسم التعليمي':'المادة/التصنيف (اختياري)';
+}
+
 
 function updateTrackFields(){
   const gradeId=Number(document.getElementById('matGrade')?.value||0);
@@ -1691,23 +1724,36 @@ async function uploadMaterial(event){
   const targetAudience=document.getElementById('matAudience').value.trim();
   const pageCountRaw=document.getElementById('matPageCount').value.trim();
   const pageCount=pageCountRaw?Number(pageCountRaw):null;
-  const gradeId=Number(document.getElementById('matGrade').value);
-  const semesterId=Number(document.getElementById('matSemester').value);
-  const categoryId=Number(document.getElementById('matCategory').value);
+  const primarySection=document.getElementById('matPrimarySection')?.value||'';
+  const allowedSections=['school_grades','curricula','teacher_supplies','interactive_games','supplementary_education'];
+  const additionalSections=Array.from(document.getElementById('matAdditionalSections')?.selectedOptions||[])
+    .map(option=>option.value).filter(value=>allowedSections.includes(value)&&value!==primarySection);
+  const gradeRaw=document.getElementById('matGrade').value;
+  const semesterRaw=document.getElementById('matSemester').value;
+  const categoryRaw=document.getElementById('matCategory').value;
+  const gradeId=gradeRaw?Number(gradeRaw):null;
+  const semesterId=semesterRaw?Number(semesterRaw):null;
+  const categoryId=categoryRaw?Number(categoryRaw):null;
   const homeSectionIds=Array.from(document.getElementById('matHomeSections')?.selectedOptions||[]).map(option=>Number(option.value)).filter(id=>Number.isInteger(id)&&id>0);
   const file=document.getElementById('matFile').files[0];
 
   if(!file)return showStatus(status,'اختر ملفًا أولًا.','error');
+  if(!allowedSections.includes(primarySection))return showStatus(status,'اختر القسم الرئيسي للملف.','error');
+  if((primarySection==='school_grades'||primarySection==='curricula')&&(!gradeId||!semesterId||!categoryId))return showStatus(status,'لملفات الصفوف والمناهج يجب تحديد الصف أو المرحلة والفصل والمادة.','error');
   if(pageCount!==null&&(!Number.isInteger(pageCount)||pageCount<1))return showStatus(status,'أدخل عدد صفحات صحيحًا أكبر من صفر.','error');
 
-  const tracks=getTracksForGrade(gradeId);
-  const trackIndex=tracks.length ? Number(document.getElementById('matTrack').value) : null;
-  const fieldIndex=(tracks.length && tracks[trackIndex]?.fields?.length)
-    ? Number(document.getElementById('matField').value) : null;
+  const tracks=gradeId?getTracksForGrade(gradeId):[];
+  const trackValue=document.getElementById('matTrack')?.value??'';
+  const trackIndex=tracks.length&&trackValue!==''?Number(trackValue):null;
+  const fieldValue=document.getElementById('matField')?.value??'';
+  const fieldIndex=(trackIndex!==null&&tracks[trackIndex]?.fields?.length&&fieldValue!=='')?Number(fieldValue):null;
 
-  const path='grade-'+gradeId+
-    '/semester-'+semesterId+
-    '/category-'+categoryId+
+  const storageFolders=[
+    gradeId?'grade-'+gradeId:null,
+    semesterId?'semester-'+semesterId:null,
+    categoryId?'category-'+categoryId:null
+  ].filter(Boolean);
+  const path=(storageFolders.length?storageFolders.join('/'):'general')+
     '/'+crypto.randomUUID()+'.'+(file.name.split('.').pop()||'bin').toLowerCase();
 
   /* لا يزال التخزين الحالي هو Supabase Storage.
@@ -1727,9 +1773,9 @@ async function uploadMaterial(event){
     return;
   }
 
-  const trackName=tracks.length ? tracks[trackIndex].name : null;
-  const fieldName=(tracks.length && fieldIndex!==null)
-    ? tracks[trackIndex].fields[fieldIndex] : null;
+  const trackName=(trackIndex!==null&&tracks[trackIndex])?tracks[trackIndex].name:null;
+  const fieldName=(trackIndex!==null&&fieldIndex!==null)
+    ? (tracks[trackIndex]?.fields?.[fieldIndex]||null) : null;
 
   const {data:savedMaterial,error:dbError}=await sb.from('materials').insert({
     title,
@@ -1738,9 +1784,11 @@ async function uploadMaterial(event){
     learning_objectives:learningObjectives||null,
     target_audience:targetAudience||null,
     page_count:pageCount,
-    grade_id:gradeId,
-    semester_id:semesterId,
-    category_id:categoryId,
+    grade_id:gradeId||null,
+    semester_id:semesterId||null,
+    category_id:categoryId||null,
+    primary_section:primarySection,
+    additional_sections:additionalSections,
     file_path:uploaded.path,
     file_name:file.name,
     file_type:file.type||null,
@@ -1771,6 +1819,7 @@ async function uploadMaterial(event){
   showUploadedMaterialLink('uploadedMaterialLink',savedMaterial.id,title);
   document.getElementById('uploadForm').reset();
   updateTrackFields();
+  updateUploadSectionFields();
   loadAdminMaterials();
 }
 
@@ -2913,8 +2962,10 @@ async function initSupabase(){
 function initAdminSelectors(){
   const g=document.getElementById('matGrade');
   const t=document.getElementById('matTrack');
+  const primary=document.getElementById('matPrimarySection');
   if(g)g.addEventListener('change',updateTrackFields);
   if(t)t.addEventListener('change',updateFieldSelect);
+  if(primary)primary.addEventListener('change',updateUploadSectionFields);
 }
 
 function restoreTheme(){
