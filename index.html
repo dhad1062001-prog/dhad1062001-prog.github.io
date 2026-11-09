@@ -41,7 +41,7 @@ a{color:inherit}
 .frame:before,.frame:after{content:"";position:absolute;width:48px;height:48px;pointer-events:none}
 .frame:before{top:13px;right:13px;border-top:1px solid var(--gold);border-right:1px solid var(--gold);border-radius:0 12px 0 0}
 .frame:after{bottom:13px;left:13px;border-bottom:1px solid var(--gold);border-left:1px solid var(--gold);border-radius:0 0 0 12px}
-.image-space{height:clamp(115px,19vw,190px);max-width:690px;margin:0 auto 27px;border:1px dashed rgba(195,164,95,.36);border-radius:19px;background:rgba(32,41,28,.22)}
+.image-space{width:min(100%,690px);margin:0 auto 27px;border:1px solid rgba(195,164,95,.28);border-radius:19px;background:rgba(32,41,28,.22);overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.22)}.image-space img{display:block;width:100%;height:auto;max-height:280px;object-fit:contain;margin:auto}
 .copy{max-width:800px;margin:auto;text-align:center}
 .eyebrow{color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.6px;margin:0 0 9px}
 h1{font-size:clamp(23px,4vw,34px);line-height:1.65;margin:0 0 12px;font-weight:900}
@@ -62,7 +62,7 @@ h1{font-size:clamp(23px,4vw,34px);line-height:1.65;margin:0 0 12px;font-weight:9
 .no-links{font-size:12px;color:#aeb7a4}
 footer{text-align:center;padding:17px 16px 21px;color:var(--muted);font-size:13px}
 footer strong{color:var(--gold);font-weight:800}
-@media(max-width:560px){.page{width:min(100% - 24px,1050px);padding-top:22px}.frame{border-radius:22px;padding:17px 16px 23px}.image-space{height:112px;margin-bottom:22px}.brand-symbol{width:65px;height:65px;font-size:41px;border-radius:20px}.brand{margin-bottom:16px}.actions{margin:22px 0 18px}.enter{width:100%}.contact-links{gap:8px}.contact-link{flex:1 1 calc(50% - 8px);justify-content:center}}
+@media(max-width:560px){.page{width:min(100% - 24px,1050px);padding-top:22px}.frame{border-radius:22px;padding:17px 16px 23px}.image-space{margin-bottom:22px}.image-space img{max-height:210px}.brand-symbol{width:65px;height:65px;font-size:41px;border-radius:20px}.brand{margin-bottom:16px}.actions{margin:22px 0 18px}.enter{width:100%}.contact-links{gap:8px}.contact-link{flex:1 1 calc(50% - 8px);justify-content:center}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
@@ -74,7 +74,7 @@ footer strong{color:var(--gold);font-weight:800}
 <p class="brand-subtitle" id="brandSubtitle">منصة اللغة العربية</p>
 </header>
 <section class="frame">
-<div class="image-space" role="img" aria-label="مساحة مخصصة لإضافة صورة الهوية لاحقًا"></div>
+<div class="image-space"><img src="assets/dhad-welcome.jpg" alt="شعار منصة ضاد: لغتنا هويتنا، وبالعلم نرتقي" fetchpriority="high" decoding="async"></div>
 <div class="copy">
 <p class="eyebrow">أصالة اللغة... بإبداع التقنية</p>
 <h1 id="welcomeHeading">مساحة تعليمية تجمع أصالة اللغة بروح التقنية الحديثة</h1>
