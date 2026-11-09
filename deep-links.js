@@ -1,3 +1,4 @@
+
 /* ضاد | نظام الروابط المباشرة والمشاركة وصفحات تفاصيل المواد
    إضافة مستقلة لا تغيّر قاعدة البيانات */
 (function(){
@@ -11,10 +12,6 @@
     description:document.querySelector('meta[name="description"]')?.content||'',
     canonical:document.querySelector('link[rel="canonical"]')?.href||location.origin+location.pathname
   };
-
-  const hasDirectEntry=!!window.__DHAD_DIRECT_ENTRY__ ||
-    DIRECT_KEYS.some(key=>requestedAtBoot.searchParams.has(key)) ||
-    (!!location.hash&&location.hash!=='#home');
 
   let bootScreen=document.getElementById('dhadDirectBoot');
 
@@ -38,14 +35,14 @@
       border:1px solid var(--line,#e5e7eb);
       border-radius:20px;
       padding:clamp(16px,3vw,28px);
-      box-shadow:0 10px 30px rgba(0,0,0,.05)
+      box-shadow:0 10px 30px rgba(0,0,0,.05);
     }
 
     #dhadMaterialDirectPage .dhad-direct-meta{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      margin:14px 0
+      margin:14px 0;
     }
 
     #dhadMaterialDirectPage .dhad-direct-meta span{
@@ -53,7 +50,7 @@
       border:1px solid var(--line,#e5e7eb);
       border-radius:999px;
       padding:6px 11px;
-      font-size:.9rem
+      font-size:.9rem;
     }
 
     #dhadMaterialDirectPage .dhad-direct-layout{
@@ -61,38 +58,38 @@
       direction:ltr;
       grid-template-columns:minmax(0,1fr) minmax(220px,280px);
       gap:18px;
-      align-items:start
+      align-items:start;
     }
 
     #dhadMaterialDirectPage .dhad-direct-card{
-      direction:rtl
+      direction:rtl;
     }
 
     #dhadMaterialDirectPage .dhad-direct-download{
       position:sticky;
       top:72px;
       display:grid;
-      gap:10px
+      gap:10px;
     }
 
     #dhadMaterialDirectPage .dhad-direct-download h3{
       margin:0 0 2px;
-      font-size:1.1rem
+      font-size:1.1rem;
     }
 
     #dhadMaterialDirectPage .dhad-direct-download button{
       width:100%;
-      min-height:46px
+      min-height:46px;
     }
 
     #dhadMaterialDirectPage .dhad-direct-description{
       line-height:2;
       white-space:pre-wrap;
-      overflow-wrap:anywhere
+      overflow-wrap:anywhere;
     }
 
     #dhadMaterialDirectPage .dhad-direct-description:empty{
-      display:none
+      display:none;
     }
 
     #dhadMaterialDirectPage .dhad-direct-info-block{
@@ -101,18 +98,22 @@
       border:1px solid var(--line,#e5e7eb);
       border-radius:14px;
       background:var(--soft,#f7f7f4);
-      line-height:2
+      line-height:2;
     }
 
     #dhadMaterialDirectPage .dhad-direct-info-block h3{
       margin:0 0 8px;
-      font-size:1rem
+      font-size:1rem;
     }
 
     #dhadMaterialDirectPage .dhad-direct-info-block p{
       margin:0;
       white-space:pre-wrap;
-      overflow-wrap:anywhere
+      overflow-wrap:anywhere;
+    }
+
+    #dhadMaterialDirectPage .dhad-direct-info-block p+p{
+      margin-top:6px;
     }
 
     #dhadMaterialDirectPage .dhad-direct-main-button{
@@ -120,45 +121,45 @@
       min-height:50px;
       margin-top:20px;
       font-size:1rem;
-      font-weight:bold
+      font-weight:bold;
     }
 
     #dhadMaterialDirectPage .dhad-direct-back-button{
       margin-bottom:15px;
-      min-height:42px
+      min-height:42px;
     }
 
     #dhadMaterialDirectPage .dhad-direct-download-view{
-      display:none
+      display:none;
     }
 
     #dhadMaterialDirectPage .dhad-direct-actions button{
-      min-height:44px
+      min-height:44px;
     }
 
     @media(max-width:760px){
       #dhadMaterialDirectPage .dhad-direct-layout{
-        grid-template-columns:1fr
+        grid-template-columns:1fr;
       }
 
       #dhadMaterialDirectPage .dhad-direct-download{
         position:static;
-        grid-row:2
+        grid-row:2;
       }
     }
 
     .dhad-feature-share{
       display:flex;
       justify-content:flex-start;
-      margin-top:12px
+      margin-top:12px;
     }
 
     .dhad-uploaded-link{
-      margin-top:10px
+      margin-top:10px;
     }
 
     .dhad-uploaded-link:empty{
-      display:none
+      display:none;
     }
 
     .dhad-uploaded-link .dhad-uploaded-row{
@@ -171,18 +172,18 @@
       border:1px solid var(--line,#e5e5df);
       padding:10px 12px;
       border-radius:12px;
-      margin-top:8px
+      margin-top:8px;
     }
 
     .dhad-uploaded-link code{
       direction:ltr;
       unicode-bidi:plaintext;
       overflow-wrap:anywhere;
-      font-size:.82rem
+      font-size:.82rem;
     }
 
     .dhad-uploaded-link button{
-      white-space:nowrap
+      white-space:nowrap;
     }
   `;
 
@@ -222,7 +223,6 @@
           </p>
         </div>
 
-
         <!-- صفحة تفاصيل المادة -->
 
         <div id="dhadDirectDetailsView">
@@ -245,7 +245,6 @@
           </article>
 
         </div>
-
 
         <!-- صفحة التنزيل -->
 
@@ -273,7 +272,6 @@
               <div id="dhadDownloadMaterialExtra"></div>
 
             </article>
-
 
             <aside class="dhad-direct-card dhad-direct-download"
                    aria-label="تنزيل المادة">
@@ -909,16 +907,24 @@
         status.textContent=
           'هذه المادة غير متاحة للعامة أو لم تعد موجودة.';
 
+        const button=document.getElementById('dhadShowDownloadPageButton');
+
+        if(button)button.style.display='none';
+
         return;
 
       }
+
+      const button=document.getElementById('dhadShowDownloadPageButton');
+
+      if(button)button.style.display='block';
 
       window.__materials=[data];
 
       setMaterialMetadata(data);
 
 
-      /* بيانات الصف والمواد والفئة */
+      /* بيانات الصف والفصل والفئة */
 
       const grade=(typeof grades!=='undefined'?grades:[])
         .find(x=>String(x.id)===String(data.grade_id));
@@ -946,7 +952,7 @@
       status.textContent='تم العثور على المادة التعليمية.';
 
 
-      /* الوصف */
+      /* وصف المادة */
 
       const description=data.description||'';
 
@@ -1028,7 +1034,7 @@
         extraHTML;
 
 
-      /* عرض الوصف نفسه في صفحة التنزيل */
+      /* تجهيز محتوى صفحة التنزيل */
 
       document.getElementById('dhadDownloadMaterialDescription').innerHTML=
         descriptionHTML;
@@ -1046,23 +1052,33 @@
         extraHTML;
 
 
-      /* أزرار التنزيل والمعاينة والمشاركة */
+      /* زر التنزيل */
 
       document.getElementById('dhadDirectDownloadButton').onclick=()=>{
+
         if(typeof downloadMaterial==='function'){
           downloadMaterial(data.id);
-        }else{
-          showInfo?.('تعذر التنزيل','وظيفة تنزيل الملف غير متاحة حاليًا.');
+        }else if(typeof showInfo==='function'){
+          showInfo('تعذر التنزيل','وظيفة تنزيل الملف غير متاحة حاليًا.');
         }
+
       };
 
+
+      /* زر المعاينة */
+
       document.getElementById('dhadDirectPreviewButton').onclick=()=>{
+
         if(typeof previewMaterial==='function'){
           previewMaterial(data.id);
-        }else{
-          showInfo?.('تعذرت المعاينة','وظيفة معاينة الملف غير متاحة حاليًا.');
+        }else if(typeof showInfo==='function'){
+          showInfo('تعذرت المعاينة','وظيفة معاينة الملف غير متاحة حاليًا.');
         }
+
       };
+
+
+      /* زر المشاركة */
 
       document.getElementById('dhadDirectShareButton').onclick=()=>{
         shareDhadLink('material',data.id);
@@ -1247,7 +1263,7 @@
           }else{
 
             document.getElementById('gamesGrid')
-              .insertAdjacentHTML(
+              ?.insertAdjacentHTML(
                 'afterbegin',
                 '<div class="empty">هذه اللعبة غير متاحة أو لم تعد منشورة.</div>'
               );
