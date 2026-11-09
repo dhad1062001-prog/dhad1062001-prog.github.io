@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>معاينة لوحة إدارة ضاد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--olive:#687347;--olive-dark:#4f5a32;--olive-soft:#eef0e6;--gold:#c6a45d;--gold-soft:#f7f1e3;--white:#fff;--bg:#f6f7f2;--ink:#303629;--muted:#7d8372;--line:#e7e9df;--red:#b65b50;--shadow:0 8px 26px rgba(55,65,35,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,Arial,sans-serif}button,a{font:inherit}button{cursor:pointer}
+.layout{min-height:100vh;display:grid;grid-template-columns:260px minmax(0,1fr)}
+.sidebar{background:var(--white);border-left:1px solid var(--line);padding:22px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;border-bottom:1px solid var(--line)}
+.brand-mark{width:46px;height:46px;border-radius:14px;background:var(--olive);color:#fff;display:grid;place-items:center;font-size:27px;font-weight:900}
+.brand h1{font-size:18px;margin:0;color:var(--olive-dark)}.brand p{font-size:11px;color:var(--muted);margin:2px 0 0}
+.nav-label{font-size:11px;color:#a0a58f;font-weight:800;margin:22px 10px 8px}
+.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;text-align:right;padding:11px 12px;border-radius:11px;color:#626957;font-weight:700;font-size:13px;display:flex;align-items:center;gap:11px}
+.nav button .ico{width:23px;text-align:center;font-size:17px}.nav button:hover{background:#f5f6f0;color:var(--olive-dark)}.nav button.active{background:var(--olive-soft);color:var(--olive-dark);box-shadow:inset -3px 0 var(--gold)}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--line);padding-top:14px}.profile{display:flex;align-items:center;gap:10px;padding:8px}.avatar{width:36px;height:36px;border-radius:50%;background:var(--gold-soft);color:var(--olive-dark);display:grid;place-items:center;font-weight:900}.profile b{font-size:12px;display:block}.profile small{font-size:10px;color:var(--muted)}
+.main{min-width:0}.topbar{height:76px;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:16px}
+.top-right{display:flex;align-items:center;gap:12px}.menu-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;color:var(--olive-dark)}
+.breadcrumb{font-size:12px;color:var(--muted)}.breadcrumb b{color:var(--olive-dark)}
+.top-actions{display:flex;align-items:center;gap:9px}.icon-btn{border:1px solid var(--line);background:#fff;border-radius:10px;width:38px;height:38px;color:var(--olive-dark)}
+.btn{border:0;border-radius:10px;padding:10px 15px;background:var(--olive);color:#fff;text-decoration:none;font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:7px}.btn.gold{background:var(--gold);color:#302d20}.btn.light{background:#fff;border:1px solid var(--line);color:var(--olive-dark)}
+.content{padding:28px 30px 40px;max-width:1500px;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:22px}.page-head h2{margin:0;color:var(--olive-dark);font-size:23px}.page-head p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.demo-note{background:var(--gold-soft);border:1px solid #eadcb9;color:#75602e;border-radius:11px;padding:10px 13px;font-size:11px;display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:17px}
+.metric,.panel{background:var(--white);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}
+.metric{padding:17px;position:relative;overflow:hidden}.metric:after{content:"";position:absolute;left:-20px;bottom:-34px;width:90px;height:90px;border-radius:50%;background:var(--olive-soft)}
+.metric-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:11px;font-weight:700}.metric-icon{width:35px;height:35px;border-radius:11px;background:var(--olive-soft);color:var(--olive);display:grid;place-items:center;font-size:17px}
+.metric strong{display:block;font-size:25px;color:var(--olive-dark);margin:10px 0 2px}.metric small{color:var(--muted);font-size:10px}.trend{color:var(--olive);font-weight:800}
+.columns{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:16px;margin-bottom:16px}
+.panel{padding:18px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.panel-head h3{font-size:14px;margin:0;color:var(--olive-dark)}.panel-head small{color:var(--muted);font-size:10px}
+.select{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 9px;font-size:10px}
+.chart{height:205px;display:flex;align-items:flex-end;gap:clamp(7px,2vw,19px);padding:8px 8px 0;border-bottom:1px solid var(--line);background:repeating-linear-gradient(to top,transparent 0,transparent 49px,#f0f1eb 50px)}
+.bar-group{height:100%;flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;position:relative;padding-bottom:0}
+.bar{width:min(18px,40%);border-radius:6px 6px 0 0;background:var(--olive);min-height:5px}.bar.gold{background:var(--gold)}
+.bar-label{position:absolute;bottom:-24px;font-size:9px;color:var(--muted)}
+.legend{display:flex;gap:15px;margin-top:31px;color:var(--muted);font-size:10px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:5px;background:var(--olive)}.dot.gold{background:var(--gold)}
+.quick-list{display:grid;gap:11px}.quick{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid #f0f1eb}.quick:last-child{border:0;padding:0}.quick-icon{width:34px;height:34px;border-radius:10px;background:var(--gold-soft);display:grid;place-items:center}.quick b{display:block;font-size:11px}.quick small{font-size:10px;color:var(--muted)}.quick .arrow{margin-right:auto;color:var(--gold);font-size:18px}
+.table-panel{margin-bottom:16px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:550px;font-size:11px}th,td{text-align:right;padding:12px 10px;border-bottom:1px solid var(--line)}th{background:#f8f9f5;color:var(--olive-dark);font-weight:800}td{color:#59604f}.file-name{display:flex;align-items:center;gap:8px;font-weight:700;color:#414936}.file-type{width:28px;height:31px;border-radius:6px;background:#f9eee9;color:#a45b48;display:grid;place-items:center;font-size:9px;font-weight:900}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:var(--olive-soft);color:var(--olive-dark);font-size:9px;font-weight:800}.pill.gold{background:var(--gold-soft);color:#8b6c2c}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.progress-row{margin:13px 0}.progress-label{display:flex;justify-content:space-between;font-size:10px;margin-bottom:6px}.progress-label span:last-child{color:var(--muted)}.progress{height:7px;border-radius:20px;background:#eef0e8;overflow:hidden}.progress i{display:block;height:100%;background:var(--olive);border-radius:20px}.progress i.gold{background:var(--gold)}
+.section-placeholder{display:none}.section-placeholder.active{display:block}.section-placeholder .panel{min-height:260px}.empty-icon{width:62px;height:62px;margin:15px auto;border-radius:18px;background:var(--olive-soft);color:var(--olive);display:grid;place-items:center;font-size:27px}.placeholder-copy{text-align:center;max-width:500px;margin:0 auto}.placeholder-copy h3{color:var(--olive-dark);margin:8px}.placeholder-copy p{font-size:12px;color:var(--muted);line-height:1.9}
+.footer{text-align:center;color:#9ba08e;font-size:10px;padding:18px}
+@media(max-width:1050px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.columns{grid-template-columns:1fr}.content{padding:22px 18px}}
+@media(max-width:720px){.layout{grid-template-columns:1fr}.sidebar{position:fixed;right:0;top:0;width:270px;transform:translateX(105%);transition:transform .25s;box-shadow:-10px 0 30px #0001}.sidebar.open{transform:translateX(0)}.menu-btn{display:inline-flex}.topbar{height:65px;padding:0 14px}.content{padding:19px 13px}.page-head{align-items:flex-start;flex-direction:column}.bottom-grid{grid-template-columns:1fr}.top-actions .btn{padding:9px 10px}.breadcrumb{font-size:10px}}
+@media(max-width:420px){.metrics{gap:9px}.metric{padding:12px}.metric strong{font-size:21px}.metric-top{font-size:10px}.top-actions .hide-mobile{display:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+ <div class="brand"><div class="brand-mark">ض</div><div><h1>إدارة ضاد</h1><p>مركز التحكم بالمنصة التعليمية</p></div></div>
+ <div class="nav-label">القائمة الرئيسية</div>
+ <nav class="nav" id="nav">
+  <button class="active" data-section="overview" data-title="الرئيسية"><span class="ico">▦</span>الرئيسية</button>
+  <button data-section="files" data-title="إدارة الملفات"><span class="ico">▤</span>إدارة الملفات</button>
+  <button data-section="sections" data-title="الأقسام والتصنيفات"><span class="ico">▦</span>الأقسام والتصنيفات</button>
+  <button data-section="content" data-title="المحتوى والصفحات"><span class="ico">✎</span>المحتوى والصفحات</button>
+  <button data-section="analytics" data-title="الإحصائيات والتقارير"><span class="ico">▥</span>الإحصائيات والتقارير</button>
+  <button data-section="storage" data-title="التخزين والنسخ الاحتياطي"><span class="ico">▣</span>التخزين والنسخ الاحتياطي</button>
+  <button data-section="seo" data-title="الظهور في محركات البحث"><span class="ico">⌕</span>الظهور في محركات البحث</button>
+  <button data-section="security" data-title="الأمان والصلاحيات"><span class="ico">♙</span>الأمان والصلاحيات</button>
+  <button data-section="settings" data-title="الإعدادات"><span class="ico">⚙</span>الإعدادات</button>
+ </nav>
+ <div class="sidebar-bottom"><div class="profile"><div class="avatar">ض</div><div><b>مساحة إدارة ضاد</b><small>معاينة تصميمية أولية</small></div></div></div>
+</aside>
+<main class="main">
+ <header class="topbar"><div class="top-right"><button class="menu-btn" id="menuBtn" aria-label="فتح القائمة">☰</button><div class="breadcrumb">ضاد <span> / </span><b id="crumb">الرئيسية</b></div></div><div class="top-actions"><button class="icon-btn" title="التنبيهات">♧</button><a class="btn light hide-mobile" href="admin.html">لوحة الإدارة الحالية ↗</a><a class="btn gold" href="platform.html">عرض المنصة ↗</a></div></header>
+ <div class="content">
+  <section id="overview" class="section-placeholder active">
+   <div class="page-head"><div><h2>مرحبًا بك في إدارة ضاد</h2><p>نظرة شاملة على أداء المنصة وإدارة مواردها من مكان واحد.</p></div><button class="btn light" type="button" onclick="alert('هذه معاينة شكلية؛ لم يتم ربطها ببيانات الموقع بعد.')">آخر تحديث: معاينة</button></div>
+   <div class="demo-note"><b>ⓘ</b> هذه نسخة مبدئية للتصميم فقط. الأرقام والرسوم أدناه أمثلة توضيحية وليست إحصائيات حقيقية، ولم يتم ربط أي إجراء بقاعدة البيانات.</div>
+   <div class="metrics">
+    <article class="metric"><div class="metric-top"><span>مشاهدات الصفحات</span><span class="metric-icon">◉</span></div><strong>—</strong><small>ستظهر البيانات الفعلية بعد الربط</small></article>
+    <article class="metric"><div class="metric-top"><span>الزوار الفريدون</span><span class="metric-icon">♙</span></div><strong>—</strong><small>قياس الزيارات الحقيقية</small></article>
+    <article class="metric"><div class="metric-top"><span>مرات التنزيل</span><span class="metric-icon">⇩</span></div><strong>—</strong><small>حسب سجلات التنزيل الحالية</small></article>
+    <article class="metric"><div class="metric-top"><span>الملفات المنشورة</span><span class="metric-icon">▤</span></div><strong>—</strong><small>إجمالي مكتبة المواد</small></article>
+   </div>
+   <div class="columns">
+    <section class="panel"><div class="panel-head"><h3>نظرة على نشاط المنصة</h3><select class="select" aria-label="الفترة"><option>آخر 7 أيام</option><option>آخر 30 يومًا</option></select></div>
+     <div class="chart" aria-label="رسم توضيحي غير مرتبط بالبيانات"><div class="bar-group"><i class="bar" style="height:35%"></i><i class="bar gold" style="height:20%"></i><span class="bar-label">الأحد</span></div><div class="bar-group"><i class="bar" style="height:55%"></i><i class="bar gold" style="height:30%"></i><span class="bar-label">الاثنين</span></div><div class="bar-group"><i class="bar" style="height:43%"></i><i class="bar gold" style="height:24%"></i><span class="bar-label">الثلاثاء</span></div><div class="bar-group"><i class="bar" style="height:75%"></i><i class="bar gold" style="height:42%"></i><span class="bar-label">الأربعاء</span></div><div class="bar-group"><i class="bar" style="height:60%"></i><i class="bar gold" style="height:34%"></i><span class="bar-label">الخميس</span></div><div class="bar-group"><i class="bar" style="height:88%"></i><i class="bar gold" style="height:52%"></i><span class="bar-label">الجمعة</span></div><div class="bar-group"><i class="bar" style="height:48%"></i><i class="bar gold" style="height:27%"></i><span class="bar-label">السبت</span></div></div>
+     <div class="legend"><span><i class="dot"></i>مشاهدات الصفحات</span><span><i class="dot gold"></i>مرات التنزيل</span></div>
+    </section>
+    <section class="panel"><div class="panel-head"><h3>الوصول السريع</h3><small>أدوات الإدارة</small></div><div class="quick-list">
+     <div class="quick"><span class="quick-icon">⇧</span><div><b>رفع ملفات جديدة</b><small>رفع فردي أو جماعي وتصنيف المواد</small></div><span class="arrow">‹</span></div>
+     <div class="quick"><span class="quick-icon">▤</span><div><b>مكتبة الملفات</b><small>بحث وتعديل وإدارة الملفات</small></div><span class="arrow">‹</span></div>
+     <div class="quick"><span class="quick-icon">▦</span><div><b>إدارة الأقسام</b><small>ترتيب الأقسام وإظهارها</small></div><span class="arrow">‹</span></div>
+     <div class="quick"><span class="quick-icon">▥</span><div><b>التقارير والإحصائيات</b><small>الزيارات والتنزيلات والأداء</small></div><span class="arrow">‹</span></div>
+    </div></section>
+   </div>
+   <section class="panel table-panel"><div class="panel-head"><h3>أحدث الملفات المضافة</h3><small>سيتم عرض أحدث السجلات بعد الربط</small></div><div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>القسم</th><th>تاريخ الإضافة</th><th>الحالة</th><th>التنزيلات</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;color:#8b907f;padding:25px">سيتم جلب الملفات الحقيقية من مكتبة ضاد عند تنفيذ مرحلة الربط.</td></tr></tbody></table></div></section>
+   <div class="bottom-grid"><section class="panel"><div class="panel-head"><h3>حالة التخزين</h3><small>تصميم مبدئي</small></div><div class="progress-row"><div class="progress-label"><b>Supabase Storage</b><span>بانتظار قراءة السعة</span></div><div class="progress"><i style="width:35%"></i></div></div><div class="progress-row"><div class="progress-label"><b>Google Drive</b><span>غير مربوط حاليًا</span></div><div class="progress"><i class="gold" style="width:0%"></i></div></div></section>
+   <section class="panel"><div class="panel-head"><h3>تنبيهات الإدارة</h3><small>نموذج العرض</small></div><div class="quick"><span class="quick-icon">ⓘ</span><div><b>مركز التنبيهات</b><small>سيعرض أخطاء الرفع والملفات الناقصة ومشكلات التخزين.</small></div></div></section></div>
+  </section>
+  <section id="otherSection" class="section-placeholder"><div class="page-head"><div><h2 id="otherTitle">إدارة الملفات</h2><p>وحدة مستقلة ضمن لوحة إدارة ضاد.</p></div></div><div class="demo-note">هذه النسخة تعرض شكل التنقل وتقسيم الوحدات فقط؛ لم تُفعّل بعد أي عمليات تعديل أو حذف أو حفظ.</div><div class="panel"><div class="placeholder-copy"><div class="empty-icon" id="otherIcon">▤</div><h3 id="otherHeading">إدارة الملفات</h3><p id="otherDesc">سيتم بناء هذه الوحدة وربطها بالبيانات الحالية بعد اعتماد شكل لوحة التحكم. ستبقى الملفات وسجلاتها الحالية محفوظة دون تغيير.</p><a class="btn light" href="admin.html">فتح أدوات الإدارة الحالية ↗</a></div></div></section>
+  <div class="footer">ضاد – منصة اللغة العربية · معاينة أولية للوحة الإدارة · الهوية الزيتية والذهبية</div>
+ </div>
+</main>
+</div>
+<script>
+(function(){
+ const labels={files:['▤','إدارة الملفات','رفع فردي وجماعي، تنظيم المكتبة، أوصاف المواد، البحث والتصفية، والتعديل الآمن.'],sections:['▦','الأقسام والتصنيفات','إدارة الصفوف والفصول والتصنيفات والأقسام، مع ترتيب العرض والتحكم في الظهور.'],content:['✎','المحتوى والصفحات','تحرير الصفحة الرئيسية وصفحات المنصة ومحتوى لوازم المعلمين والألعاب والأنشطة.'],analytics:['▥','الإحصائيات والتقارير','لوحة الزيارات الحقيقية والزوار والتنزيلات والملفات الأكثر نشاطًا، مع تقارير قابلة للتصدير.'],storage:['▣','التخزين والنسخ الاحتياطي','متابعة مساحة Supabase، وإدارة مسارات التخزين، وإضافة حسابات Google Drive مستقبلًا.'],seo:['⌕','الظهور في محركات البحث','إدارة بيانات SEO والروابط المباشرة وملفات Sitemap ومتابعة الصفحات المفهرسة.'],security:['♙','الأمان والصلاحيات','إدارة أدوار المستخدمين وسجل العمليات ومحاولات الدخول والصلاحيات.'],settings:['⚙','الإعدادات','إعدادات المنصة والهوية والتنبيهات وتفضيلات لوحة الإدارة.']};
+ const nav=document.getElementById('nav'),sidebar=document.getElementById('sidebar');
+ nav.addEventListener('click',e=>{const b=e.target.closest('button[data-section]');if(!b)return;nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));const key=b.dataset.section;document.getElementById('crumb').textContent=b.dataset.title;document.getElementById('overview').classList.toggle('active',key==='overview');document.getElementById('otherSection').classList.toggle('active',key!=='overview');if(key!=='overview'){const d=labels[key];document.getElementById('otherTitle').textContent=d[1];document.getElementById('otherHeading').textContent=d[1];document.getElementById('otherIcon').textContent=d[0];document.getElementById('otherDesc').textContent=d[2];}sidebar.classList.remove('open');});
+ document.getElementById('menuBtn').addEventListener('click',()=>sidebar.classList.toggle('open'));
+ document.addEventListener('click',e=>{if(innerWidth<=720&&sidebar.classList.contains('open')&&!sidebar.contains(e.target)&&!e.target.closest('#menuBtn'))sidebar.classList.remove('open');});
+})();
+</script>
+</body></html>
