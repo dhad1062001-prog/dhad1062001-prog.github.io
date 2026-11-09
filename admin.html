@@ -106,6 +106,7 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <button type="button" class="secondary" data-admin-nav="sitePagesEditor" data-admin-owner-nav>الصفحات</button>
   <button type="button" class="secondary" data-admin-nav="contactLinksEditor" data-admin-owner-nav>التواصل</button>
   <button type="button" class="secondary" data-admin-nav="teacherSuppliesManager" data-admin-owner-nav>لوازم المعلمين</button>
+  <button type="button" class="secondary" data-admin-nav="homeContentManager" data-admin-owner-nav>محتوى الأقسام</button>
  </nav>
 
  <div class="cards">
@@ -264,6 +265,42 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <div class="panel" style="box-shadow:none;margin-top:14px"><h3>الملفات المرتبطة بالقسم</h3><div id="teacherSuppliesAdminList"><p class="note">سيتم تحميل الملفات بعد تسجيل الدخول.</p></div></div>
  </section>
 
+ <section class="section hidden" id="homeContentManager" data-admin-owner-nav>
+  <h3>محتوى أقسام الصفحة الرئيسية وربط الملفات</h3>
+  <p class="note">هذه الوحدة تكمل إدارة الأقسام: تحرير النص أو الرابط أو الصورة أو الملف، وضبط طريقة عرض الملفات المرتبطة. إنشاء الأقسام وتسميتها وترتيبها الأساسي متاح في وحدة «الأقسام».</p>
+  <div class="grid2">
+   <div class="panel" style="box-shadow:none">
+    <label for="hcSectionChoice">اختر القسم</label>
+    <select id="hcSectionChoice" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 14px;background:#20291C;color:#fff"><option value="">جارٍ تحميل الأقسام…</option></select>
+    <label for="hcContentType">نوع المحتوى</label>
+    <select id="hcContentType" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 12px;background:#20291C;color:#fff">
+     <option value="text">نص</option><option value="image">صورة</option><option value="file">ملف قابل للمعاينة والتنزيل</option><option value="link">رابط</option><option value="materials">ملفات مرتبطة فقط</option>
+    </select>
+    <label for="hcContent">النص أو الرابط أو وصف المحتوى</label>
+    <textarea id="hcContent" rows="5" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 12px;background:#20291C;color:#fff"></textarea>
+    <div id="hcFileWrap" class="hidden">
+     <label for="hcFile">اختر صورة أو ملفًا</label>
+     <input id="hcFile" type="file" style="display:block;margin:8px 0 12px">
+     <p class="note" id="hcCurrentFile">لا يوجد ملف مرتبط.</p>
+    </div>
+    <div class="grid2">
+     <div><label for="hcDisplayLimit">عدد الملفات المعروضة</label><input id="hcDisplayLimit" type="number" min="1" max="50" value="6" style="width:100%;padding:10px;margin:7px 0 12px"></div>
+     <div><label for="hcDisplayStyle">طريقة العرض</label><select id="hcDisplayStyle" style="width:100%;padding:10px;margin:7px 0 12px"><option value="grid">بطاقات</option><option value="list">قائمة</option></select></div>
+    </div>
+    <button type="button" id="hcSaveContent">حفظ محتوى القسم</button>
+    <div id="hcStatus" class="status" role="status" aria-live="polite"></div>
+   </div>
+   <div class="panel" style="box-shadow:none">
+    <h3>الملفات المرتبطة بالقسم</h3>
+    <p class="note">اختر الملفات التي تريد عرضها داخل القسم. إزالة الاختيار تفصل الارتباط فقط ولا تحذف الملف الأصلي.</p>
+    <label for="hcMaterials">ملفات المكتبة (يمكن اختيار أكثر من ملف)</label>
+    <select id="hcMaterials" multiple size="12" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0 12px;background:#20291C;color:#fff"></select>
+    <button type="button" id="hcSaveMaterials" class="gold">حفظ ارتباطات الملفات</button>
+    <p class="note" id="hcMaterialHint">اختر قسمًا لعرض الملفات المرتبطة به.</p>
+   </div>
+  </div>
+ </section>
+
  <section class="section"><h3>إدارة المنصة</h3><p style="color:var(--muted);line-height:1.9;margin-top:0">هذه هي الصفحة المستقلة الجديدة. أدوات إدارة الملفات والأقسام والمحتوى ما زالت تعمل في اللوحة الحالية داخل الموقع، وسيتم نقلها تدريجيًا بعد اختبار كل وحدة دون حذف النسخة القديمة.</p><div class="actions"><a class="btn" href="./platform.html">فتح أدوات الإدارة الحالية</a></div></section>
 </section>
 <div id="globalStatus" class="status" role="status" aria-live="polite"></div>
@@ -299,7 +336,8 @@ function showState(){
  $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('teacherSuppliesManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();}}
+ $('homeContentManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();loadHomeContentManager();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -673,6 +711,99 @@ async function saveManagedSection(){
 }
 
 
+
+let homeContentSectionsAdmin=[],homeContentMaterialsAdmin=[],homeContentCurrentFilePath='';
+function hcStatus(message,type){status('hcStatus',message,type);}
+function hcSafeUrl(value){
+ try{const u=new URL(String(value||'').trim());return ['http:','https:','mailto:','tel:'].includes(u.protocol)?u.href:'';}catch(_){return '';}
+}
+async function loadHomeContentManager(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const select=$('hcSectionChoice');select.innerHTML='<option value="">جارٍ تحميل الأقسام…</option>';
+ const [sections,materials]=await Promise.all([
+  client.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style').order('sort_order',{ascending:true}).order('id',{ascending:true}),
+  client.from('materials').select('id,title,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000)
+ ]);
+ if(sections.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل الأقسام: '+sections.error.message,'error');}
+ if(materials.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل ملفات المكتبة: '+materials.error.message,'error');}
+ homeContentSectionsAdmin=sections.data||[];homeContentMaterialsAdmin=materials.data||[];
+ select.innerHTML='<option value="">اختر القسم</option>'+homeContentSectionsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ $('hcMaterials').innerHTML=homeContentMaterialsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'ملف')+'</option>').join('');
+ $('hcContentType').addEventListener('change',updateHomeContentEditor,{once:false});
+ if(select.value)await loadHomeContentSection();
+}
+function updateHomeContentEditor(){
+ const type=$('hcContentType').value;
+ $('hcFileWrap').classList.toggle('hidden',!['image','file'].includes(type));
+ $('hcFile').accept=type==='image'?'image/*':'.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif,.mp3,.wav,.m4a,.mp4,.webm,.ogg,.zip';
+ $('hcContent').placeholder=type==='text'?'اكتب النص الذي سيظهر في القسم…':type==='link'?'https://example.com':type==='image'?'وصف الصورة (اختياري)…':type==='file'?'وصف الملف (اختياري)…':'هذا القسم يعرض الملفات المرتبطة به.';
+}
+async function loadHomeContentSection(){
+ const id=$('hcSectionChoice').value,row=homeContentSectionsAdmin.find(x=>String(x.id)===String(id));
+ if(!row){$('hcContent').value='';$('hcCurrentFile').textContent='لا يوجد ملف مرتبط.';$('hcMaterials').selectedIndex=-1;return;}
+ $('hcContentType').value=row.content_type||'materials';$('hcContent').value=row.content||'';
+ $('hcDisplayLimit').value=String(row.display_limit||6);$('hcDisplayStyle').value=row.display_style==='list'?'list':'grid';
+ homeContentCurrentFilePath=row.file_path||'';$('hcCurrentFile').textContent=homeContentCurrentFilePath?'الملف الحالي: '+homeContentCurrentFilePath:'لا يوجد ملف مرتبط.';
+ updateHomeContentEditor();
+ const {data,error}=await client.from('home_section_materials').select('material_id').eq('section_id',row.id);
+ if(error)return hcStatus('تعذر تحميل ارتباطات الملفات: '+error.message,'error');
+ const chosen=new Set((data||[]).map(x=>String(x.material_id)));
+ Array.from($('hcMaterials').options).forEach(o=>o.selected=chosen.has(String(o.value)));
+ $('hcMaterialHint').textContent='القسم المحدد: '+(row.title||'دون عنوان')+' — '+chosen.size+' ملفًا مرتبطًا.';
+ hcStatus('');
+}
+async function saveHomeContentSection(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const id=$('hcSectionChoice').value,row=homeContentSectionsAdmin.find(x=>String(x.id)===String(id));
+ if(!row)return hcStatus('اختر قسمًا أولًا.','error');
+ const type=$('hcContentType').value,content=$('hcContent').value.trim(),file=$('hcFile').files?.[0]||null;
+ const limit=Number($('hcDisplayLimit').value||6),style=$('hcDisplayStyle').value==='list'?'list':'grid';
+ if(!['text','image','file','link','materials'].includes(type))return hcStatus('نوع المحتوى غير صالح.','error');
+ if(!Number.isInteger(limit)||limit<1||limit>50)return hcStatus('عدد الملفات المعروضة يجب أن يكون بين 1 و50.','error');
+ if((type==='text'||type==='link')&&!content)return hcStatus('أدخل المحتوى المطلوب أولًا.','error');
+ if(type==='link'&&!hcSafeUrl(content))return hcStatus('الرابط غير صحيح. استخدم http أو https أو mailto أو tel.','error');
+ if(file&&file.size>50*1024*1024)return hcStatus('حجم الملف يتجاوز 50 ميجابايت.','error');
+ if(['image','file'].includes(type)&&!file&&!homeContentCurrentFilePath)return hcStatus('اختر ملفًا قبل الحفظ.','error');
+ hcStatus('جارٍ حفظ محتوى القسم…');
+ let filePath=['image','file'].includes(type)?homeContentCurrentFilePath:null,uploaded=false;
+ if(file){
+  if(type==='image'&&!file.type.startsWith('image/'))return hcStatus('الملف المختار ليس صورة.','error');
+  const safeName=file.name.replace(/[^A-Za-z0-9._-]+/g,'-').slice(-100)||'file';
+  const path='home-sections/'+crypto.randomUUID()+'-'+safeName;
+  const {data,error}=await client.storage.from('materials').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+  if(error)return hcStatus('تعذر رفع الملف: '+error.message,'error');
+  filePath=data.path||path;uploaded=true;
+ }
+ const payload={content_type:type,content,file_path:filePath||'',display_limit:limit,display_style:style,updated_at:new Date().toISOString()};
+ const {data,error}=await client.from('home_sections').update(payload).eq('id',row.id).select('id').maybeSingle();
+ if(error||!data){if(uploaded)await client.storage.from('materials').remove([filePath]);return hcStatus('تعذر حفظ محتوى القسم: '+(error?.message||'لم تؤكد قاعدة البيانات الحفظ'),'error');}
+ homeContentCurrentFilePath=filePath||'';$('hcCurrentFile').textContent=homeContentCurrentFilePath?'الملف الحالي: '+homeContentCurrentFilePath:'لا يوجد ملف مرتبط.';
+ $('hcFile').value='';hcStatus('تم حفظ محتوى القسم بنجاح.','ok');
+ await loadHomeContentManager();$('hcSectionChoice').value=String(row.id);await loadHomeContentSection();
+}
+async function saveHomeContentMaterials(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const id=$('hcSectionChoice').value;if(!id)return hcStatus('اختر قسمًا أولًا.','error');
+ const selected=Array.from($('hcMaterials').selectedOptions).map(o=>String(o.value));
+ const {data:existing,error:readError}=await client.from('home_section_materials').select('material_id').eq('section_id',id);
+ if(readError)return hcStatus('تعذر قراءة الارتباطات الحالية: '+readError.message,'error');
+ const current=(existing||[]).map(x=>String(x.material_id)),add=selected.filter(x=>!current.includes(x)),remove=current.filter(x=>!selected.includes(x));
+ if(add.length){
+  const {error}=await client.from('home_section_materials').insert(add.map(material_id=>({section_id:Number(id),material_id,sort_order:selected.indexOf(material_id)})));
+  if(error)return hcStatus('تعذر ربط الملفات: '+error.message,'error');
+ }
+ for(const material_id of selected.filter(x=>current.includes(x))){
+  const {error}=await client.from('home_section_materials').update({sort_order:selected.indexOf(material_id)}).eq('section_id',id).eq('material_id',material_id);
+  if(error)return hcStatus('تعذر تحديث ترتيب الملفات: '+error.message,'error');
+ }
+ if(remove.length){
+  const {error}=await client.from('home_section_materials').delete().eq('section_id',id).in('material_id',remove);
+  if(error)return hcStatus('تعذر إزالة بعض الارتباطات: '+error.message,'error');
+ }
+ $('hcMaterialHint').textContent='تم حفظ '+selected.length+' ارتباطًا. لم تُحذف أي ملفات أصلية.';
+ hcStatus('تم تحديث الملفات المرتبطة بالقسم دون حذف الملفات الأصلية.','ok');
+}
+
 const TEACHER_SUPPLIES_SECTION_ID=2;
 let teacherSupplyRowsAdmin=[];
 function teacherSupplyStatusAdmin(message,type){
@@ -772,6 +903,11 @@ async function removeTeacherSupplyAdmin(id){
 $('loginBtn').addEventListener('click',signIn);
  $('tsLinkExistingAdmin').addEventListener('click',linkExistingTeacherSupplyAdmin);
  $('tsUploadFormAdmin').addEventListener('submit',uploadTeacherSupplyAdmin);
+ $('hcSectionChoice').addEventListener('change',loadHomeContentSection);
+ $('hcContentType').addEventListener('change',updateHomeContentEditor);
+ $('hcSaveContent').addEventListener('click',saveHomeContentSection);
+ $('hcSaveMaterials').addEventListener('click',saveHomeContentMaterials);
+
 
 document.querySelectorAll('[data-admin-nav]').forEach(btn=>btn.addEventListener('click',()=>{
  const target=$(btn.dataset.adminNav);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
