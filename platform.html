@@ -2429,7 +2429,7 @@ function homeSectionTypeLabel(type){
   return ({text:'نص',image:'صورة',file:'ملف',link:'رابط',materials:'ملفات'})[type]||'محتوى';
 }
 
-function renderPublicHomeSections(rows){
+function renderPublicHomeSections(rows,directSectionId=null){
   const container=document.getElementById('homeSectionsContainer');
   if(!container)return;
   const allSections=(rows||[]).filter(row=>row&&row.is_active&&row.title&&['text','image','file','link','materials'].includes(row.content_type));
@@ -2467,7 +2467,22 @@ function renderPublicHomeSections(rows){
     const sectionIcon=row.icon?escapeHtml(row.icon)+' ':'';
     return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   };
-  const sections=allSections.filter(row=>(row.parent_id===null||row.parent_id===undefined)&&row.show_on_home!==false).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
+  let directRootId=null;
+  if(directSectionId){
+    let current=allSections.find(row=>String(row.id)===String(directSectionId));
+    if(current){
+      while(current.parent_id!==null&&current.parent_id!==undefined){
+        const parent=allSections.find(row=>String(row.id)===String(current.parent_id));
+        if(!parent)break;
+        current=parent;
+      }
+      directRootId=String(current.id);
+    }
+  }
+  const sections=allSections.filter(row=>directRootId
+    ? String(row.id)===directRootId
+    : (row.parent_id===null||row.parent_id===undefined)&&row.show_on_home!==false
+  ).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
   const markup=sections.map(renderSection).join('');
   container.innerHTML=markup;
   container.closest('.home-tiles-layout')?.classList.toggle('has-home-sections',Boolean(markup));
@@ -2482,7 +2497,7 @@ function renderPublicHomeSections(rows){
   });
 }
 
-async function loadHomeSectionsPublic(){
+async function loadHomeSectionsPublic(directSectionId=null){
   const container=document.getElementById('homeSectionsContainer');
   if(!container||!sb)return;
   try{
@@ -2501,7 +2516,7 @@ async function loadHomeSectionsPublic(){
     if(error)throw error;
     homeSectionsPublic=data||[];
     await loadHomeSectionRelations(false,homeSectionsPublic.map(x=>x.id));
-    renderPublicHomeSections(homeSectionsPublic);
+    renderPublicHomeSections(homeSectionsPublic,directSectionId);
   }catch(error){
     homeSectionsPublic=[];
     container.innerHTML='';
@@ -3059,7 +3074,18 @@ async function initSupabase(){
         document.getElementById('home').style.display='block';
         await loadHomeSectionsPublic();
       }else if(requestedUrl.searchParams.has('homeSection')){
-        await loadHomeSectionsPublic();
+        const directSectionId=requestedUrl.searchParams.get('homeSection');
+        await loadHomeSectionsPublic(directSectionId);
+        hideAll();
+        document.getElementById('home').style.display='block';
+        const directSection=document.getElementById('homeSectionPublic_'+directSectionId);
+        if(directSection){
+          directSection.scrollIntoView({behavior:'smooth',block:'start'});
+          directSection.style.outline='2px solid var(--gold)';
+          directSection.style.outlineOffset='5px';
+        }else{
+          showInfo('القسم غير متاح','قد يكون القسم مخفيًا أو لم يعد موجودًا.');
+        }
       }
       await Promise.all([loadSiteBranding(),loadHomeDescription()]);
     }
