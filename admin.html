@@ -57,6 +57,13 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <article class="metric"><div class="label">مرات بدء التنزيل</div><strong id="downloads">—</strong></article>
   <article class="metric"><div class="label">مشاهدات الملفات</div><strong id="materialViews">—</strong></article>
  </div>
+
+ <section class="section" id="analyticsTrend">
+  <h3>حركة الزيارات والتنزيلات</h3>
+  <div id="analyticsBars" style="display:flex;align-items:end;gap:8px;overflow-x:auto;min-height:190px;padding:12px 4px"></div>
+  <div class="actions" style="margin-top:8px"><span class="note">🟩 مشاهدات الصفحات</span><span class="note">🟨 مرات بدء التنزيل</span></div>
+ </section>
+
  <div class="grid2">
   <section class="section"><h3>الملفات الأكثر نشاطًا</h3><div id="topMaterials">جارٍ التحميل…</div></section>
   <section class="section"><h3>الصفحات الأكثر زيارة</h3><div id="topPages">جارٍ التحميل…</div></section>
@@ -237,6 +244,20 @@ function list(rows,materials){
  return '<ol class="list">'+rows.map(x=>materials?'<li><b>'+escapeHtml(x.title||'ملف')+'</b> — تنزيلات: '+n(x.downloads)+' · مشاهدات: '+n(x.views)+'</li>':'<li>'+escapeHtml(x.path||'/')+' — '+n(x.views)+' زيارة</li>').join('')+'</ol>';
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function renderAnalyticsChart(rows){
+ const target=$('analyticsBars');
+ if(!target)return;
+ const values=(Array.isArray(rows)?rows:[]).slice(-14);
+ if(!values.length){target.innerHTML='<p class="note">لا توجد بيانات كافية لرسم الاتجاه اليومي بعد.</p>';return;}
+ const max=Math.max(1,...values.flatMap(x=>[Number(x.page_views||0),Number(x.downloads||0)]));
+ target.innerHTML=values.map(x=>{
+  const views=Number(x.page_views||0),downloads=Number(x.downloads||0);
+  const viewHeight=Math.max(3,Math.round(views/max*100)),downloadHeight=Math.max(3,Math.round(downloads/max*100));
+  return '<div style="min-width:48px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:6px;height:165px"><div style="display:flex;align-items:end;gap:4px;height:125px;width:100%;justify-content:center"><span title="مشاهدات: '+n(views)+'" style="width:13px;height:'+viewHeight+'%;min-height:3px;background:#789477;border-radius:5px 5px 0 0"></span><span title="تنزيلات: '+n(downloads)+'" style="width:13px;height:'+downloadHeight+'%;min-height:3px;background:#C3A45F;border-radius:5px 5px 0 0"></span></div><small style="font-size:10px;color:var(--muted);white-space:nowrap">'+escapeHtml(String(x.day||'').slice(5))+'</small></div>';
+ }).join('');
+}
+
 function renderDaily(rows){
  if(!Array.isArray(rows)||!rows.length)return '<p style="color:var(--muted)">لا توجد بيانات بعد.</p>';
  return '<table><thead><tr><th>التاريخ</th><th>مشاهدات الصفحات</th><th>الزوار</th><th>التنزيلات</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+escapeHtml(x.day)+'</td><td>'+n(x.page_views)+'</td><td>'+n(x.unique_visitors)+'</td><td>'+n(x.downloads)+'</td></tr>').join('')+'</tbody></table>';
@@ -251,7 +272,7 @@ async function loadAnalytics(){
   if(error)throw error;
   const t=data?.totals||{};
   $('pageViews').textContent=n(t.page_views);$('visitors').textContent=n(t.unique_visitors);$('downloads').textContent=n(t.downloads);$('materialViews').textContent=n(t.material_views);
-  $('topMaterials').innerHTML=list(data?.top_materials,true);$('topPages').innerHTML=list(data?.top_pages,false);$('daily').innerHTML=renderDaily(data?.daily);
+  $('topMaterials').innerHTML=list(data?.top_materials,true);$('topPages').innerHTML=list(data?.top_pages,false);$('daily').innerHTML=renderDaily(data?.daily);renderAnalyticsChart(data?.daily);
   status('globalStatus','تم تحديث الإحصائيات بنجاح.','ok');
  }catch(e){
   console.error(e);status('globalStatus','تعذر تحميل الإحصائيات. تحقق من صلاحية الحساب والاتصال ثم أعد المحاولة.','error');
