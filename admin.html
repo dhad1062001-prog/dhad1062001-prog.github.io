@@ -53,6 +53,27 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
 
 
+
+ <section class="section" id="siteBrandingEditor">
+  <h3>إدارة هوية المنصة والصور</h3>
+  <p class="note">تعديل اسم المنصة وشعارها والنص التعريفي وصورة واجهة الاستقبال. تُرفع الصور الجديدة إلى مساحة التخزين الحالية، مع الاحتفاظ بالصور السابقة دون حذفها.</p>
+  <div class="grid2">
+   <div><label class="note" for="brandNameAdmin">اسم المنصة</label><input id="brandNameAdmin" maxlength="100" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+   <div><label class="note" for="brandMarkAdmin">الرمز النصي</label><input id="brandMarkAdmin" maxlength="8" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+  </div>
+  <label class="note" for="brandTaglineAdmin">العبارة التعريفية</label><input id="brandTaglineAdmin" maxlength="300" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px">
+  <div class="grid2">
+   <div><label class="note" for="brandTeacherAdmin">النص التعريفي بالمعلم</label><input id="brandTeacherAdmin" maxlength="180" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+   <div><label class="note" for="brandAppAdmin">رابط التطبيق (اختياري)</label><input id="brandAppAdmin" type="url" placeholder="https://" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px;direction:ltr"></div>
+  </div>
+  <div class="grid2">
+   <div><label class="note" for="brandLogoAdmin">الشعار (PNG / JPG / WebP، حتى 5MB)</label><input id="brandLogoAdmin" type="file" accept="image/png,image/jpeg,image/webp" style="width:100%;padding:10px;border:1px dashed var(--line);border-radius:10px;margin:5px 0 12px"><div id="brandLogoInfo" class="note">لم يتم تحميل بيانات الشعار.</div></div>
+   <div><label class="note" for="brandBackgroundAdmin">صورة خلفية واجهة الاستقبال (حتى 5MB)</label><input id="brandBackgroundAdmin" type="file" accept="image/png,image/jpeg,image/webp" style="width:100%;padding:10px;border:1px dashed var(--line);border-radius:10px;margin:5px 0 12px"><div id="brandBackgroundInfo" class="note">لم يتم تحميل بيانات الخلفية.</div></div>
+  </div>
+  <div class="actions"><button id="brandSaveAdmin" type="button" class="gold">حفظ الهوية</button><button id="brandReloadAdmin" type="button" class="secondary">إعادة تحميل</button></div>
+  <div id="brandAdminStatus" class="status" role="status" aria-live="polite"></div>
+ </section>
+
  <section class="section" id="homePageEditor">
   <div class="toolbar" style="margin-bottom:12px"><div><h3 style="margin:0">إدارة نصوص صفحة الاستقبال</h3><p class="note" style="margin:3px 0">تعديل العنوان الرئيسي والوصف التعريفي وظهوره للزوار.</p></div><button id="homePageReload" type="button" class="secondary">إعادة تحميل</button></div>
   <label class="note" for="homePageTitle">العنوان الرئيسي</label><input id="homePageTitle" maxlength="180" placeholder="ضاد – منصة اللغة العربية" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px">
@@ -132,7 +153,8 @@ function showState(){
  $('userLine').textContent=currentUser?(currentProfile?.full_name||currentUser.email||'حساب الإدارة'):'غير مسجل الدخول';
  $('sectionManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('homePageEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();}}
+ $('siteBrandingEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -184,6 +206,63 @@ async function loadAnalytics(){
 }
 
 
+
+
+let adminBranding={name:'ضـــاد',tagline:'كل ما يحتاجه معلم اللغة العربية والطالب وولي الأمر',mark:'ض',logoPath:'',heroBackgroundPath:'',teacherText:'',appDownloadUrl:''};
+function brandAdminStatus(message,type){status('brandAdminStatus',message,type);}
+function renderAdminBranding(){
+ $('brandNameAdmin').value=adminBranding.name||'ضـــاد';$('brandMarkAdmin').value=adminBranding.mark||'ض';
+ $('brandTaglineAdmin').value=adminBranding.tagline||'';$('brandTeacherAdmin').value=adminBranding.teacherText||'';
+ $('brandAppAdmin').value=adminBranding.appDownloadUrl||'';
+ $('brandLogoInfo').textContent=adminBranding.logoPath?'يوجد شعار محفوظ: '+adminBranding.logoPath:'لا يوجد شعار مخصص محفوظ.';
+ $('brandBackgroundInfo').textContent=adminBranding.heroBackgroundPath?'توجد خلفية محفوظة: '+adminBranding.heroBackgroundPath:'لا توجد خلفية مخصصة محفوظة.';
+}
+async function loadAdminBranding(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const {data,error}=await client.from('site_pages').select('content').eq('slug','site-branding').maybeSingle();
+ if(error){brandAdminStatus('تعذر تحميل الهوية: '+error.message,'error');return;}
+ if(data?.content){try{adminBranding={...adminBranding,...JSON.parse(data.content)};}catch(e){brandAdminStatus('بيانات الهوية المحفوظة ليست بصيغة JSON سليمة. لم يتم تعديلها.','error');return;}}
+ renderAdminBranding();brandAdminStatus('تم تحميل إعدادات الهوية الحالية.','ok');
+}
+async function validateAdminBrandImage(file){
+ if(!file)return true;
+ if(file.size>5*1024*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))return false;
+ try{
+  const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());
+  if(file.type==='image/png')return bytes.length>=8&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10&&bytes[6]===26&&bytes[7]===10;
+  if(file.type==='image/jpeg')return bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+  if(file.type==='image/webp')return bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP';
+ }catch(e){}
+ return false;
+}
+async function uploadAdminBrandImage(file,prefix){
+ if(!file)return '';
+ if(!await validateAdminBrandImage(file))throw new Error('صيغة الصورة غير مدعومة أو حجمها أكبر من 5MB.');
+ const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+ const path='site-branding/'+prefix+'-'+crypto.randomUUID()+'.'+ext;
+ const {data,error}=await client.storage.from('materials').upload(path,file,{contentType:file.type,upsert:false});
+ if(error)throw error;
+ return data?.path||path;
+}
+async function saveAdminBranding(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return brandAdminStatus('تعديل الهوية متاح لمالك المنصة فقط.','error');
+ const name=$('brandNameAdmin').value.trim(),tagline=$('brandTaglineAdmin').value.trim(),mark=$('brandMarkAdmin').value.trim()||'ض';
+ const teacherText=$('brandTeacherAdmin').value.trim(),appDownloadUrl=$('brandAppAdmin').value.trim();
+ if(!name)return brandAdminStatus('اكتب اسم المنصة أولًا.','error');
+ if(appDownloadUrl){try{const u=new URL(appDownloadUrl);if(!['http:','https:'].includes(u.protocol))throw new Error();}catch(e){return brandAdminStatus('رابط التطبيق غير صالح.','error');}}
+ const logoFile=$('brandLogoAdmin').files?.[0]||null,backgroundFile=$('brandBackgroundAdmin').files?.[0]||null;
+ $('brandSaveAdmin').disabled=true;brandAdminStatus('جارٍ حفظ الهوية ورفع الصور…');
+ try{
+  const logoPath=logoFile?await uploadAdminBrandImage(logoFile,'logo'):adminBranding.logoPath||'';
+  const heroBackgroundPath=backgroundFile?await uploadAdminBrandImage(backgroundFile,'background'):adminBranding.heroBackgroundPath||'';
+  const next={name,tagline,mark,logoPath,heroBackgroundPath,teacherText,appDownloadUrl};
+  const {error}=await client.from('site_pages').upsert({slug:'site-branding',title:'إعدادات هوية ضاد',content:JSON.stringify(next),updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'slug'});
+  if(error)throw error;
+  adminBranding=next;renderAdminBranding();$('brandLogoAdmin').value='';$('brandBackgroundAdmin').value='';
+  brandAdminStatus('تم حفظ الهوية. احتُفظ بالصور السابقة في التخزين.','ok');
+ }catch(error){console.error(error);brandAdminStatus('تعذر حفظ الهوية: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('brandSaveAdmin').disabled=false;}
+}
 
 function homePageStatus(message,type){status('homePageStatus',message,type);}
 async function loadHomePageEditor(){
@@ -327,6 +406,9 @@ $('loginBtn').addEventListener('click',signIn);
 $('sectionsReload').addEventListener('click',()=>{loadSectionManager();loadUploadSectionChoices();});
 $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
 $('homePageReload').addEventListener('click',loadHomePageEditor);
+$('brandReloadAdmin').addEventListener('click',loadAdminBranding);
+$('brandSaveAdmin').addEventListener('click',saveAdminBranding);
+
 $('homePageSave').addEventListener('click',saveHomePageEditor);
 
 $('adminUploadStart').addEventListener('click',startAdminUpload);
