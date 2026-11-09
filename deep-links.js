@@ -894,7 +894,8 @@
           created_at,
           track_name,
           field_name,
-          is_public
+          is_public,
+          download_count
         `)
         .eq('id',id)
         .eq('is_public',true)
@@ -1007,7 +1008,8 @@
           safeText(data.file_name)+'</p>':'')+
         (data.file_size?
           '<p><b>حجم الملف:</b> '+
-          safeText(formatFileSize(data.file_size))+'</p>':'');
+          safeText(formatFileSize(data.file_size))+'</p>':'')+
+        '<p><b>مرات بدء التنزيل:</b> <span class="dhad-download-count" data-material-count="'+safeText(String(data.id))+'"><span data-count-value>'+Number(data.download_count||0).toLocaleString('ar')+'</span></span></p>';
 
 
       const extraHTML=extraInfo?
