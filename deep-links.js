@@ -350,13 +350,6 @@
             <aside class="dhad-direct-card dhad-direct-download"
                    aria-label="تنزيل المادة">
 
-              <h3>تنزيل ومعاينة المادة</h3>
-
-              <p>
-                يمكنك الآن تنزيل الملف أو معاينته،
-                كما يمكنك مشاركة رابط المادة مع الآخرين.
-              </p>
-
               <button
                 id="dhadDirectDownloadButton"
                 class="primary"
