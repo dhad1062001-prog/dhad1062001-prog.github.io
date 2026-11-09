@@ -11,7 +11,7 @@ async function digest(v){if(!window.crypto?.subtle)return null;const b=new TextE
 function visitor(){if(!visitorHashPromise)visitorHashPromise=digest(stored(storage('localStorage'),'dhad_analytics_visitor_v1'));return visitorHashPromise;}
 function session(){if(!sessionHashPromise)sessionHashPromise=digest(stored(storage('sessionStorage'),'dhad_analytics_session_v1'));return sessionHashPromise;}
 function device(){const w=innerWidth||0;return w&&w<600?'mobile':w&&w<1024?'tablet':w?'desktop':'unknown';}
-function path(){const u=new URL(location.href);const q=u.searchParams.has('material')?'?material':u.searchParams.has('game')?'?game':'';const h=u.hash;const safeHash=/^#\/?[A-Za-z][A-Za-z0-9_/-]{0,120}$/.test(h)?h:'';return u.pathname+q+safeHash;}
+function path(){const u=new URL(location.href);const q=u.searchParams.has('material')?'?material':u.searchParams.has('game')?'?game':'';const h=u.hash;const authHash=/^#(?:access_token|refresh_token|id_token|token_type|expires_in|error|error_description|state)(?:[=&/]|$)/i.test(h);const safeHash=!authHash&&/^#\/?[A-Za-z][A-Za-z0-9_/-]{0,120}$/.test(h)?h:'';return u.pathname+q+safeHash;}
 async function record(type,materialId){
  const client=api();if(!client?.functions)return null;
  if(typeof isFileManager==='function'&&isFileManager())return null;
