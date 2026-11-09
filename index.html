@@ -510,7 +510,8 @@ if(window.__DHAD_DIRECT_ENTRY__){
               <div class="field" id="trackWrap" style="display:none"><label>المسار</label><select id="matTrack"></select></div>
               <div class="field" id="fieldWrap" style="display:none"><label>الحقل</label><select id="matField"></select></div>
               <div class="field"><label>الفصل الدراسي</label><select id="matSemester" required></select></div>
-              <div class="field"><label>القسم</label><select id="matCategory" required></select></div>
+              <div class="field"><label>القسم التعليمي</label><select id="matCategory" required></select></div>
+              <div class="field"><label for="matHomeSections">أقسام الصفحة الرئيسية (اختياري)</label><select id="matHomeSections" multiple size="4" aria-describedby="matHomeSectionsHelp"></select><small id="matHomeSectionsHelp" class="callout-help">يمكنك اختيار قسم أو أكثر ليظهر الملف ضمنها، مثل «لوازم المعلمين». لا يؤثر ذلك في تصنيفه الدراسي.</small></div>
               <div class="field"><label>الملف</label><input type="file" id="matFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div>
               <button class="primary" type="submit">رفع المادة</button>
               <div class="status" id="uploadStatus"></div><div id="uploadedMaterialLink" class="dhad-uploaded-link" aria-live="polite"></div>
@@ -1634,6 +1635,7 @@ async function showAdminPage(){
   document.getElementById('adminWelcome').textContent=
     'الحساب: '+(currentUser?.email||'')+' — الصلاحية: '+(currentProfile?.role||'');
   fillAdminSelects();
+  await loadUploadHomeSections();
   await loadAdminStats();
   loadAdminMaterials();
   scrollTop();
@@ -1645,6 +1647,16 @@ function cancelMaterialBatch(){materialBatchCancelRequested=true;}
 function updateBatchRow(i,state){materialBatchQueue[i].state=state;const e=document.querySelector('[data-batch-index="'+i+'"] [data-batch-state]');if(e)e.textContent=state;}
 function initMaterialBatchUpload(){const input=document.getElementById('batchFilesInput');if(!input)return;input.addEventListener('change',()=>{for(const file of Array.from(input.files||[])){const duplicate=materialBatchQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||(window.__adminMaterials||[]).some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);if(duplicate&&!confirm('يوجد ملف بالاسم والحجم نفسيهما: «'+file.name+'». هل تضيفه رغم احتمال التكرار؟'))continue;materialBatchQueue.push({file,title:file.name.replace(/\.[^.]+$/,''),gradeId:'',semesterId:'',categoryId:'',state:'بانتظار الرفع'});}input.value='';renderMaterialBatchQueue();});}
 async function uploadMaterialBatch(){if(!isFileManager())return showInfo('صلاحية غير كافية','رفع الملفات متاح للمالك والمشرف فقط.');if(materialBatchRunning||!materialBatchQueue.length)return;const status=document.getElementById('batchUploadStatus');materialBatchRunning=true;materialBatchCancelRequested=false;document.getElementById('batchUploadButton').disabled=true;document.getElementById('batchCancelButton').disabled=false;let ok=0,failed=0;try{for(let i=0;i<materialBatchQueue.length;i++){if(materialBatchCancelRequested)break;const x=materialBatchQueue[i];if(x.state==='تم الرفع')continue;const r=document.querySelector('[data-batch-index="'+i+'"]');const title=r?.querySelector('[data-batch-title]')?.value.trim()||x.title;const gradeId=Number(r?.querySelector('[data-batch-grade]')?.value);const semesterId=Number(r?.querySelector('[data-batch-semester]')?.value);const categoryId=Number(r?.querySelector('[data-batch-category]')?.value);if(!gradeId||!semesterId||!categoryId){updateBatchRow(i,'فشل: أكمل التصنيف');failed++;continue;}if(x.file.size>50*1024*1024){updateBatchRow(i,'فشل: أكبر من 50MB');failed++;continue;}updateBatchRow(i,'جارٍ الرفع…');const ext=(x.file.name.split('.').pop()||'bin').toLowerCase();const path='grade-'+gradeId+'/semester-'+semesterId+'/category-'+categoryId+'/'+crypto.randomUUID()+'.'+ext;try{const {data,error}=await sb.storage.from(MATERIALS_BUCKET).upload(path,x.file,{contentType:x.file.type||'application/octet-stream',upsert:false});if(error)throw error;const {data:savedMaterial,error:dbError}=await sb.from('materials').insert({title,description:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,file_path:data.path,file_name:x.file.name,file_type:x.file.type||null,file_size:x.file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();if(dbError||!savedMaterial?.id){await sb.storage.from(MATERIALS_BUCKET).remove([data.path]);throw dbError||new Error('لم يتم استرجاع معرّف المادة بعد الحفظ.');}x.materialId=savedMaterial.id;x.state='تم الرفع';updateBatchRow(i,'تم الرفع');ok++;}catch(e){x.state='فشل';updateBatchRow(i,'فشل: '+(e.message||'خطأ'));failed++;}}}finally{materialBatchRunning=false;document.getElementById('batchUploadButton').disabled=false;document.getElementById('batchCancelButton').disabled=true;showStatus(status,(materialBatchCancelRequested?'توقفت الدفعة بعد الملف الجاري. ':'')+'نجح '+ok+'، فشل '+failed+'؛ يمكن إعادة محاولة الملفات غير الناجحة.','info');renderBatchUploadedLinks();await loadAdminMaterials();}}
+async function loadUploadHomeSections(){
+  const select=document.getElementById('matHomeSections');
+  if(!select)return;
+  select.innerHTML='<option disabled>جارٍ تحميل أقسام الصفحة الرئيسية...</option>';
+  const {data,error}=await sb.from('home_sections').select('id,title').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});
+  if(error){select.innerHTML='';console.warn('تعذر تحميل أقسام الصفحة الرئيسية لقائمة رفع الملفات:',error);return;}
+  select.innerHTML=(data||[]).map(row=>'<option value="'+escapeHtml(String(row.id))+'">'+escapeHtml(row.title||'قسم دون عنوان')+'</option>').join('');
+  if(!(data||[]).length)select.innerHTML='<option disabled>لا توجد أقسام عامة مفعّلة حاليًا</option>';
+}
+
 async function uploadMaterial(event){
   event.preventDefault();
   if(!isFileManager())return showInfo('صلاحية غير كافية','هذه العملية متاحة للمالك والمشرف فقط.');
@@ -1660,6 +1672,7 @@ async function uploadMaterial(event){
   const gradeId=Number(document.getElementById('matGrade').value);
   const semesterId=Number(document.getElementById('matSemester').value);
   const categoryId=Number(document.getElementById('matCategory').value);
+  const homeSectionIds=Array.from(document.getElementById('matHomeSections')?.selectedOptions||[]).map(option=>Number(option.value)).filter(id=>Number.isInteger(id)&&id>0);
   const file=document.getElementById('matFile').files[0];
 
   if(!file)return showStatus(status,'اختر ملفًا أولًا.','error');
@@ -1722,7 +1735,17 @@ async function uploadMaterial(event){
     return;
   }
 
-  showStatus(status,'تم رفع المادة بنجاح ✅ وأُنشئ رابطها المباشر.','ok');
+  if(homeSectionIds.length){
+    const linkRows=[];
+    for(const sectionId of homeSectionIds){
+      const {data:latestLinks,error:linksReadError}=await sb.from('home_section_materials').select('sort_order').eq('section_id',sectionId).order('sort_order',{ascending:false}).limit(1);
+      if(linksReadError){showStatus(status,'تم رفع الملف وحفظه، لكن تعذرت قراءة ترتيب أحد أقسام الصفحة الرئيسية: '+linksReadError.message,'error');showUploadedMaterialLink('uploadedMaterialLink',savedMaterial.id,title);return;}
+      linkRows.push({section_id:sectionId,material_id:savedMaterial.id,sort_order:Number(latestLinks?.[0]?.sort_order||0)+1});
+    }
+    const {error:linkError}=await sb.from('home_section_materials').insert(linkRows);
+    if(linkError){showStatus(status,'تم رفع الملف وحفظه في المكتبة، لكن تعذر ربطه بأقسام الصفحة الرئيسية: '+linkError.message,'error');showUploadedMaterialLink('uploadedMaterialLink',savedMaterial.id,title);return;}
+  }
+  showStatus(status,homeSectionIds.length?'تم رفع المادة وربطها بأقسام الصفحة الرئيسية المحددة بنجاح.':'تم رفع المادة بنجاح ✅ وأُنشئ رابطها المباشر.','ok');
   showUploadedMaterialLink('uploadedMaterialLink',savedMaterial.id,title);
   document.getElementById('uploadForm').reset();
   updateTrackFields();
