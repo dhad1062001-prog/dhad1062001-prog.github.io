@@ -52,6 +52,17 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
  <section class="section"><h3>الإحصائيات اليومية</h3><div class="table-wrap" id="daily">جارٍ التحميل…</div><p class="note">الزوار الفريدون تقديريون ويُحسبون باستخدام معرّف مجهول محفوظ في المتصفح. عدد التنزيلات يعبر عن مرات بدء طلب التنزيل، ولا يثبت اكتمال حفظ الملف على جهاز الزائر.</p></section>
 
 
+
+ <section class="section" id="homePageEditor">
+  <div class="toolbar" style="margin-bottom:12px"><div><h3 style="margin:0">إدارة نصوص صفحة الاستقبال</h3><p class="note" style="margin:3px 0">تعديل العنوان الرئيسي والوصف التعريفي وظهوره للزوار.</p></div><button id="homePageReload" type="button" class="secondary">إعادة تحميل</button></div>
+  <label class="note" for="homePageTitle">العنوان الرئيسي</label><input id="homePageTitle" maxlength="180" placeholder="ضاد – منصة اللغة العربية" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px">
+  <label class="note" for="homePageSubtitle">العنوان الفرعي</label><input id="homePageSubtitle" maxlength="300" placeholder="كل ما يحتاجه معلم اللغة العربية والطالب وولي الأمر" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px">
+  <label class="note" for="homePageDescription">وصف المنصة (اكتب الفقرات، واترك سطرًا فارغًا بين كل فقرة)</label><textarea id="homePageDescription" rows="7" maxlength="20000" placeholder="اكتب وصفًا واضحًا للمنصة ومحتواها والفئات المستفيدة..." style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px;resize:vertical"></textarea>
+  <label style="display:flex;gap:8px;align-items:center;margin:5px 0 14px"><input id="homePageVisible" type="checkbox" checked> إظهار وصف المنصة في صفحة الاستقبال</label>
+  <div class="actions"><button id="homePageSave" type="button" class="gold">حفظ التعديلات</button></div>
+  <div id="homePageStatus" class="status" role="status" aria-live="polite"></div>
+ </section>
+
  <section class="section" id="adminUploadPanel">
   <h3>رفع الملفات إلى الأقسام</h3>
   <p class="note">اختر القسم الرئيسي أولًا، ثم القسم الفرعي إن وجد، وبعدها اختر ملفًا واحدًا أو مجموعة ملفات. تُحفظ علاقة الملف بالأقسام في جدول الربط، ولا تُكتب أسماء الأقسام المخصصة في حقل التصنيف القديم.</p>
@@ -120,7 +131,8 @@ function showState(){
  $('dashboard').classList.toggle('hidden',!currentUser||!authorized());
  $('userLine').textContent=currentUser?(currentProfile?.full_name||currentUser.email||'حساب الإدارة'):'غير مسجل الدخول';
  $('sectionManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER)loadSectionManager();}
+ $('homePageEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -171,6 +183,32 @@ async function loadAnalytics(){
  }finally{$('refreshBtn').disabled=false;}
 }
 
+
+
+function homePageStatus(message,type){status('homePageStatus',message,type);}
+async function loadHomePageEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const {data,error}=await client.from('site_pages').select('title,content,home_title,home_subtitle,is_visible').eq('slug','home-description').maybeSingle();
+ if(error){homePageStatus('تعذر تحميل وصف الصفحة الرئيسية: '+error.message,'error');return;}
+ $('homePageTitle').value=data?.home_title||'';
+ $('homePageSubtitle').value=data?.home_subtitle||'';
+ $('homePageDescription').value=data?.content||'';
+ $('homePageVisible').checked=data?.is_visible!==false;
+ homePageStatus(data?'تم تحميل إعدادات صفحة الاستقبال.':'لم يُحفظ وصف مخصص بعد؛ يمكنك إضافته الآن.','ok');
+}
+async function saveHomePageEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return homePageStatus('تعديل صفحة الاستقبال متاح لمالك المنصة فقط.','error');
+ const title=$('homePageTitle').value.trim(),subtitle=$('homePageSubtitle').value.trim(),raw=$('homePageDescription').value.trim();
+ const escapeText=value=>String(value).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+ const content=raw.split(/\n\s*\n/).map(part=>part.trim()).filter(Boolean).map(part=>'<p>'+escapeText(part).replace(/\n/g,'<br>')+'</p>').join('');
+ $('homePageSave').disabled=true;homePageStatus('جارٍ حفظ إعدادات صفحة الاستقبال…');
+ try{
+  const {error}=await client.from('site_pages').upsert({slug:'home-description',title:'وصف صفحة الاستقبال',content,home_title:title||null,home_subtitle:subtitle||null,is_visible:$('homePageVisible').checked,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'slug'});
+  if(error)throw error;
+  homePageStatus('تم حفظ إعدادات صفحة الاستقبال. ستظهر التعديلات بعد تحديث الموقع.','ok');
+ }catch(error){console.error(error);homePageStatus('تعذر حفظ الإعدادات: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('homePageSave').disabled=false;}
+}
 
 let uploadSectionRows=[];
 function uploadStatus(message,type){status('adminUploadStatus',message,type);}
@@ -288,6 +326,9 @@ async function saveManagedSection(){
 $('loginBtn').addEventListener('click',signIn);
 $('sectionsReload').addEventListener('click',()=>{loadSectionManager();loadUploadSectionChoices();});
 $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
+$('homePageReload').addEventListener('click',loadHomePageEditor);
+$('homePageSave').addEventListener('click',saveHomePageEditor);
+
 $('adminUploadStart').addEventListener('click',startAdminUpload);
 $('adminUploadClear').addEventListener('click',()=>{$('adminUploadFiles').value='';$('adminUploadDescription').value='';$('adminUploadResults').textContent='';uploadStatus('تم مسح اختيار الملفات.','ok');});
 
