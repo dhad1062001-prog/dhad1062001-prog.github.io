@@ -5,7 +5,7 @@
 (function(){
   try{
     const u=new URL(location.href);
-    const keys=['material','game','additional','calendar','homeSection'];
+    const keys=['material','game','additional','calendar','homeSection','teacherSupplies'];
     const route=keys.some(key=>u.searchParams.has(key))||(!!location.hash&&location.hash!=='#home');
     if(!route)return;
     window.__DHAD_DIRECT_ENTRY__=true;
@@ -396,7 +396,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
         <form id="homeSectionForm" onsubmit="saveHomeSection(event)">
           <input id="homeSectionId" type="hidden" value="">
           <div class="field"><label for="homeSectionTitle">عنوان القسم</label><input id="homeSectionTitle" maxlength="160" required placeholder="مثال: ملفات مفيدة للمعلم"></div>
-          <div class="field"><label for="homeSectionType">نوع المحتوى</label><select id="homeSectionType" required onchange="updateHomeSectionEditor()"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف قابل للمعاينة والتنزيل</option><option value="link">رابط قابل للضغط</option></select></div>
+          <div class="field"><label for="homeSectionType">نوع المحتوى</label><select id="homeSectionType" required onchange="updateHomeSectionEditor()"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف قابل للمعاينة والتنزيل</option><option value="link">رابط قابل للضغط</option><option value="materials">مجموعة مواد تعليمية</option></select></div>
           <div class="field"><label id="homeSectionContentLabel" for="homeSectionContent">النص</label><textarea id="homeSectionContent" oninput="previewHomeSection()" placeholder="اكتب المحتوى هنا..."></textarea></div>
           <div class="field" id="homeSectionFileWrap" style="display:none"><label id="homeSectionFileLabel" for="homeSectionFile">اختيار ملف</label><input id="homeSectionFile" type="file" onchange="previewHomeSection()"><small class="callout-help">يُرفع الملف إلى مساحة التخزين الحالية materials. الحد الأعلى المطبق هنا 50 ميجابايت.</small></div>
           <div id="homeSectionCurrentFile" class="callout-help" style="margin-bottom:12px"></div>
@@ -2699,7 +2699,7 @@ async function initSupabase(){
     const ok=await loadLookups();
     if(ok){
       const requestedUrl=new URL(location.href);
-      const hasDirectQuery=['material','game','additional','calendar','homeSection'].some(key=>requestedUrl.searchParams.has(key));
+      const hasDirectQuery=['material','game','additional','calendar','homeSection','teacherSupplies'].some(key=>requestedUrl.searchParams.has(key));
       const requestedHash=String(location.hash||'').replace(/^#/,'');
       const hasDeepRoute=hasDirectQuery||(!!requestedHash&&requestedHash!=='home');
       // لا نعرض الصفحة الرئيسية كوجهة مؤقتة إذا كان الزائر قد طلب رابطًا مباشرًا.
@@ -2765,4 +2765,5 @@ setTimeout(()=>{
 </script>
 <script src="features.js"></script>
 <script src="deep-links.js"></script>
+<script src="teacher-supplies.js"></script>
 </body></html>
