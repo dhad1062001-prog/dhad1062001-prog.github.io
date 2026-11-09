@@ -44,6 +44,7 @@ The migration intentionally does not delete or rewrite existing materials, secti
 ## Current implementation on `feature/admin-center-foundation`
 
 - The independent admin page now includes an owner-only section editor for top-level and child sections, optional unique slug, description, icon, sort order, active state, and manual homepage visibility.
+- The admin page now includes owner controls for homepage title, subtitle, description, visibility, site branding, logo/background images, the about/privacy/contact page text, and contact links.
 - The admin page now includes single/bulk upload controls: choose a top-level section, optionally choose one of its children, then select multiple files. Files are stored in the existing `materials` bucket and metadata in the existing `materials` table.
 - Upload associations are written to `home_section_materials`; when a child is selected, the parent association is retained and the child association is marked primary. The legacy `materials.primary_section` field is intentionally not populated with dynamic section slugs.
 - File-manager accounts can insert section-material associations through one narrowly scoped RLS policy in the migration; editing the section hierarchy remains owner-only.
