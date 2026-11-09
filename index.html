@@ -1117,6 +1117,11 @@ function updateUploadSectionFields(){
   const gradeLabel=document.getElementById('matGradeLabel');
   const semesterLabel=document.getElementById('matSemesterLabel');
   const categoryLabel=document.getElementById('matCategoryLabel');
+  const additional=document.getElementById('matAdditionalSections');
+  if(additional)Array.from(additional.options).forEach(option=>{
+    option.disabled=option.value===primary;
+    if(option.value===primary)option.selected=false;
+  });
   if(grade)grade.required=academicRequired;
   if(semester)semester.required=academicRequired;
   if(category)category.required=academicRequired;
@@ -1734,7 +1739,20 @@ async function uploadMaterial(event){
   const gradeId=gradeRaw?Number(gradeRaw):null;
   const semesterId=semesterRaw?Number(semesterRaw):null;
   const categoryId=categoryRaw?Number(categoryRaw):null;
-  const homeSectionIds=Array.from(document.getElementById('matHomeSections')?.selectedOptions||[]).map(option=>Number(option.value)).filter(id=>Number.isInteger(id)&&id>0);
+  const homeSectionSelect=document.getElementById('matHomeSections');
+  const homeSectionIds=Array.from(homeSectionSelect?.selectedOptions||[]).map(option=>Number(option.value)).filter(id=>Number.isInteger(id)&&id>0);
+  const sectionLabels={
+    school_grades:'الصفوف الدراسية',
+    curricula:'المناهج الدراسية',
+    teacher_supplies:'لوازم المعلمين',
+    interactive_games:'الألعاب التفاعلية',
+    supplementary_education:'التعليم الإضافي'
+  };
+  [primarySection,...additionalSections].forEach(section=>{
+    const match=Array.from(homeSectionSelect?.options||[]).find(option=>String(option.textContent||'').trim()===sectionLabels[section]);
+    const id=Number(match?.value||0);
+    if(id>0&&!homeSectionIds.includes(id))homeSectionIds.push(id);
+  });
   const file=document.getElementById('matFile').files[0];
 
   if(!file)return showStatus(status,'اختر ملفًا أولًا.','error');
