@@ -358,6 +358,21 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 #gradesHubPage .grade .circle{background:#34412F!important;color:#D2B574!important;border-color:rgba(195,164,95,.32)!important}
 #gradesHubPage .grade.kindergarten-grade{background:#2D3829!important;border-color:#59654D!important}
 @media(prefers-reduced-motion:reduce){#gradesHubPage .grade{transition:none!important}}
+
+
+/* مربعات الصفوف الدراسية: ترتيب موحد من رياض الأطفال حتى آخر صف */
+#gradesHubPage .grades{display:grid!important;grid-auto-flow:row!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-columns:auto!important;gap:14px!important;align-items:stretch!important}
+#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{aspect-ratio:1/1!important;min-height:0!important;height:auto!important;grid-row:auto!important;padding:15px!important;border-radius:19px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:9px!important}
+#gradesHubPage .grade .circle,#gradesHubPage .grade.kindergarten-grade .circle{width:58px!important;height:58px!important;min-width:58px!important;margin:0 auto!important;border-radius:17px!important;font-size:27px!important}
+#gradesHubPage .grade .name{margin:0!important;font-size:clamp(15px,1.35vw,19px)!important;line-height:1.45!important;text-align:center!important}
+#gradesHubPage .grade .sub{margin:0!important;text-align:center!important}
+.grade-page-tools{display:flex;justify-content:flex-start;margin:0 0 8px}
+.page-share-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 11px!important;border:1px solid rgba(195,164,95,.48)!important;border-radius:999px!important;background:#34412F!important;color:#D2B574!important;font:700 12px Cairo,Tahoma,Arial,sans-serif!important;box-shadow:0 3px 10px rgba(0,0,0,.12)!important;transition:background .18s ease,transform .18s ease}
+.page-share-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.page-share-btn:hover{background:#20291C!important;transform:translateY(-1px)}
+@media(max-width:1080px){#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{min-height:0!important;padding:10px!important}}
+@media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}#gradesHubPage .grade .circle{width:44px!important;height:44px!important;min-width:44px!important;font-size:21px!important;border-radius:14px!important}#gradesHubPage .grade .name{font-size:14px!important}}
 </style>
 
 </head>
@@ -402,7 +417,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
 
 </main>
 
-<section class="content-page" id="gradesHubPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← الصفوف الدراسية</div><div class="page-title"><h2>الصفوف الدراسية</h2><p>اختر الصف ثم المسار إن وجد، فالحقل والفصل الدراسي والقسم.</p></div><div class="grades" id="grades"></div></div></section>
+<section class="content-page" id="gradesHubPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← الصفوف الدراسية</div><div class="page-title"><h2>الصفوف الدراسية</h2><p>اختر الصف ثم المسار إن وجد، فالحقل والفصل الدراسي والقسم.</p></div><div class="grade-page-tools"><button class="page-share-btn" type="button" onclick="shareCurrentPage()" aria-label="مشاركة صفحة الصفوف الدراسية"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.2M8.7 13.3l6.6 4.2"></path></svg><span>مشاركة الصفحة</span></button></div><div class="grades" id="grades"></div></div></section>
 <section class="content-page" id="gradePage"><div class="panel"><button class="back" onclick="goBack()">↩ رجوع</button><div class="crumb" id="crumb"></div><div class="page-title"><h2 id="gradeTitle"></h2><p>اختر المسار أو الفصل للوصول إلى المحتوى.</p></div><div class="term-grid-preview" id="terms"></div></div></section>
 <section class="content-page" id="listingPage"><div class="panel"><button class="back" onclick="goBack()">↩ رجوع</button><div class="crumb" id="listCrumb"></div><div class="page-title"><h2 id="listTitle"></h2><p>المحتوى المعروض يُجلب مباشرة من قاعدة البيانات.</p></div><div class="materials" id="materials"></div></div></section>
 <section class="content-page feature-page" id="gamesPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← ألعاب تعليمية تفاعلية</div><div class="page-title"><h2>ألعاب تعليمية تفاعلية</h2><p>اختر لعبة تعليمية لفتحها داخل المنصة.</p></div><div id="gamePlayer" class="game-player" hidden><div class="panel-head"><h3 id="gamePlayerTitle">اللعبة</h3><button class="secondary" type="button" onclick="closeGamePlayer()">إغلاق اللعبة</button></div><iframe id="gameFrame" title="لعبة تعليمية" sandbox="allow-scripts" allow="fullscreen" referrerpolicy="no-referrer"></iframe></div><div id="gamesGrid" class="feature-content-grid"></div></div></section>
@@ -1125,13 +1140,22 @@ function showPageError(message){
     '<div class="empty" style="grid-column:1/-1">'+escapeHtml(message)+'</div>';
 }
 
+async function shareCurrentPage(){
+  const shareData={title:'الصفوف الدراسية | ضاد',text:'تصفح الصفوف الدراسية على منصة ضاد – منصة اللغة العربية',url:location.origin+location.pathname+'#grades'};
+  try{
+    if(navigator.share){await navigator.share(shareData);return;}
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(shareData.url);showInfo('تم نسخ الرابط','يمكنك الآن مشاركة رابط صفحة الصفوف الدراسية.');return;}
+    const field=document.createElement('textarea');field.value=shareData.url;field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();document.execCommand('copy');field.remove();showInfo('تم نسخ الرابط','يمكنك الآن مشاركة رابط صفحة الصفوف الدراسية.');
+  }catch(error){if(error&&error.name!=='AbortError')showInfo('تعذر المشاركة','انسخ رابط الصفحة من شريط العنوان وشاركه.');}
+}
+
 function renderGrades(){
   const icons=['🎨','✏️','📖','🔤','🖋️','📚','🧠','🏫','🪶','📝','📜','🎓','🏅'];
   const colors=['g1','g2','g3','g4','g5','g6','g7','g8','g9','g10','g11','g12','g13'];
   const el=document.getElementById('grades');
   const gradeRank=(name)=>{
     const n=String(name||'').replace(/[\u0640\s]/g,'');
-    if(n.includes('رياضالأطفال')||n.includes('روضة'))return 5.5;
+    if(n.includes('رياضالأطفال')||n.includes('روضة'))return 0;
     const words=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحاديعشر','الثانيعشر','التوجيهي'];
     const index=words.findIndex(w=>n.includes(w));
     return index<0?999:index+1;
