@@ -545,7 +545,7 @@ function renderSectionManager(){
  const parent=$('sectionParent'),list=$('sectionsList');
  if(!parent||!list)return;
  const current=$('sectionEditId').value;
- parent.innerHTML='<option value="">قسم رئيسي</option>'+managedSections.filter(x=>String(x.id)!==String(current)).map(x=>'<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ parent.innerHTML='<option value="">قسم رئيسي</option>'+managedSections.filter(x=>(x.parent_id===null||x.parent_id===undefined)&&String(x.id)!==String(current)).map(x=>'<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
  const ordered=[...managedSections].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
  list.innerHTML=ordered.length?ordered.map(x=>'<article style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><b>'+escapeHtml(x.icon||'📁')+' '+escapeHtml(x.title)+'</b><div class="note">'+(x.parent_id?'فرعي ضمن: '+escapeHtml(managedSections.find(p=>String(p.id)===String(x.parent_id))?.title||'قسم'):'قسم رئيسي')+' · الترتيب: '+Number(x.sort_order||0)+' · '+(x.show_on_home?'ظاهر في الاستقبال':'غير ظاهر في الاستقبال')+' · '+(x.is_active?'مفعّل':'متوقف')+'</div></div><button type="button" class="secondary" data-section-edit="'+escapeHtml(String(x.id))+'">تعديل</button></div>'+(x.section_description?'<p class="note">'+escapeHtml(x.section_description)+'</p>':'')+'</article>').join(''):'<p class="note">لا توجد أقسام حتى الآن. أضف أول قسم من النموذج.</p>';
  list.querySelectorAll('[data-section-edit]').forEach(btn=>btn.addEventListener('click',()=>editManagedSection(btn.dataset.sectionEdit)));
