@@ -49,7 +49,7 @@ The migration intentionally does not delete or rewrite existing materials, secti
 - It also includes owner-only creation and editing for grades, semesters, and categories; deletion is intentionally omitted so existing materials cannot be orphaned.
 - The admin page now includes single/bulk upload controls: choose a top-level section, optionally choose one of its children, then select multiple files. Files are stored in the existing `materials` bucket and metadata in the existing `materials` table.
 - Upload associations are written to `home_section_materials`; when a child is selected, the parent association is retained and the child association is marked primary. The legacy `materials.primary_section` field is intentionally not populated with dynamic section slugs.
-- File-manager accounts can insert section-material associations through one narrowly scoped RLS policy in the migration; editing the section hierarchy remains owner-only.
+- File-manager accounts can insert section-material associations through a consolidated RLS policy that preserves owner access and avoids overlapping insert policies; editing the section hierarchy remains owner-only.
 - Public rendering now nests child sections inside their parent and only renders top-level sections with `show_on_home = true`. A fallback query preserves compatibility before the new columns exist.
 - The admin and public inline JavaScript passed syntax compilation checks. Database integration testing is pending because the migration has not been applied.
 
