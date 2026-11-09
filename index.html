@@ -436,9 +436,9 @@ if(window.__DHAD_DIRECT_ENTRY__){
         <form id="tsUploadForm" onsubmit="uploadTeacherSupply(event)">
           <div class="field"><label for="tsUploadTitle">عنوان الملف</label><input id="tsUploadTitle" maxlength="200" required></div>
           <div class="field"><label for="tsUploadDescription">وصف الملف</label><textarea id="tsUploadDescription" rows="4" placeholder="اكتب وصفًا يوضح محتوى الملف وفائدته للمعلم..."></textarea></div>
-          <div class="field"><label for="tsUploadGrade">الصف الدراسي</label><select id="tsUploadGrade" required></select></div>
-          <div class="field"><label for="tsUploadSemester">الفصل الدراسي</label><select id="tsUploadSemester" required></select></div>
-          <div class="field"><label for="tsUploadCategory">التصنيف</label><select id="tsUploadCategory" required></select></div>
+          <div class="field"><label for="tsUploadGrade">الصف أو المرحلة (اختياري)</label><select id="tsUploadGrade"></select></div>
+          <div class="field"><label for="tsUploadSemester">الفصل الدراسي (اختياري)</label><select id="tsUploadSemester"></select></div>
+          <div class="field"><label for="tsUploadCategory">المادة أو التصنيف (اختياري)</label><select id="tsUploadCategory"></select></div>
           <div class="field"><label for="tsUploadFile">الملف</label><input id="tsUploadFile" type="file" required></div>
           <button class="primary" type="submit">رفع الملف وإضافته للقسم</button>
         </form>
@@ -2498,18 +2498,22 @@ async function uploadTeacherSupply(event){
   const status=document.getElementById('teacherSuppliesAdminStatus');
   const title=document.getElementById('tsUploadTitle').value.trim();
   const description=document.getElementById('tsUploadDescription').value.trim();
-  const gradeId=Number(document.getElementById('tsUploadGrade').value);
-  const semesterId=Number(document.getElementById('tsUploadSemester').value);
-  const categoryId=Number(document.getElementById('tsUploadCategory').value);
+  const gradeRaw=document.getElementById('tsUploadGrade').value;
+  const semesterRaw=document.getElementById('tsUploadSemester').value;
+  const categoryRaw=document.getElementById('tsUploadCategory').value;
+  const gradeId=gradeRaw?Number(gradeRaw):null;
+  const semesterId=semesterRaw?Number(semesterRaw):null;
+  const categoryId=categoryRaw?Number(categoryRaw):null;
   const file=document.getElementById('tsUploadFile').files[0];
-  if(!gradeId||!semesterId||!categoryId||!file)return showStatus(status,'أكمل اختيار الصف والفصل والتصنيف والملف.','error');
+  if(!file)return showStatus(status,'اختر الملف أولًا.','error');
   if(file.size>50*1024*1024)return showStatus(status,'حجم الملف يتجاوز الحد المسموح (50 ميجابايت).','error');
   showStatus(status,'جارٍ رفع الملف...','info');
   const ext=(file.name.split('.').pop()||'bin').toLowerCase();
-  const path='grade-'+gradeId+'/semester-'+semesterId+'/category-'+categoryId+'/'+crypto.randomUUID()+'.'+ext;
+  const folders=[gradeId?'grade-'+gradeId:null,semesterId?'semester-'+semesterId:null,categoryId?'category-'+categoryId:null].filter(Boolean);
+  const path=(folders.length?folders.join('/'):'teacher-supplies')+'/'+crypto.randomUUID()+'.'+ext;
   const {data:uploaded,error:uploadError}=await sb.storage.from(MATERIALS_BUCKET).upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
   if(uploadError)return showStatus(status,'فشل رفع الملف: '+uploadError.message,'error');
-  const {data:saved,error:dbError}=await sb.from('materials').insert({title,description:description||null,content_summary:null,learning_objectives:null,target_audience:null,page_count:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,primary_section:'teacher_supplies',additional_sections:[],file_path:uploaded.path,file_name:file.name,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();
+  const {data:saved,error:dbError}=await sb.from('materials').insert({title,description:description||null,content_summary:null,learning_objectives:null,target_audience:null,page_count:null,grade_id:gradeId||null,semester_id:semesterId||null,category_id:categoryId||null,primary_section:'teacher_supplies',additional_sections:[],file_path:uploaded.path,file_name:file.name,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();
   if(dbError||!saved?.id){await sb.storage.from(MATERIALS_BUCKET).remove([uploaded.path]);return showStatus(status,'تعذر حفظ بيانات الملف: '+(dbError?.message||'لم يتم استرجاع معرّف الملف.'),'error');}
   const sortOrder=teacherSuppliesAdminRows.length?Math.max(...teacherSuppliesAdminRows.map(x=>x.sort_order||0))+1:1;
   const {error:linkError}=await sb.from('home_section_materials').insert({section_id:TEACHER_SUPPLIES_SECTION_ID,material_id:saved.id,sort_order:sortOrder});
