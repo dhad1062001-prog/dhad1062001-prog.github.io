@@ -50,6 +50,33 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <section class="section"><h3>الصفحات الأكثر زيارة</h3><div id="topPages">جارٍ التحميل…</div></section>
  </div>
  <section class="section"><h3>الإحصائيات اليومية</h3><div class="table-wrap" id="daily">جارٍ التحميل…</div><p class="note">الزوار الفريدون تقديريون ويُحسبون باستخدام معرّف مجهول محفوظ في المتصفح. عدد التنزيلات يعبر عن مرات بدء طلب التنزيل، ولا يثبت اكتمال حفظ الملف على جهاز الزائر.</p></section>
+
+ <section class="section" id="sectionManager">
+  <div class="toolbar" style="margin-bottom:14px"><div><h3 style="margin:0">إدارة الأقسام الرئيسية والفرعية</h3><p class="note" style="margin:3px 0">إنشاء الأقسام وتنظيم مكان ظهورها يدويًا. لا تُحذف أي بيانات عند تعديل ترتيب الأقسام.</p></div><button id="sectionsReload" class="secondary" type="button">تحديث القائمة</button></div>
+  <div class="grid2">
+   <div class="panel" style="box-shadow:none">
+    <h3 id="sectionFormHeading">إضافة قسم جديد</h3>
+    <input id="sectionEditId" type="hidden">
+    <label for="sectionTitle" class="note">اسم القسم</label><input id="sectionTitle" maxlength="120" placeholder="مثال: لوازم المعلمين" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px">
+    <label for="sectionSlug" class="note">رابط مختصر (اختياري، أحرف إنجليزية وأرقام وشرطة)</label><input id="sectionSlug" maxlength="120" placeholder="teacher-supplies" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px;direction:ltr">
+    <label for="sectionDescription" class="note">وصف القسم</label><textarea id="sectionDescription" rows="3" maxlength="2000" placeholder="وصف موجز يظهر للزوار..." style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px;resize:vertical"></textarea>
+    <div class="grid2">
+     <div><label for="sectionParent" class="note">القسم الأب</label><select id="sectionParent" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"><option value="">قسم رئيسي</option></select></div>
+     <div><label for="sectionIcon" class="note">الرمز أو الأيقونة</label><input id="sectionIcon" maxlength="24" placeholder="📚" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+    </div>
+    <label for="sectionSort" class="note">ترتيب الظهور</label><input id="sectionSort" type="number" min="0" step="1" value="0" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px">
+    <div class="actions" style="margin:4px 0 14px;flex-wrap:wrap">
+     <label style="display:flex;gap:7px;align-items:center"><input id="sectionActive" type="checkbox" checked> القسم مفعّل</label>
+     <label style="display:flex;gap:7px;align-items:center"><input id="sectionHome" type="checkbox"> إظهاره في صفحة الاستقبال</label>
+    </div>
+    <div class="actions"><button id="sectionSave" type="button" class="gold">حفظ القسم</button><button id="sectionCancel" type="button" class="secondary">تفريغ النموذج</button></div>
+    <div id="sectionsStatus" class="status" role="status" aria-live="polite"></div>
+   </div>
+   <div class="panel" style="box-shadow:none"><h3>الأقسام الحالية</h3><div id="sectionsList"><p class="note">جارٍ تحميل الأقسام…</p></div></div>
+  </div>
+  <p class="note">ملاحظة: هذه الوحدة تحتاج إلى ترقية مخطط قاعدة البيانات الموجودة في فرع التطوير. إذا لم تكن الترقية قد طُبقت بعد، ستظهر رسالة توضح ذلك ولن تُجرى أي كتابة.</p>
+ </section>
+
  <section class="section"><h3>إدارة المنصة</h3><p style="color:var(--muted);line-height:1.9;margin-top:0">هذه هي الصفحة المستقلة الجديدة. أدوات إدارة الملفات والأقسام والمحتوى ما زالت تعمل في اللوحة الحالية داخل الموقع، وسيتم نقلها تدريجيًا بعد اختبار كل وحدة دون حذف النسخة القديمة.</p><div class="actions"><a class="btn" href="./platform.html">فتح أدوات الإدارة الحالية</a></div></section>
 </section>
 <div id="globalStatus" class="status" role="status" aria-live="polite"></div>
@@ -77,7 +104,7 @@ function showState(){
  $('deniedPanel').classList.toggle('hidden',!currentUser||authorized());
  $('dashboard').classList.toggle('hidden',!currentUser||!authorized());
  $('userLine').textContent=currentUser?(currentProfile?.full_name||currentUser.email||'حساب الإدارة'):'غير مسجل الدخول';
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();}
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();if(String(currentUser.email||'').toLowerCase()===OWNER)loadSectionManager();}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -127,7 +154,67 @@ async function loadAnalytics(){
   console.error(e);status('globalStatus','تعذر تحميل الإحصائيات. تحقق من صلاحية الحساب والاتصال ثم أعد المحاولة.','error');
  }finally{$('refreshBtn').disabled=false;}
 }
+
+let managedSections=[];
+function sectionStatus(message,type){status('sectionsStatus',message,type);}
+function resetSectionForm(){
+ $('sectionEditId').value='';$('sectionTitle').value='';$('sectionSlug').value='';
+ $('sectionDescription').value='';$('sectionParent').value='';$('sectionIcon').value='';
+ $('sectionSort').value=String(managedSections.length*10+10);
+ $('sectionActive').checked=true;$('sectionHome').checked=false;
+ $('sectionFormHeading').textContent='إضافة قسم جديد';$('sectionSave').textContent='حفظ القسم';
+}
+function renderSectionManager(){
+ const parent=$('sectionParent'),list=$('sectionsList');
+ if(!parent||!list)return;
+ const current=$('sectionEditId').value;
+ parent.innerHTML='<option value="">قسم رئيسي</option>'+managedSections.filter(x=>String(x.id)!==String(current)).map(x=>'<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ const ordered=[...managedSections].sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
+ list.innerHTML=ordered.length?ordered.map(x=>'<article style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><b>'+escapeHtml(x.icon||'📁')+' '+escapeHtml(x.title)+'</b><div class="note">'+(x.parent_id?'فرعي ضمن: '+escapeHtml(managedSections.find(p=>String(p.id)===String(x.parent_id))?.title||'قسم'):'قسم رئيسي')+' · الترتيب: '+Number(x.sort_order||0)+' · '+(x.show_on_home?'ظاهر في الاستقبال':'غير ظاهر في الاستقبال')+' · '+(x.is_active?'مفعّل':'متوقف')+'</div></div><button type="button" class="secondary" data-section-edit="'+escapeHtml(String(x.id))+'">تعديل</button></div>'+(x.section_description?'<p class="note">'+escapeHtml(x.section_description)+'</p>':'')+'</article>').join(''):'<p class="note">لا توجد أقسام حتى الآن. أضف أول قسم من النموذج.</p>';
+ list.querySelectorAll('[data-section-edit]').forEach(btn=>btn.addEventListener('click',()=>editManagedSection(btn.dataset.sectionEdit)));
+}
+function editManagedSection(id){
+ const x=managedSections.find(r=>String(r.id)===String(id));if(!x)return;
+ $('sectionEditId').value=x.id;$('sectionTitle').value=x.title||'';$('sectionSlug').value=x.slug||'';
+ $('sectionDescription').value=x.section_description||'';$('sectionIcon').value=x.icon||'';
+ $('sectionSort').value=String(x.sort_order||0);$('sectionActive').checked=!!x.is_active;
+ $('sectionHome').checked=!!x.show_on_home;$('sectionFormHeading').textContent='تعديل القسم';
+ $('sectionSave').textContent='حفظ التعديلات';renderSectionManager();$('sectionParent').value=x.parent_id?String(x.parent_id):'';
+}
+async function loadSectionManager(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER){sectionStatus('إدارة هيكل الأقسام متاحة لحساب مالك المنصة فقط.','error');return;}
+ $('sectionsList').innerHTML='<p class="note">جارٍ تحميل الأقسام…</p>';
+ const {data,error}=await client.from('home_sections').select('id,title,content_type,content,sort_order,is_active,display_limit,display_style,parent_id,section_description,icon,cover_image_path,cover_image_alt,show_on_home,slug').order('sort_order',{ascending:true}).order('id',{ascending:true});
+ if(error){
+  console.error('Section manager schema/access:',error);
+  $('sectionsList').innerHTML='<p class="note">تعذر تحميل الأقسام. إذا ظهرت رسالة عن عمود غير موجود، فهذا يعني أن ترقية الأقسام في فرع التطوير لم تُطبّق بعد. لم يتم تعديل أي بيانات.</p>';
+  sectionStatus('تعذر تحميل بنية الأقسام: '+(error.message||'تحقق من الترقية وسياسات الوصول.'),'error');return;
+ }
+ managedSections=data||[];renderSectionManager();resetSectionForm();sectionStatus('تم تحميل '+managedSections.length+' قسمًا.','ok');
+}
+async function saveManagedSection(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return sectionStatus('هذه العملية متاحة لمالك المنصة فقط.','error');
+ const title=$('sectionTitle').value.trim(),slug=$('sectionSlug').value.trim();
+ if(!title)return sectionStatus('اكتب اسم القسم أولًا.','error');
+ if(slug&&!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return sectionStatus('الرابط المختصر يجب أن يحتوي أحرفًا إنجليزية صغيرة وأرقامًا وشرطة فقط.','error');
+ const id=$('sectionEditId').value,parent=$('sectionParent').value||null;
+ if(parent&&String(parent)===String(id))return sectionStatus('لا يمكن جعل القسم أبًا لنفسه.','error');
+ const payload={title,slug:slug||null,parent_id:parent?Number(parent):null,section_description:$('sectionDescription').value.trim(),icon:$('sectionIcon').value.trim(),sort_order:Math.max(0,Number($('sectionSort').value)||0),is_active:$('sectionActive').checked,show_on_home:$('sectionHome').checked};
+ $('sectionSave').disabled=true;sectionStatus('جارٍ حفظ القسم…');
+ try{
+  const query=id?client.from('home_sections').update(payload).eq('id',Number(id)):client.from('home_sections').insert({...payload,content_type:'materials',content:''});
+  const {error}=await query;
+  if(error)throw error;
+  await loadSectionManager();sectionStatus(id?'تم تحديث القسم بنجاح.':'تم إنشاء القسم بنجاح.','ok');
+ }catch(error){console.error(error);sectionStatus('تعذر حفظ القسم: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('sectionSave').disabled=false;}
+}
+
 $('loginBtn').addEventListener('click',signIn);
+$('sectionsReload').addEventListener('click',loadSectionManager);
+$('sectionSave').addEventListener('click',saveManagedSection);
+$('sectionCancel').addEventListener('click',resetSectionForm);
+
 $('switchBtn').addEventListener('click',logout);
 $('logoutBtn').addEventListener('click',logout);
 $('refreshBtn').addEventListener('click',loadAnalytics);
