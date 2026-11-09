@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#20291C">
+<title>ضاد | منصة اللغة العربية</title>
+<meta name="description" content="ضاد منصة تعليمية متخصصة في دعم تعليم اللغة العربية وتعلّمها، وتوفير الموارد والوسائل التعليمية للمعلمين والطلاب وأولياء الأمور.">
+<link rel="canonical" href="https://dhad1062001-prog.github.io/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#20291C;--panel:#2D3829;--panel2:#34412F;--gold:#C3A45F;--white:#fff;--muted:#C8CEBF;--line:#59654D}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100vh;font-family:"Cairo",Tahoma,Arial,sans-serif;color:var(--white);background:radial-gradient(ellipse at 50% -15%,rgba(195,164,95,.13),transparent 36rem),linear-gradient(180deg,#20291C,#1b2318);display:flex;flex-direction:column}
+a{color:inherit}
+.page{width:min(100% - 36px,1050px);margin:auto;flex:1;display:flex;flex-direction:column;justify-content:center;padding:34px 0 22px}
+.brand{text-align:center;margin-bottom:20px}
+.brand-symbol{width:76px;height:76px;margin:0 auto 12px;border:1px solid rgba(195,164,95,.72);border-radius:23px;display:grid;place-items:center;background:linear-gradient(145deg,#34412F,#20291C);box-shadow:0 10px 28px rgba(0,0,0,.2),inset 0 0 0 5px rgba(195,164,95,.06);color:var(--gold);font-family:serif;font-size:48px;font-weight:700}
+.brand-name{font-size:clamp(35px,6vw,52px);font-weight:900;letter-spacing:1px;line-height:1.25;margin:0;color:var(--gold)}
+.brand-subtitle{margin:7px 0 0;color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.4px}
+.frame{background:linear-gradient(145deg,rgba(52,65,47,.88),rgba(45,56,41,.94));border:1px solid var(--line);border-radius:28px;padding:clamp(20px,4vw,42px);box-shadow:0 24px 65px rgba(0,0,0,.25);position:relative;overflow:hidden}
+.frame:before,.frame:after{content:"";position:absolute;width:48px;height:48px;pointer-events:none}
+.frame:before{top:13px;right:13px;border-top:1px solid var(--gold);border-right:1px solid var(--gold);border-radius:0 12px 0 0}
+.frame:after{bottom:13px;left:13px;border-bottom:1px solid var(--gold);border-left:1px solid var(--gold);border-radius:0 0 0 12px}
+.image-space{height:clamp(115px,19vw,190px);max-width:690px;margin:0 auto 27px;border:1px dashed rgba(195,164,95,.36);border-radius:19px;background:rgba(32,41,28,.22)}
+.copy{max-width:800px;margin:auto;text-align:center}
+.eyebrow{color:var(--gold);font-size:13px;font-weight:800;letter-spacing:.6px;margin:0 0 9px}
+h1{font-size:clamp(23px,4vw,34px);line-height:1.65;margin:0 0 12px;font-weight:900}
+.lead{font-size:clamp(15px,2vw,18px);line-height:2.1;color:var(--muted);margin:0 auto 14px;max-width:760px}
+.description{font-size:14px;line-height:2.15;color:#e7e9e1;margin:0 auto;max-width:790px;white-space:pre-line}
+.signature-line{width:74px;height:2px;background:var(--gold);margin:24px auto 12px;border-radius:4px}
+.motto{color:var(--gold);font-size:clamp(16px,2.4vw,20px);font-weight:800;margin:0}
+.actions{display:flex;justify-content:center;margin:27px 0 20px}
+.enter{min-width:220px;min-height:54px;padding:12px 28px;display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:14px;background:var(--gold);color:#20291C;text-decoration:none;font-weight:900;font-size:16px;box-shadow:0 9px 24px rgba(0,0,0,.2);transition:transform .2s,filter .2s}
+.enter:hover{transform:translateY(-2px);filter:brightness(1.07)}
+.enter span{font-size:20px}
+.contact-area{text-align:center;border-top:1px solid rgba(195,164,95,.22);padding-top:18px}
+.contact-title{font-size:13px;color:var(--muted);font-weight:700;margin:0 0 12px}
+.contact-links{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;min-height:42px}
+.contact-link{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid rgba(195,164,95,.45);border-radius:12px;background:rgba(32,41,28,.45);color:#f3ead5;text-decoration:none;font-size:13px;font-weight:700;transition:.18s}
+.contact-link:hover{background:rgba(195,164,95,.13);border-color:var(--gold);transform:translateY(-1px)}
+.contact-link svg{width:17px;height:17px;fill:var(--gold)}
+.no-links{font-size:12px;color:#aeb7a4}
+footer{text-align:center;padding:17px 16px 21px;color:var(--muted);font-size:13px}
+footer strong{color:var(--gold);font-weight:800}
+@media(max-width:560px){.page{width:min(100% - 24px,1050px);padding-top:22px}.frame{border-radius:22px;padding:17px 16px 23px}.image-space{height:112px;margin-bottom:22px}.brand-symbol{width:65px;height:65px;font-size:41px;border-radius:20px}.brand{margin-bottom:16px}.actions{margin:22px 0 18px}.enter{width:100%}.contact-links{gap:8px}.contact-link{flex:1 1 calc(50% - 8px);justify-content:center}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="brand" aria-label="هوية منصة ضاد">
+<div class="brand-symbol" aria-hidden="true">ض</div>
+<p class="brand-name" id="brandName">ضــاد</p>
+<p class="brand-subtitle" id="brandSubtitle">منصة اللغة العربية</p>
+</header>
+<section class="frame">
+<div class="image-space" role="img" aria-label="مساحة مخصصة لإضافة صورة الهوية لاحقًا"></div>
+<div class="copy">
+<p class="eyebrow">أصالة اللغة... بإبداع التقنية</p>
+<h1 id="welcomeHeading">مساحة تعليمية تجمع أصالة اللغة بروح التقنية الحديثة</h1>
+<p class="lead" id="welcomeLead">منصة ضاد هي منصة تعليمية متخصصة في دعم تعليم اللغة العربية وتعلّمها، تهدف إلى توفير بيئة معرفية رقمية متكاملة تخدم معلمي اللغة العربية والطلاب وأولياء الأمور.</p>
+<p class="description" id="welcomeDescription">تجمع المنصة بين المحتوى التعليمي الهادف والموارد والوسائل التعليمية المتنوعة، من ملفات وأوراق عمل وعروض تقديمية وأنشطة تفاعلية وألعاب تعليمية، لتجعل الوصول إلى المعرفة أكثر سهولة، والتعلّم أكثر متعة وفاعلية.
+
+وانطلاقًا من إيماننا بمكانة اللغة العربية وأهمية تطوير أساليب تعليمها، نسعى في ضاد إلى توظيف التقنية والابتكار في إثراء المحتوى العربي، وتقديم أدوات وموارد تساعد المعلم في أداء رسالته، والطالب في تنمية مهاراته، وولي الأمر في متابعة رحلته التعليمية.</p>
+<div class="signature-line"></div>
+<p class="motto" id="welcomeMotto">ضاد... لأن لغتنا تستحق أن نتعلمها بإبداع، ونعلّمها بإتقان.</p>
+</div>
+<div class="actions">
+<a class="enter" href="index.html"><span aria-hidden="true">←</span> عرض منصة ضاد</a>
+</div>
+<div class="contact-area">
+<p class="contact-title">يسعدنا تواصلكم ومتابعتكم</p>
+<div class="contact-links" id="contactLinks"><span class="no-links">جاري تحميل روابط التواصل...</span></div>
+</div>
+</section>
+</main>
+<footer>إعداد وإشراف<br><strong>الأستاذ: مثنى جلال الشرفات</strong></footer>
+<script>
+const SUPABASE_URL='https://rjkrfvnexrhebvulrtgp.supabase.co';
+const SUPABASE_KEY='sb_publishable_INgrDnl6WPs_vNhpvwXMSA_YiHX8x7J';
+const contactTypes=[
+{key:'facebook',title:'فيسبوك',icon:'<svg viewBox="0 0 24 24"><path d="M13.5 8.5V7.2c0-.7.5-1.2 1.2-1.2h2.1V2.2c-.8-.1-1.7-.2-2.6-.2-3.1 0-5.2 1.9-5.2 5.4v1.1H5.5v4h3.5V24h4.3V12.5h3.3l.5-4h-3.6Z"/></svg>'},
+{key:'email',title:'البريد الإلكتروني',icon:'<svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>'},
+{key:'whatsapp',title:'الواتساب',icon:'<svg viewBox="0 0 24 24"><path d="M20.5 3.5A11.9 11.9 0 0 0 12 0a11.9 11.9 0 0 0-10.2 18L0 24l6.2-1.8A12 12 0 0 0 12 24h.1A12 12 0 0 0 20.5 3.5ZM12 21.8a9.8 9.8 0 0 1-5-1.4l-.4-.2-3.7 1.1 1.1-3.6-.2-.4A9.8 9.8 0 1 1 12 21.8Z"/></svg>'},
+{key:'youtube',title:'قناة يوتيوب',icon:'<svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.4.6A3 3 0 0 0 .5 6.2C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 0 0 2.1 2.1c1.8.6 9.4.6 9.4.6s7.6 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-1.8.5-5.8.5-5.8ZM9.6 15.7V8.3l6.4 3.7-6.4 3.7Z"/></svg>'}
+];
+function safeContactUrl(value,key){
+let v=String(value||'').trim();if(!v)return '';
+if(key==='email'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))v='mailto:'+v;
+if(!/^(https?:\/\/|mailto:|tel:)/i.test(v))v='https://'+v;
+try{const u=new URL(v);return ['https:','http:','mailto:','tel:'].includes(u.protocol)?u.href:''}catch{return ''}
+}
+(async()=>{
+try{
+const client=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+if(!client)return;
+const {data}=await client.from('site_contact_links').select('key,url').order('sort_order');
+const map=Object.fromEntries((data||[]).map(x=>[x.key,safeContactUrl(x.url,x.key)]));
+const links=contactTypes.filter(x=>map[x.key]);
+const target=document.getElementById('contactLinks');
+target.innerHTML=links.length?links.map(x=>'<a class="contact-link" target="_blank" rel="noopener noreferrer" href="'+map[x.key]+'">'+x.icon+'<span>'+x.title+'</span></a>').join(''):'<span class="no-links">يمكنكم زيارة صفحة اتصل بنا للاطلاع على قنوات التواصل.</span>';
+}catch(e){document.getElementById('contactLinks').innerHTML='<a class="contact-link" href="contact.html">جميع قنوات التواصل</a>'}
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</body>
+</html>
