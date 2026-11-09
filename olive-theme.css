@@ -72,3 +72,77 @@ table td{color:#E9EDE5!important;border-color:#59654D!important}
   .hero-wrap,.page-hero{background:#20291C!important}
   .foot{padding-bottom:24px}
 }
+
+
+/* CONSOLIDATED DHAD BRAND PASS — dark olive, gold and white */
+:root{
+  color-scheme:dark;
+  --dhad-bg:#20291C;
+  --dhad-surface:#2D3829;
+  --dhad-surface-2:#34412F;
+  --dhad-gold:#C3A45F;
+  --dhad-gold-light:#E4C982;
+  --dhad-white:#FFFFFF;
+  --dhad-muted:#C8CEBF;
+  --dhad-border:#59654D;
+}
+html,body{background-color:var(--dhad-bg)!important;color:var(--dhad-white)!important}
+body{
+  background-image:radial-gradient(ellipse at 12% 8%,rgba(195,164,95,.075),transparent 34rem),
+                   radial-gradient(ellipse at 92% 82%,rgba(89,101,77,.16),transparent 30rem)!important;
+}
+h1,h2,h3,h4,h5,h6,.brand h1,.section-head h3,.page-hero h2{color:var(--dhad-white)!important}
+p,small,label,.muted,.subtitle,.description,.page-body{color:var(--dhad-muted)}
+a{ text-decoration-color:rgba(195,164,95,.45) }
+.top,header,.topbar,.site-header,.nav-wrap{
+  background:rgba(32,41,28,.97)!important;
+  border-color:var(--dhad-border)!important;
+}
+.brand-mark,.mark,.logo-mark{
+  background:linear-gradient(145deg,var(--dhad-gold),#A98A48)!important;
+  color:var(--dhad-bg)!important;
+  border:1px solid rgba(255,255,255,.22);
+}
+.hero,.hero-wrap,.page-hero,.page-title,.callout-inner{
+  background-color:var(--dhad-surface)!important;
+  border-color:var(--dhad-gold)!important;
+}
+.hero-visual{filter:saturate(.72)}
+.section,.panel,.card,.admin-card,.stat-card,.metric,.tile,.feature-card,
+.platform-card,.home-card,.term,.category-card,.material-card,.file-card,
+.contact-card,.page-body,.setup-box,.table-wrap,.login,.modal-card,
+.certificate-preview,.home-section-preview,.feature,.home-panel{
+  background:linear-gradient(145deg,var(--dhad-surface),#263323)!important;
+  color:var(--dhad-white)!important;
+  border-color:var(--dhad-border)!important;
+}
+input,select,textarea{
+  background:var(--dhad-bg)!important;
+  color:var(--dhad-white)!important;
+  border-color:var(--dhad-border)!important;
+}
+input::placeholder,textarea::placeholder{color:#AEB8A7!important}
+button,.btn,.contact-btn,.hero-chip,.section-link{
+  border-color:var(--dhad-gold)!important;
+}
+button:not(.secondary):not(.theme):not(.mobile-toggle):not(.modal-close):not(.danger):not(.grade),
+.btn:not(.secondary):not(.danger),.primary,.download,.download-app-link,
+.login-btn,.contact-btn,.hero-chip:hover,.section-link:hover{
+  background:linear-gradient(135deg,var(--dhad-gold),#A98A48)!important;
+  color:var(--dhad-bg)!important;
+}
+.secondary,.back,.theme,.mobile-toggle,.modal-close,.admin-nav-btn,.logout-btn{
+  background:var(--dhad-surface-2)!important;
+  color:var(--dhad-white)!important;
+  border-color:var(--dhad-gold)!important;
+}
+.danger{background:#713B35!important;color:#fff!important;border-color:#A86B5F!important}
+table th{background:var(--dhad-surface-2)!important;color:var(--dhad-white)!important}
+table td{color:#E9EDE5!important;border-color:var(--dhad-border)!important}
+.badge,.status,.count-badge{background:var(--dhad-surface-2)!important;color:var(--dhad-gold-light)!important;border-color:var(--dhad-border)!important}
+footer,.foot{background:#171E15!important;color:var(--dhad-white)!important;border-color:var(--dhad-border)!important}
+footer a,.foot a{color:var(--dhad-gold-light)!important}
+hr,.divider,.footer-bottom{border-color:var(--dhad-border)!important}
+::selection{background:var(--dhad-gold)!important;color:var(--dhad-bg)!important}
+:focus-visible{outline:2px solid var(--dhad-gold)!important;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
