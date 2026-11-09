@@ -102,9 +102,13 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <button type="button" class="secondary" data-admin-nav="siteBrandingEditor" data-admin-owner-nav>الهوية والصور</button>
   <button type="button" class="secondary" data-admin-nav="sectionManager" data-admin-owner-nav>الأقسام</button>
   <button type="button" class="secondary" data-admin-nav="adminUploadPanel">رفع الملفات</button>
+  <button type="button" class="secondary" data-admin-nav="adminMaterialsManager">مكتبة الملفات</button>
   <button type="button" class="secondary" data-admin-nav="academicStructureEditor" data-admin-owner-nav>الصفوف والفصول</button>
   <button type="button" class="secondary" data-admin-nav="sitePagesEditor" data-admin-owner-nav>الصفحات</button>
   <button type="button" class="secondary" data-admin-nav="contactLinksEditor" data-admin-owner-nav>التواصل</button>
+  <button type="button" class="secondary" data-admin-nav="teacherSuppliesManager" data-admin-owner-nav>لوازم المعلمين</button>
+  <button type="button" class="secondary" data-admin-nav="homeContentManager" data-admin-owner-nav>محتوى الأقسام</button>
+  <button type="button" class="secondary" data-admin-nav="featureContentManager" data-admin-owner-nav>الألعاب والتقويم والشهادات</button>
  </nav>
 
  <div class="cards">
@@ -130,6 +134,76 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
 
 
+
+
+ <section class="section" id="featureContentManager" data-admin-owner-nav>
+  <h3>إدارة الألعاب والتعليم الإضافي والتقويم والشهادات</h3>
+  <p class="note">هذه الوحدة تستخدم سجلات site_pages ومساحة materials الموجودتين بالفعل، وتحافظ على تنسيق البيانات الذي تقرؤه واجهة الموقع الحالية. لا تنفذ حذفًا لملفات التخزين عند حذف سجل من القائمة.</p>
+  <div id="featureAdminStatus" class="status" role="status" aria-live="polite"></div>
+  <section class="section">
+   <h3>بطاقات الصفحة الرئيسية</h3><p class="note">تحرير عناوين البطاقات وأوصافها وأيقوناتها وألوانها وترتيبها ووجهاتها وظهورها.</p>
+   <div id="featureCardsAdminList"></div>
+   <div class="actions"><button type="button" class="gold" id="featureCardsSave">حفظ البطاقات</button></div>
+  </section>
+  <div class="grid2">
+   <section class="section">
+    <h3>التعليم الإضافي</h3>
+    <form id="featureAdditionalForm">
+     <input id="featureAdditionalId" type="hidden">
+     <label>العنوان</label><input id="featureAdditionalTitle" maxlength="160" required>
+     <label>وصف مختصر</label><input id="featureAdditionalDescription" maxlength="240">
+     <label>المحتوى التعليمي</label><textarea id="featureAdditionalText" rows="5"></textarea>
+     <label>صور تعليمية (يمكن اختيار عدة صور)</label><input id="featureAdditionalImages" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+     <small id="featureAdditionalCurrent" class="note"></small>
+     <label>ترتيب العرض</label><input id="featureAdditionalOrder" type="number" min="0" step="1" value="1">
+     <label>حالة المحتوى</label><select id="featureAdditionalStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+     <div class="actions"><button class="gold" type="submit">حفظ المحتوى</button><button class="secondary" type="button" id="featureAdditionalReset">تفريغ</button></div>
+    </form>
+    <div id="featureAdditionalList"></div>
+   </section>
+   <section class="section">
+    <h3>التقويم الدراسي</h3>
+    <form id="featureCalendarForm">
+     <input id="featureCalendarId" type="hidden">
+     <label>عنوان الصورة</label><input id="featureCalendarTitle" maxlength="160" required>
+     <label>الوصف</label><textarea id="featureCalendarDescription" rows="3"></textarea>
+     <label>السنة أو الفصل الدراسي</label><input id="featureCalendarYear" maxlength="80" placeholder="2026 / الفصل الأول">
+     <label>صورة التقويم</label><input id="featureCalendarImage" type="file" accept="image/png,image/jpeg,image/webp">
+     <small id="featureCalendarCurrent" class="note"></small>
+     <label>ترتيب العرض</label><input id="featureCalendarOrder" type="number" min="0" step="1" value="1">
+     <label>حالة النشر</label><select id="featureCalendarStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+     <div class="actions"><button class="gold" type="submit">حفظ صورة التقويم</button><button class="secondary" type="button" id="featureCalendarReset">تفريغ</button></div>
+    </form>
+    <div id="featureCalendarList"></div>
+   </section>
+  </div>
+  <section class="section">
+   <h3>الألعاب التعليمية التفاعلية</h3>
+   <form id="featureGameForm">
+    <input id="featureGameId" type="hidden">
+    <div class="grid2"><div><label>اسم اللعبة</label><input id="featureGameTitle" maxlength="160" required></div><div><label>ترتيب العرض</label><input id="featureGameOrder" type="number" min="0" step="1" value="1"></div></div>
+    <label>الوصف</label><textarea id="featureGameDescription" rows="3"></textarea>
+    <div class="grid2"><div><label>صورة الغلاف (اختياري)</label><input id="featureGameCover" type="file" accept="image/png,image/jpeg,image/webp"></div><div><label>ملف HTML أو مجلد اللعبة ومواردها</label><input id="featureGameFiles" type="file" multiple webkitdirectory directory></div></div>
+    <label>ملف HTML الرئيسي</label><select id="featureGameMain"><option value="">اختر ملف HTML بعد تحديد المجلد</option></select>
+    <small id="featureGameCurrent" class="note"></small>
+    <label>حالة النشر</label><select id="featureGameStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+    <div class="actions"><button class="gold" type="submit">حفظ اللعبة</button><button class="secondary" type="button" id="featureGameReset">تفريغ</button></div>
+   </form>
+   <div id="featureGamesList"></div>
+  </section>
+  <section class="section">
+   <h3>قالب شهادة التقدير</h3>
+   <form id="featureCertificateForm">
+    <label>عنوان الشهادة</label><input id="featureCertTitle" maxlength="120">
+    <label>عبارة التقديم</label><textarea id="featureCertIntro" rows="2" maxlength="200"></textarea>
+    <label>نص الشهادة</label><textarea id="featureCertBody" rows="4" maxlength="600"></textarea>
+    <label>العبارة الختامية</label><input id="featureCertFooter" maxlength="200">
+    <div class="grid2"><div><label>اسم المدرسة</label><input id="featureCertSchool" maxlength="120"></div><div><label>اسم المعلم</label><input id="featureCertTeacher" maxlength="120"></div></div>
+    <div class="grid2"><div><label>اللون الأساسي</label><input id="featureCertColor" type="color" value="#D9A441"></div><label style="display:flex;align-items:center;gap:8px"><input id="featureCertBrand" type="checkbox" checked> إظهار اسم ضاد</label></div>
+    <div class="actions"><button class="gold" type="submit">حفظ قالب الشهادة</button></div>
+   </form>
+  </section>
+ </section>
 
  <section class="section" id="academicStructureEditor">
   <h3>إدارة الصفوف والفصول والتصنيفات</h3>
@@ -236,6 +310,78 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <p class="note">ملاحظة: هذه الوحدة تحتاج إلى ترقية مخطط قاعدة البيانات الموجودة في فرع التطوير. إذا لم تكن الترقية قد طُبقت بعد، ستظهر رسالة توضح ذلك ولن تُجرى أي كتابة.</p>
  </section>
 
+ <section class="section hidden" id="teacherSuppliesManager" data-admin-owner-nav>
+  <h3>إدارة لوازم المعلمين</h3>
+  <p class="note">إدارة الملفات المرتبطة بقسم لوازم المعلمين. إزالة الملف من هذا القسم تفصل الارتباط فقط ولا تحذف الأصل من مكتبة الملفات أو التخزين.</p>
+  <div class="grid2">
+   <div class="panel" style="box-shadow:none">
+    <h3>إضافة ملف موجود من المكتبة</h3>
+    <label for="tsExistingMaterialAdmin">اختر ملفًا عامًا من المكتبة</label>
+    <select id="tsExistingMaterialAdmin" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0 12px;background:#20291C;color:#fff"><option value="">جارٍ تحميل المكتبة…</option></select>
+    <button type="button" id="tsLinkExistingAdmin">ربط الملف بالقسم</button>
+   </div>
+   <form class="panel" id="tsUploadFormAdmin" style="box-shadow:none">
+    <h3>رفع ملف جديد</h3>
+    <label for="tsTitleAdmin">اسم الملف</label><input id="tsTitleAdmin" required maxlength="180" style="width:100%;padding:10px;margin:6px 0 10px;border:1px solid var(--line);border-radius:10px;background:#20291C;color:#fff">
+    <label for="tsDescriptionAdmin">وصف الملف</label><textarea id="tsDescriptionAdmin" rows="3" style="width:100%;padding:10px;margin:6px 0 10px;border:1px solid var(--line);border-radius:10px;background:#20291C;color:#fff"></textarea>
+    <div class="grid2">
+     <div><label for="tsGradeAdmin">الصف (اختياري)</label><select id="tsGradeAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+     <div><label for="tsSemesterAdmin">الفصل (اختياري)</label><select id="tsSemesterAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+     <div><label for="tsCategoryAdmin">التصنيف (اختياري)</label><select id="tsCategoryAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+    </div>
+    <label for="tsFileAdmin">الملف (حتى 50 ميجابايت)</label><input id="tsFileAdmin" type="file" required style="display:block;width:100%;margin:8px 0 14px">
+    <button type="submit">رفع وإضافة إلى القسم</button>
+   </form>
+  </div>
+  <div id="teacherSuppliesAdminStatus" class="status" role="status" aria-live="polite"></div>
+  <div class="panel" style="box-shadow:none;margin-top:14px"><h3>الملفات المرتبطة بالقسم</h3><div id="teacherSuppliesAdminList"><p class="note">سيتم تحميل الملفات بعد تسجيل الدخول.</p></div></div>
+ </section>
+
+
+ <section class="section hidden" id="adminMaterialsManager">
+  <h3>مكتبة الملفات وإدارتها</h3>
+  <p class="note">بحث ومعاينة وتعديل بيانات الملفات ومتابعة عدد مرات التنزيل. الحذف يزيل سجل الملف وارتباطاته ثم يحاول حذف الملف من التخزين.</p>
+  <div class="actions" style="margin-bottom:12px;flex-wrap:wrap"><input id="amSearch" placeholder="ابحث باسم الملف أو الوصف أو اسم الملف الأصلي…" style="flex:1;min-width:220px;padding:11px;border:1px solid var(--line);border-radius:10px"><button type="button" id="amReload" class="secondary">تحديث المكتبة</button><span id="amCount" class="note">—</span></div>
+  <div class="panel" style="box-shadow:none;margin-bottom:12px"><label><input id="amSelectAll" type="checkbox"> تحديد كل النتائج الظاهرة</label> <span id="amSelectedCount" class="note">0 محدد</span> <button type="button" id="amDeleteSelected" class="secondary">حذف المحدد</button></div>
+  <div id="amList" class="admin-files-grid"><p class="note">سجّل الدخول لتحميل الملفات.</p></div><div id="amStatus" class="status" role="status" aria-live="polite"></div>
+ </section>
+
+ <section class="section hidden" id="homeContentManager" data-admin-owner-nav>
+  <h3>محتوى أقسام الصفحة الرئيسية وربط الملفات</h3>
+  <p class="note">هذه الوحدة تكمل إدارة الأقسام: تحرير النص أو الرابط أو الصورة أو الملف، وضبط طريقة عرض الملفات المرتبطة. إنشاء الأقسام وتسميتها وترتيبها الأساسي متاح في وحدة «الأقسام».</p>
+  <div class="grid2">
+   <div class="panel" style="box-shadow:none">
+    <label for="hcSectionChoice">اختر القسم</label>
+    <select id="hcSectionChoice" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 14px;background:#20291C;color:#fff"><option value="">جارٍ تحميل الأقسام…</option></select>
+    <label for="hcContentType">نوع المحتوى</label>
+    <select id="hcContentType" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 12px;background:#20291C;color:#fff">
+     <option value="text">نص</option><option value="image">صورة</option><option value="file">ملف قابل للمعاينة والتنزيل</option><option value="link">رابط</option><option value="materials">ملفات مرتبطة فقط</option>
+    </select>
+    <label for="hcContent">النص أو الرابط أو وصف المحتوى</label>
+    <textarea id="hcContent" rows="5" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:7px 0 12px;background:#20291C;color:#fff"></textarea>
+    <div id="hcFileWrap" class="hidden">
+     <label for="hcFile">اختر صورة أو ملفًا</label>
+     <input id="hcFile" type="file" style="display:block;margin:8px 0 12px">
+     <p class="note" id="hcCurrentFile">لا يوجد ملف مرتبط.</p>
+    </div>
+    <div class="grid2">
+     <div><label for="hcDisplayLimit">عدد الملفات المعروضة</label><input id="hcDisplayLimit" type="number" min="1" max="50" value="6" style="width:100%;padding:10px;margin:7px 0 12px"></div>
+     <div><label for="hcDisplayStyle">طريقة العرض</label><select id="hcDisplayStyle" style="width:100%;padding:10px;margin:7px 0 12px"><option value="grid">بطاقات</option><option value="list">قائمة</option></select></div>
+    </div>
+    <button type="button" id="hcSaveContent">حفظ محتوى القسم</button>
+    <div id="hcStatus" class="status" role="status" aria-live="polite"></div>
+   </div>
+   <div class="panel" style="box-shadow:none">
+    <h3>الملفات المرتبطة بالقسم</h3>
+    <p class="note">اختر الملفات التي تريد عرضها داخل القسم. إزالة الاختيار تفصل الارتباط فقط ولا تحذف الملف الأصلي.</p>
+    <label for="hcMaterials">ملفات المكتبة (يمكن اختيار أكثر من ملف)</label>
+    <select id="hcMaterials" multiple size="12" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0 12px;background:#20291C;color:#fff"></select>
+    <button type="button" id="hcSaveMaterials" class="gold">حفظ ارتباطات الملفات</button>
+    <p class="note" id="hcMaterialHint">اختر قسمًا لعرض الملفات المرتبطة به.</p>
+   </div>
+  </div>
+ </section>
+
  <section class="section"><h3>إدارة المنصة</h3><p style="color:var(--muted);line-height:1.9;margin-top:0">هذه هي الصفحة المستقلة الجديدة. أدوات إدارة الملفات والأقسام والمحتوى ما زالت تعمل في اللوحة الحالية داخل الموقع، وسيتم نقلها تدريجيًا بعد اختبار كل وحدة دون حذف النسخة القديمة.</p><div class="actions"><a class="btn" href="./platform.html">فتح أدوات الإدارة الحالية</a></div></section>
 </section>
 <div id="globalStatus" class="status" role="status" aria-live="polite"></div>
@@ -270,7 +416,9 @@ function showState(){
  $('sitePagesEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();}}
+ $('teacherSuppliesManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ $('homeContentManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();loadHomeContentManager();loadAdminMaterialsManager();loadFeatureAdminData();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -643,7 +791,443 @@ async function saveManagedSection(){
  finally{$('sectionSave').disabled=false;}
 }
 
+
+
+
+let adminMaterialsRows=[],adminMaterialsFiltered=[];
+function amStatus(message,type){status('amStatus',message,type);}
+function amSelectedIds(){return Array.from($('amList').querySelectorAll('.am-select:checked')).map(x=>x.value);}
+function amUpdateSelected(){const n=amSelectedIds().length,all=Array.from($('amList').querySelectorAll('.am-select'));$('amSelectedCount').textContent=n+' محدد';$('amSelectAll').checked=all.length>0&&n===all.length;$('amSelectAll').indeterminate=n>0&&n<all.length;}
+function formatAdminBytes(value){const n=Number(value||0);if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(2)+' GB';}
+function amRender(){
+ const q=$('amSearch').value.trim().toLocaleLowerCase('ar');
+ adminMaterialsFiltered=adminMaterialsRows.filter(m=>[m.title,m.description,m.file_name,m.content_summary,m.target_audience].some(v=>String(v||'').toLocaleLowerCase('ar').includes(q)));
+ $('amCount').textContent=adminMaterialsFiltered.length+' من '+adminMaterialsRows.length+' ملف';
+ if(!adminMaterialsFiltered.length){$('amList').innerHTML='<p class="note">لا توجد ملفات مطابقة للبحث.</p>';amUpdateSelected();return;}
+ $('amList').innerHTML=adminMaterialsFiltered.map(m=>'<article class="admin-file-card"><label><input type="checkbox" class="am-select" value="'+escapeHtml(m.id)+'"> تحديد</label><b>'+escapeHtml(m.title||'ملف دون عنوان')+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+escapeHtml(m.file_type||'نوع غير محدد')+' · '+(m.file_size?formatAdminBytes(m.file_size):'الحجم غير محدد')+'<br>مرات التنزيل: '+Number(m.download_count||0).toLocaleString('ar')+'<br>'+(m.is_public?'ظاهر للزوار':'غير منشور')+'</div><div class="admin-file-actions"><button type="button" class="secondary" data-am-preview="'+escapeHtml(m.id)+'">معاينة</button><button type="button" class="secondary" data-am-edit="'+escapeHtml(m.id)+'">تعديل البيانات</button><button type="button" class="secondary" data-am-share="'+escapeHtml(m.id)+'">مشاركة</button><button type="button" class="secondary" data-am-toggle="'+escapeHtml(m.id)+'">'+(m.is_public?'إخفاء':'نشر')+'</button><button type="button" class="secondary" data-am-delete="'+escapeHtml(m.id)+'">حذف</button></div></article>').join('');
+ $('amList').querySelectorAll('.am-select').forEach(x=>x.addEventListener('change',amUpdateSelected));
+ $('amList').querySelectorAll('[data-am-preview]').forEach(b=>b.addEventListener('click',()=>amPreview(b.dataset.amPreview)));
+ $('amList').querySelectorAll('[data-am-edit]').forEach(b=>b.addEventListener('click',()=>amEdit(b.dataset.amEdit)));
+ $('amList').querySelectorAll('[data-am-share]').forEach(b=>b.addEventListener('click',async()=>{const url=window.location.origin+window.location.pathname+'?material='+encodeURIComponent(b.dataset.amShare);try{await navigator.clipboard.writeText(url);amStatus('تم نسخ رابط الملف.','ok');}catch(_){window.prompt('انسخ رابط الملف:',url);}}));
+ $('amList').querySelectorAll('[data-am-toggle]').forEach(b=>b.addEventListener('click',()=>amTogglePublic(b.dataset.amToggle)));
+ $('amList').querySelectorAll('[data-am-delete]').forEach(b=>b.addEventListener('click',()=>amDelete(b.dataset.amDelete)));
+ amUpdateSelected();
+}
+async function loadAdminMaterialsManager(){
+ if(!currentUser||!authorized())return amStatus('هذه الوحدة متاحة للحسابات الإدارية المخوّلة.','error');
+ $('amList').innerHTML='<p class="note">جارٍ تحميل المكتبة…</p>';
+ let all=[],from=0,step=500;
+ while(true){
+  const {data,error}=await client.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,download_count,content_summary,learning_objectives,target_audience,page_count,is_public').order('created_at',{ascending:false}).range(from,from+step-1);
+  if(error){$('amList').innerHTML='<p class="note">تعذر تحميل المكتبة.</p>';return amStatus('تعذر تحميل الملفات: '+error.message,'error');}
+  all=all.concat(data||[]);if(!data||data.length<step)break;from+=step;
+ }
+ adminMaterialsRows=all;$('amSearch').value='';amRender();amStatus('تم تحميل '+all.length+' ملفًا.','ok');
+}
+function amPreview(id){
+ const m=adminMaterialsRows.find(x=>String(x.id)===String(id));if(!m)return;
+ if(!m.file_path)return amStatus('لا يوجد مسار ملف للمعاينة.','error');
+ const {data}=client.storage.from('materials').getPublicUrl(m.file_path);
+ if(data&&data.publicUrl)window.open(data.publicUrl,'_blank','noopener,noreferrer');else amStatus('تعذر إنشاء رابط المعاينة.','error');
+}
+async function amEdit(id){
+ if(!currentUser||!authorized())return;
+ const m=adminMaterialsRows.find(x=>String(x.id)===String(id));if(!m)return;
+ const title=prompt('اسم الملف/المادة:',m.title||'');if(title===null)return;
+ const description=prompt('الوصف:',m.description||'');if(description===null)return;
+ const summary=prompt('نبذة المحتويات:',m.content_summary||'');if(summary===null)return;
+ const objectives=prompt('الأهداف التعليمية:',m.learning_objectives||'');if(objectives===null)return;
+ const audience=prompt('الفئة المستهدفة:',m.target_audience||'');if(audience===null)return;
+ const pagesRaw=prompt('عدد الصفحات (اتركه فارغًا إن لم يتوفر):',m.page_count||'');if(pagesRaw===null)return;
+ const pages=pagesRaw.trim()?Number(pagesRaw):null;
+ if(pages!==null&&(!Number.isInteger(pages)||pages<1))return amStatus('عدد الصفحات يجب أن يكون عددًا صحيحًا أكبر من صفر.','error');
+ const {error}=await client.from('materials').update({title:title.trim(),description:description.trim()||null,content_summary:summary.trim()||null,learning_objectives:objectives.trim()||null,target_audience:audience.trim()||null,page_count:pages,updated_at:new Date().toISOString()}).eq('id',id);
+ if(error)return amStatus('تعذر تحديث الملف: '+error.message,'error');
+ await loadAdminMaterialsManager();amStatus('تم تحديث بيانات الملف.','ok');
+}
+async function amTogglePublic(id){
+ if(!currentUser||!authorized())return;
+ const m=adminMaterialsRows.find(x=>String(x.id)===String(id));if(!m)return;
+ const {error}=await client.from('materials').update({is_public:!m.is_public,updated_at:new Date().toISOString()}).eq('id',id);
+ if(error)return amStatus('تعذر تغيير حالة النشر: '+error.message,'error');
+ await loadAdminMaterialsManager();amStatus(m.is_public?'تم إخفاء الملف عن الزوار.':'تم نشر الملف للزوار.','ok');
+}
+async function amDeleteRows(rows){
+ if(!currentUser||!authorized()||!rows.length)return;
+ let deleted=0,storageDeleted=0,issues=[];
+ for(const m of rows){
+  const {error:linkError}=await client.from('home_section_materials').delete().eq('material_id',m.id);
+  if(linkError){issues.push((m.title||m.id)+': تعذر إزالة ارتباطاته ('+linkError.message+')');continue;}
+  const {error:dbError}=await client.from('materials').delete().eq('id',m.id);
+  if(dbError){issues.push((m.title||m.id)+': تعذر حذف السجل ('+dbError.message+')');continue;}
+  deleted++;
+  if(m.file_path){const {error:storageError}=await client.storage.from('materials').remove([m.file_path]);if(storageError)issues.push((m.title||m.id)+': حُذف السجل وتعذر حذف الملف من التخزين');else storageDeleted++;}
+ }
+ await loadAdminMaterialsManager();
+ amStatus('حُذف '+deleted+' سجلًا، وحُذفت '+storageDeleted+' ملفات من التخزين.'+(issues.length?' توجد حالات لم تكتمل: '+issues.join(' | '):''),issues.length?'error':'ok');
+}
+async function amDelete(id){
+ const m=adminMaterialsRows.find(x=>String(x.id)===String(id));if(!m)return;
+ if(!confirm('حذف الملف «'+(m.title||m.file_name||'دون عنوان')+'» من المكتبة والتخزين؟'))return;
+ await amDeleteRows([m]);
+}
+async function amDeleteSelected(){
+ const ids=amSelectedIds();if(!ids.length)return amStatus('حدد ملفًا واحدًا على الأقل.','error');
+ const rows=ids.map(id=>adminMaterialsRows.find(x=>String(x.id)===String(id))).filter(Boolean);
+ if(!confirm('سيتم حذف '+rows.length+' ملفًا وسجلات ارتباطها من المكتبة والتخزين. هل تريد المتابعة؟'))return;
+ await amDeleteRows(rows);
+}
+
+let homeContentSectionsAdmin=[],homeContentMaterialsAdmin=[],homeContentCurrentFilePath='';
+function hcStatus(message,type){status('hcStatus',message,type);}
+function hcSafeUrl(value){
+ try{const u=new URL(String(value||'').trim());return ['http:','https:','mailto:','tel:'].includes(u.protocol)?u.href:'';}catch(_){return '';}
+}
+async function loadHomeContentManager(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const select=$('hcSectionChoice');select.innerHTML='<option value="">جارٍ تحميل الأقسام…</option>';
+ const [sectionsResult,materials]=await Promise.all([
+  client.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style').order('sort_order',{ascending:true}).order('id',{ascending:true}),
+  client.from('materials').select('id,title,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000)
+ ]);
+ let sections=sectionsResult;
+ if(sections.error&&/display_limit|display_style/i.test(sections.error.message||''))sections=await client.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active').order('sort_order',{ascending:true}).order('id',{ascending:true});
+ if(sections.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل الأقسام: '+sections.error.message,'error');}
+ if(materials.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل ملفات المكتبة: '+materials.error.message,'error');}
+ homeContentSectionsAdmin=sections.data||[];homeContentMaterialsAdmin=materials.data||[];
+ select.innerHTML='<option value="">اختر القسم</option>'+homeContentSectionsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ $('hcMaterials').innerHTML=homeContentMaterialsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'ملف')+'</option>').join('');
+ if(select.value)await loadHomeContentSection();
+}
+function updateHomeContentEditor(){
+ const type=$('hcContentType').value;
+ $('hcFileWrap').classList.toggle('hidden',!['image','file'].includes(type));
+ $('hcFile').accept=type==='image'?'image/*':'.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif,.mp3,.wav,.m4a,.mp4,.webm,.ogg,.zip';
+ $('hcContent').placeholder=type==='text'?'اكتب النص الذي سيظهر في القسم…':type==='link'?'https://example.com':type==='image'?'وصف الصورة (اختياري)…':type==='file'?'وصف الملف (اختياري)…':'هذا القسم يعرض الملفات المرتبطة به.';
+}
+async function loadHomeContentSection(){
+ const id=$('hcSectionChoice').value,row=homeContentSectionsAdmin.find(x=>String(x.id)===String(id));
+ if(!row){$('hcContent').value='';$('hcCurrentFile').textContent='لا يوجد ملف مرتبط.';$('hcMaterials').selectedIndex=-1;return;}
+ $('hcContentType').value=row.content_type||'materials';$('hcContent').value=row.content||'';
+ $('hcDisplayLimit').value=String(row.display_limit||6);$('hcDisplayStyle').value=row.display_style==='list'?'list':'grid';
+ homeContentCurrentFilePath=row.file_path||'';$('hcCurrentFile').textContent=homeContentCurrentFilePath?'الملف الحالي: '+homeContentCurrentFilePath:'لا يوجد ملف مرتبط.';
+ updateHomeContentEditor();
+ const {data,error}=await client.from('home_section_materials').select('material_id').eq('section_id',row.id);
+ if(error)return hcStatus('تعذر تحميل ارتباطات الملفات: '+error.message,'error');
+ const chosen=new Set((data||[]).map(x=>String(x.material_id)));
+ Array.from($('hcMaterials').options).forEach(o=>o.selected=chosen.has(String(o.value)));
+ $('hcMaterialHint').textContent='القسم المحدد: '+(row.title||'دون عنوان')+' — '+chosen.size+' ملفًا مرتبطًا.';
+ hcStatus('');
+}
+async function saveHomeContentSection(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const id=$('hcSectionChoice').value,row=homeContentSectionsAdmin.find(x=>String(x.id)===String(id));
+ if(!row)return hcStatus('اختر قسمًا أولًا.','error');
+ const type=$('hcContentType').value,content=$('hcContent').value.trim(),file=$('hcFile').files?.[0]||null;
+ const limit=Number($('hcDisplayLimit').value||6),style=$('hcDisplayStyle').value==='list'?'list':'grid';
+ if(!['text','image','file','link','materials'].includes(type))return hcStatus('نوع المحتوى غير صالح.','error');
+ if(!Number.isInteger(limit)||limit<1||limit>50)return hcStatus('عدد الملفات المعروضة يجب أن يكون بين 1 و50.','error');
+ if((type==='text'||type==='link')&&!content)return hcStatus('أدخل المحتوى المطلوب أولًا.','error');
+ if(type==='link'&&!hcSafeUrl(content))return hcStatus('الرابط غير صحيح. استخدم http أو https أو mailto أو tel.','error');
+ if(file&&file.size>50*1024*1024)return hcStatus('حجم الملف يتجاوز 50 ميجابايت.','error');
+ if(['image','file'].includes(type)&&!file&&!homeContentCurrentFilePath)return hcStatus('اختر ملفًا قبل الحفظ.','error');
+ hcStatus('جارٍ حفظ محتوى القسم…');
+ let filePath=['image','file'].includes(type)?homeContentCurrentFilePath:null,uploaded=false;
+ if(file){
+  if(type==='image'&&!file.type.startsWith('image/'))return hcStatus('الملف المختار ليس صورة.','error');
+  const safeName=file.name.replace(/[^A-Za-z0-9._-]+/g,'-').slice(-100)||'file';
+  const path='home-sections/'+crypto.randomUUID()+'-'+safeName;
+  const {data,error}=await client.storage.from('materials').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+  if(error)return hcStatus('تعذر رفع الملف: '+error.message,'error');
+  filePath=data.path||path;uploaded=true;
+ }
+ const payload={content_type:type,content,file_path:filePath||'',display_limit:limit,display_style:style,updated_at:new Date().toISOString()};
+ const {data,error}=await client.from('home_sections').update(payload).eq('id',row.id).select('id').maybeSingle();
+ if(error||!data){if(uploaded)await client.storage.from('materials').remove([filePath]);return hcStatus('تعذر حفظ محتوى القسم: '+(error?.message||'لم تؤكد قاعدة البيانات الحفظ'),'error');}
+ homeContentCurrentFilePath=filePath||'';$('hcCurrentFile').textContent=homeContentCurrentFilePath?'الملف الحالي: '+homeContentCurrentFilePath:'لا يوجد ملف مرتبط.';
+ $('hcFile').value='';hcStatus('تم حفظ محتوى القسم بنجاح.','ok');
+ await loadHomeContentManager();$('hcSectionChoice').value=String(row.id);await loadHomeContentSection();
+}
+async function saveHomeContentMaterials(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const id=$('hcSectionChoice').value;if(!id)return hcStatus('اختر قسمًا أولًا.','error');
+ const selected=Array.from($('hcMaterials').selectedOptions).map(o=>String(o.value));
+ const {data:existing,error:readError}=await client.from('home_section_materials').select('material_id').eq('section_id',id);
+ if(readError)return hcStatus('تعذر قراءة الارتباطات الحالية: '+readError.message,'error');
+ const current=(existing||[]).map(x=>String(x.material_id)),add=selected.filter(x=>!current.includes(x)),remove=current.filter(x=>!selected.includes(x));
+ if(add.length){
+  const {error}=await client.from('home_section_materials').insert(add.map(material_id=>({section_id:Number(id),material_id,sort_order:selected.indexOf(material_id)})));
+  if(error)return hcStatus('تعذر ربط الملفات: '+error.message,'error');
+ }
+ for(const material_id of selected.filter(x=>current.includes(x))){
+  const {error}=await client.from('home_section_materials').update({sort_order:selected.indexOf(material_id)}).eq('section_id',id).eq('material_id',material_id);
+  if(error)return hcStatus('تعذر تحديث ترتيب الملفات: '+error.message,'error');
+ }
+ if(remove.length){
+  const {error}=await client.from('home_section_materials').delete().eq('section_id',id).in('material_id',remove);
+  if(error)return hcStatus('تعذر إزالة بعض الارتباطات: '+error.message,'error');
+ }
+ $('hcMaterialHint').textContent='تم حفظ '+selected.length+' ارتباطًا. لم تُحذف أي ملفات أصلية.';
+ hcStatus('تم تحديث الملفات المرتبطة بالقسم دون حذف الملفات الأصلية.','ok');
+}
+
+const TEACHER_SUPPLIES_SECTION_ID=2;
+let teacherSupplyRowsAdmin=[];
+function teacherSupplyStatusAdmin(message,type){
+ const el=$('teacherSuppliesAdminStatus');if(!el)return;
+ el.textContent=message||'';el.className='status'+(message?' show':'')+(type?' '+type:'');
+}
+function teacherSupplyOwnerAdmin(){
+ return !!currentUser&&String(currentUser.email||'').trim().toLowerCase()===OWNER;
+}
+function teacherSupplyEscapeAdmin(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function teacherSupplyBytesAdmin(value){
+ const n=Number(value||0);if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB';
+}
+async function loadTeacherSupplyLookupsAdmin(){
+ const specs=[['tsGradeAdmin','grades','الصف'],['tsSemesterAdmin','semesters','الفصل'],['tsCategoryAdmin','categories','التصنيف']];
+ for(const [id,table,label] of specs){
+  const el=$(id);if(!el)continue;
+  const {data,error}=await client.from(table).select('id,name').order('sort_order',{ascending:true});
+  if(error){el.innerHTML='<option value="">تعذر تحميل '+label+'</option>';continue;}
+  el.innerHTML='<option value="">'+label+' (اختياري)</option>'+(data||[]).map(x=>'<option value="'+teacherSupplyEscapeAdmin(x.id)+'">'+teacherSupplyEscapeAdmin(x.name)+'</option>').join('');
+ }
+}
+async function loadTeacherSuppliesAdmin(){
+ if(!teacherSupplyOwnerAdmin())return;
+ const list=$('teacherSuppliesAdminList');if(!list)return;
+ list.innerHTML='<p class="note">جارٍ تحميل الملفات…</p>';
+ try{
+  const [mr,lr]=await Promise.all([
+   client.from('materials').select('id,title,description,file_name,file_type,file_size,grade_id,semester_id,category_id,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000),
+   client.from('home_section_materials').select('material_id,sort_order').eq('section_id',TEACHER_SUPPLIES_SECTION_ID).order('sort_order',{ascending:true})
+  ]);
+  if(mr.error)throw mr.error;if(lr.error)throw lr.error;
+  const byId=new Map((mr.data||[]).map(x=>[String(x.id),x]));
+  teacherSupplyRowsAdmin=(lr.data||[]).map(x=>({...byId.get(String(x.material_id)),sort_order:Number(x.sort_order||0)})).filter(x=>x.id);
+  const linked=new Set(teacherSupplyRowsAdmin.map(x=>String(x.id)));
+  $('tsExistingMaterialAdmin').innerHTML='<option value="">اختر ملفًا من المكتبة</option>'+(mr.data||[]).filter(x=>!linked.has(String(x.id))).map(x=>'<option value="'+teacherSupplyEscapeAdmin(x.id)+'">'+teacherSupplyEscapeAdmin(x.title||x.file_name||'ملف')+'</option>').join('');
+  renderTeacherSuppliesAdmin();
+ }catch(error){
+  list.innerHTML='<p class="note">تعذر تحميل الملفات المرتبطة بالقسم.</p>';
+  teacherSupplyStatusAdmin('تعذر تحميل ملفات لوازم المعلمين: '+(error.message||'خطأ غير معروف'),'error');
+ }
+}
+function renderTeacherSuppliesAdmin(){
+ const list=$('teacherSuppliesAdminList');if(!list)return;
+ if(!teacherSupplyRowsAdmin.length){list.innerHTML='<p class="note">لا توجد ملفات مرتبطة بالقسم حاليًا.</p>';return;}
+ list.innerHTML=teacherSupplyRowsAdmin.map((m,i)=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--line)"><div style="min-width:180px;flex:1"><b>'+teacherSupplyEscapeAdmin(m.title||m.file_name||'ملف')+'</b><div class="note">'+teacherSupplyEscapeAdmin(m.file_name||'')+' · '+teacherSupplyBytesAdmin(m.file_size)+'</div><div class="note">'+teacherSupplyEscapeAdmin(m.description||'لا يوجد وصف مضاف.')+'</div></div><div class="actions"><button type="button" class="secondary" data-ts-up="'+i+'" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="secondary" data-ts-down="'+i+'" '+(i===teacherSupplyRowsAdmin.length-1?'disabled':'')+'>↓</button><button type="button" class="secondary" data-ts-remove="'+teacherSupplyEscapeAdmin(m.id)+'">إزالة من القسم</button></div></div>').join('');
+ list.querySelectorAll('[data-ts-up]').forEach(b=>b.addEventListener('click',()=>moveTeacherSupplyAdmin(Number(b.dataset.tsUp),-1)));
+ list.querySelectorAll('[data-ts-down]').forEach(b=>b.addEventListener('click',()=>moveTeacherSupplyAdmin(Number(b.dataset.tsDown),1)));
+ list.querySelectorAll('[data-ts-remove]').forEach(b=>b.addEventListener('click',()=>removeTeacherSupplyAdmin(b.dataset.tsRemove)));
+}
+async function linkExistingTeacherSupplyAdmin(){
+ if(!teacherSupplyOwnerAdmin())return;
+ const id=$('tsExistingMaterialAdmin').value;if(!id)return teacherSupplyStatusAdmin('اختر ملفًا من المكتبة أولًا.','error');
+ const {data:existing,error:readError}=await client.from('home_section_materials').select('material_id').eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',id).maybeSingle();
+ if(readError)return teacherSupplyStatusAdmin('تعذر التحقق من الارتباط: '+readError.message,'error');
+ if(existing)return teacherSupplyStatusAdmin('هذا الملف مرتبط بالقسم بالفعل.','error');
+ const order=teacherSupplyRowsAdmin.length?Math.max(...teacherSupplyRowsAdmin.map(x=>x.sort_order||0))+1:1;
+ const {error}=await client.from('home_section_materials').insert({section_id:TEACHER_SUPPLIES_SECTION_ID,material_id:id,sort_order:order});
+ if(error)return teacherSupplyStatusAdmin('تعذر ربط الملف: '+error.message,'error');
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم ربط الملف بالقسم دون نسخ الأصل.','ok');
+}
+async function uploadTeacherSupplyAdmin(event){
+ event.preventDefault();if(!teacherSupplyOwnerAdmin())return;
+ const title=$('tsTitleAdmin').value.trim(),description=$('tsDescriptionAdmin').value.trim(),file=$('tsFileAdmin').files?.[0];
+ if(!title)return teacherSupplyStatusAdmin('اكتب اسم الملف.','error');
+ if(!file)return teacherSupplyStatusAdmin('اختر الملف أولًا.','error');
+ if(file.size>50*1024*1024)return teacherSupplyStatusAdmin('حجم الملف يتجاوز 50 ميجابايت.','error');
+ const gradeId=$('tsGradeAdmin').value?Number($('tsGradeAdmin').value):null,semesterId=$('tsSemesterAdmin').value?Number($('tsSemesterAdmin').value):null,categoryId=$('tsCategoryAdmin').value?Number($('tsCategoryAdmin').value):null;
+ teacherSupplyStatusAdmin('جارٍ رفع الملف…','info');
+ const ext=(file.name.split('.').pop()||'bin').toLowerCase(),folders=[gradeId?'grade-'+gradeId:null,semesterId?'semester-'+semesterId:null,categoryId?'category-'+categoryId:null].filter(Boolean);
+ const path=(folders.length?folders.join('/'):'teacher-supplies')+'/'+crypto.randomUUID()+'.'+ext;
+ const {data:uploaded,error:uploadError}=await client.storage.from('materials').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+ if(uploadError)return teacherSupplyStatusAdmin('فشل رفع الملف: '+uploadError.message,'error');
+ const {data:saved,error:dbError}=await client.from('materials').insert({title,description:description||null,content_summary:null,learning_objectives:null,target_audience:null,page_count:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,primary_section:'teacher_supplies',additional_sections:[],file_path:uploaded.path,file_name:file.name,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();
+ if(dbError||!saved?.id){await client.storage.from('materials').remove([uploaded.path]);return teacherSupplyStatusAdmin('تعذر حفظ بيانات الملف: '+(dbError?.message||'لم يتم استرجاع معرّف الملف'),'error');}
+ const sortOrder=teacherSupplyRowsAdmin.length?Math.max(...teacherSupplyRowsAdmin.map(x=>x.sort_order||0))+1:1;
+ const {error:linkError}=await client.from('home_section_materials').insert({section_id:TEACHER_SUPPLIES_SECTION_ID,material_id:saved.id,sort_order:sortOrder});
+ if(linkError){await loadTeacherSuppliesAdmin();return teacherSupplyStatusAdmin('رُفع الملف وحُفظ في المكتبة، لكن تعذر ربطه بالقسم: '+linkError.message,'error');}
+ $('tsUploadFormAdmin').reset();await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم رفع الملف وإضافته إلى قسم لوازم المعلمين.','ok');
+}
+async function moveTeacherSupplyAdmin(index,delta){
+ if(!teacherSupplyOwnerAdmin())return;const next=index+delta;if(next<0||next>=teacherSupplyRowsAdmin.length)return;
+ const rows=teacherSupplyRowsAdmin.slice();[rows[index],rows[next]]=[rows[next],rows[index]];
+ for(let i=0;i<rows.length;i++){const {error}=await client.from('home_section_materials').update({sort_order:i+1}).eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',rows[i].id);if(error)return teacherSupplyStatusAdmin('تعذر حفظ الترتيب: '+error.message,'error');}
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم تحديث ترتيب الملفات.','ok');
+}
+async function removeTeacherSupplyAdmin(id){
+ if(!teacherSupplyOwnerAdmin())return;
+ const m=teacherSupplyRowsAdmin.find(x=>String(x.id)===String(id));if(!m||!confirm('إزالة «'+(m.title||m.file_name||'الملف')+'» من قسم لوازم المعلمين؟ لن يُحذف الملف الأصلي.'))return;
+ const {error}=await client.from('home_section_materials').delete().eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',id);
+ if(error)return teacherSupplyStatusAdmin('تعذر إزالة الارتباط: '+error.message,'error');
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تمت إزالة الارتباط فقط، وبقي الملف الأصلي محفوظًا.','ok');
+}
+
+
+/* إدارة الميزات الإضافية: توافق مباشر مع مخطط features.js القديم */
+const FEATURE_SLUGS={homeCards:'dhad-home-cards-v1',additional:'dhad-additional-items-v1',calendar:'dhad-calendar-items-v1',games:'dhad-games-v1',certificate:'dhad-certificate-v1'};
+const FEATURE_CARD_DEFAULTS=[
+ {id:'grades',title:'الصفوف الدراسية',description:'جميع الصفوف والمناهج في مكان واحد',icon:'🎓',color:'#3986D9',size:'normal',order:1,visible:true,target:'grades',url:'',imagePath:''},
+ {id:'games',title:'استديو الألعاب التفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#E85B68',size:'normal',order:2,visible:true,target:'games',url:'',imagePath:''},
+ {id:'additional',title:'التعليم الإضافي',description:'دروس وموارد إضافية لتعزيز مهاراتك',icon:'💡',color:'#35B6B0',size:'normal',order:3,visible:true,target:'additional',url:'',imagePath:''},
+ {id:'calendar',title:'التقويم الدراسي',description:'تابع مواعيدك الدراسية بكل سهولة',icon:'🗓️',color:'#F0A23B',size:'normal',order:4,visible:true,target:'calendar',url:'',imagePath:''},
+ {id:'certificate',title:'شهادات التقدير',description:'احصل على شهادتك بكل إنجاز',icon:'🏅',color:'#8764D8',size:'normal',order:5,visible:true,target:'certificate',url:'',imagePath:''}
+];
+const FEATURE_CERT_DEFAULT={title:'شهادة تقدير',intro:'تُمنح هذه الشهادة بكل فخر واعتزاز إلى',body:'تقديرًا لجهوده المميزة وإبداعه واجتهاده في تعلّم اللغة العربية. مع تمنياتنا له بدوام التوفيق والنجاح.',footer:'مع خالص التقدير',school:'',teacher:'',color:'#D9A441',showBrand:true};
+let featureData={homeCards:FEATURE_CARD_DEFAULTS.map(x=>({...x})),additional:[],calendar:[],games:[],certificate:{...FEATURE_CERT_DEFAULT}},featureGameFiles=[],featureGameMainPath='';
+function featureStatus(message,type){status('featureAdminStatus',message,type);}
+function featureIsOwner(){return !!currentUser&&String(currentUser.email||'').trim().toLowerCase()===OWNER;}
+function featureSafeColor(v,f){return /^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;}
+function featureItemStatus(x){return ['draft','review','approved','published','archived'].includes(x?.status)?x.status:(x?.active===false?'archived':'published');}
+function featurePublicUrl(v){try{const u=new URL(String(v||''));return ['http:','https:'].includes(u.protocol)?u.href:'';}catch(e){return '';}}
+function featureEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function featureSave(key,value,title){
+ if(!featureIsOwner())return false;
+ const {error}=await client.from('site_pages').upsert({slug:FEATURE_SLUGS[key],title,content:JSON.stringify(value),updated_at:new Date().toISOString()},{onConflict:'slug'});
+ if(error){featureStatus('تعذر الحفظ: '+error.message,'error');return false;}return true;
+}
+async function featureUpload(file,folder,relative){
+ if(!file||file.size>50*1024*1024){featureStatus('حجم الملف يتجاوز 50 ميجابايت.','error');return '';}
+ const parts=String(relative||file.name).replace(/\\/g,'/').split('/').filter(x=>x&&x!=='.'&&x!=='..').map(x=>x.replace(/[\u0000-\u001f?#%]/g,'_').trim()).filter(Boolean);
+ if(!parts.length)return '';
+ const path='dhad-content/'+folder+'/'+crypto.randomUUID()+'/'+parts.join('/');
+ let type=file.type||'application/octet-stream';const ext=(file.name.split('.').pop()||'').toLowerCase();if(ext==='html'||ext==='htm')type='text/html';else if(ext==='css')type='text/css';else if(ext==='js')type='text/javascript';
+ const {data,error}=await client.storage.from('materials').upload(path,file,{contentType:type,upsert:false});
+ if(error){featureStatus('تعذر رفع الملف: '+error.message,'error');return '';}return data?.path||path;
+}
+async function loadFeatureAdminData(){
+ if(!featureIsOwner())return;
+ featureStatus('جارٍ تحميل بيانات الأقسام الإضافية…','info');
+ const slugs=Object.values(FEATURE_SLUGS);
+ const {data,error}=await client.from('site_pages').select('slug,content').in('slug',slugs);
+ if(error){featureStatus('تعذر تحميل بيانات الأقسام: '+error.message,'error');return;}
+ featureData={homeCards:FEATURE_CARD_DEFAULTS.map(x=>({...x})),additional:[],calendar:[],games:[],certificate:{...FEATURE_CERT_DEFAULT}};
+ for(const row of data||[]){let v;try{v=JSON.parse(row.content||'null')}catch(e){continue;}
+  if(row.slug===FEATURE_SLUGS.homeCards&&Array.isArray(v))featureData.homeCards=FEATURE_CARD_DEFAULTS.map(base=>({...base,...(v.find(x=>x?.id===base.id)||{}),visible:(v.find(x=>x?.id===base.id)||{}).visible!==false}));
+  if(row.slug===FEATURE_SLUGS.additional&&Array.isArray(v))featureData.additional=v;
+  if(row.slug===FEATURE_SLUGS.calendar&&Array.isArray(v))featureData.calendar=v;
+  if(row.slug===FEATURE_SLUGS.games&&Array.isArray(v))featureData.games=v;
+  if(row.slug===FEATURE_SLUGS.certificate&&v&&typeof v==='object')featureData.certificate={...FEATURE_CERT_DEFAULT,...v};
+ }
+ renderFeatureAdmin();featureStatus('تم تحميل البيانات.','ok');
+}
+function featureRenderList(id,rows,type){
+ const el=$(id);if(!el)return;
+ if(!rows.length){el.innerHTML='<p class="note">لا توجد عناصر محفوظة.</p>';return;}
+ el.innerHTML=rows.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)).map(x=>'<div class="actions" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0"><span><b>'+featureEscape(x.title||'عنصر دون عنوان')+'</b><small class="note"> · '+featureEscape(featureItemStatus(x))+' · ترتيب '+Number(x.order||0)+'</small></span><span class="actions"><button type="button" class="secondary" data-feature-edit="'+type+'" data-feature-id="'+featureEscape(x.id)+'">تعديل</button><button type="button" class="secondary" data-feature-toggle="'+type+'" data-feature-id="'+featureEscape(x.id)+'">'+(featureItemStatus(x)==='published'?'أرشفة':'نشر')+'</button><button type="button" class="secondary" data-feature-delete="'+type+'" data-feature-id="'+featureEscape(x.id)+'">حذف</button></span></div>').join('');
+}
+function renderFeatureAdmin(){
+ const cards=$('featureCardsAdminList');if(cards)cards.innerHTML=featureData.homeCards.slice().sort((a,b)=>a.order-b.order).map(c=>'<div data-feature-card="'+featureEscape(c.id)+'" style="border-bottom:1px solid var(--line);padding:12px 0"><b>'+featureEscape(c.title)+'</b><div class="grid2"><div><label>العنوان</label><input data-cf="title" value="'+featureEscape(c.title)+'"></div><div><label>الوصف</label><input data-cf="description" value="'+featureEscape(c.description)+'"></div><div><label>الرمز</label><input data-cf="icon" value="'+featureEscape(c.icon)+'"></div><div><label>اللون</label><input data-cf="color" type="color" value="'+featureSafeColor(c.color,'#C3A45F')+'"></div><div><label>الحجم</label><select data-cf="size"><option value="compact" '+(c.size==='compact'?'selected':'')+'>صغير</option><option value="normal" '+(c.size==='normal'?'selected':'')+'>متوسط</option><option value="large" '+(c.size==='large'?'selected':'')+'>كبير</option></select></div><div><label>الوجهة</label><select data-cf="target">'+[['grades','الصفوف'],['games','الألعاب'],['additional','التعليم الإضافي'],['calendar','التقويم'],['certificate','الشهادات']].map(([v,l])=>'<option value="'+v+'" '+((c.target||c.id)===v?'selected':'')+'>'+l+'</option>').join('')+'</select></div><div><label>رابط خارجي</label><input data-cf="url" value="'+featureEscape(c.url||'')+'" placeholder="https://"></div><div><label>الترتيب</label><input data-cf="order" type="number" min="0" value="'+Number(c.order||0)+'"></div></div><label><input data-cf="visible" type="checkbox" '+(c.visible?'checked':'')+'> إظهار البطاقة</label></div>').join('');
+ featureRenderList('featureAdditionalList',featureData.additional,'additional');featureRenderList('featureCalendarList',featureData.calendar,'calendar');featureRenderList('featureGamesList',featureData.games,'games');
+ const t=featureData.certificate;$('featureCertTitle').value=t.title||'';$('featureCertIntro').value=t.intro||'';$('featureCertBody').value=t.body||'';$('featureCertFooter').value=t.footer||'';$('featureCertSchool').value=t.school||'';$('featureCertTeacher').value=t.teacher||'';$('featureCertColor').value=featureSafeColor(t.color,'#D9A441');$('featureCertBrand').checked=t.showBrand!==false;
+}
+async function saveFeatureCards(){
+ const rows=[];
+ for(const el of document.querySelectorAll('[data-feature-card]')){
+  const old=featureData.homeCards.find(x=>x.id===el.dataset.featureCard)||{},get=k=>el.querySelector('[data-cf="'+k+'"]');
+  const order=Number(get('order').value),title=get('title').value.trim(),url=get('url').value.trim();
+  if(!title||!Number.isInteger(order)||order<0||url&&!featurePublicUrl(url))return featureStatus('تحقق من عنوان البطاقة وترتيبها والرابط الخارجي.','error');
+  rows.push({...old,title,description:get('description').value.trim(),icon:get('icon').value.trim(),color:featureSafeColor(get('color').value,old.color),size:get('size').value,target:get('target').value,url,order,visible:get('visible').checked});
+ }
+ if(await featureSave('homeCards',rows,'بطاقات الصفحة الرئيسية')){featureData.homeCards=rows;featureStatus('تم حفظ بطاقات الصفحة الرئيسية.','ok');}
+}
+function resetFeatureForm(type){
+ const prefix=type==='additional'?'featureAdditional':type==='calendar'?'featureCalendar':'featureGame';
+ $(prefix+'Form').reset();$(prefix+'Id').value='';$(prefix+(type==='additional'?'Order':type==='calendar'?'Order':'Order')).value=String(featureData[type].length+1);
+ if(type==='additional'){$('featureAdditionalStatus').value='draft';$('featureAdditionalCurrent').textContent='';}
+ if(type==='calendar'){$('featureCalendarStatus').value='draft';$('featureCalendarCurrent').textContent='';}
+ if(type==='games'){featureGameFiles=[];featureGameMainPath='';$('featureGameStatus').value='draft';$('featureGameCurrent').textContent='';refreshFeatureGameOptions();}
+}
+function editFeatureItem(type,id){
+ const x=featureData[type].find(v=>String(v.id)===String(id));if(!x)return;
+ if(type==='additional'){$('featureAdditionalId').value=x.id;$('featureAdditionalTitle').value=x.title||'';$('featureAdditionalDescription').value=x.description||'';$('featureAdditionalText').value=x.text||'';$('featureAdditionalOrder').value=x.order||0;$('featureAdditionalStatus').value=featureItemStatus(x);$('featureAdditionalCurrent').textContent=(x.images||[]).length?'الصور السابقة محفوظة؛ الصور الجديدة تضاف إليها.':'';$('featureAdditionalForm').scrollIntoView({behavior:'smooth'});}
+ if(type==='calendar'){$('featureCalendarId').value=x.id;$('featureCalendarTitle').value=x.title||'';$('featureCalendarDescription').value=x.description||'';$('featureCalendarYear').value=x.year||'';$('featureCalendarOrder').value=x.order||0;$('featureCalendarStatus').value=featureItemStatus(x);$('featureCalendarCurrent').textContent=x.imagePath?'الصورة الحالية محفوظة.':'';$('featureCalendarForm').scrollIntoView({behavior:'smooth'});}
+ if(type==='games'){$('featureGameId').value=x.id;$('featureGameTitle').value=x.title||'';$('featureGameDescription').value=x.description||'';$('featureGameOrder').value=x.order||0;$('featureGameStatus').value=featureItemStatus(x);featureGameFiles=x.files||[];featureGameMainPath=x.mainPath||'';$('featureGameCurrent').textContent=featureGameFiles.length+' ملفًا محفوظًا.';refreshFeatureGameOptions();$('featureGameForm').scrollIntoView({behavior:'smooth'});}
+}
+async function saveFeatureAdditional(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureAdditionalId').value||crypto.randomUUID(),old=featureData.additional.find(x=>x.id===id),order=Number($('featureAdditionalOrder').value||0);
+ if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const images=[...(old?.images||[])];
+ for(const file of Array.from($('featureAdditionalImages').files||[])){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)return featureStatus('الصور يجب أن تكون PNG أو JPG أو WebP وبحد 5MB للصورة.','error');const path=await featureUpload(file,'additional');if(!path)return;images.push({path,name:file.name});}
+ const item={id,title:$('featureAdditionalTitle').value.trim(),description:$('featureAdditionalDescription').value.trim(),text:$('featureAdditionalText').value.trim(),images,order,status:$('featureAdditionalStatus').value,active:$('featureAdditionalStatus').value==='published'};
+ const rows=old?featureData.additional.map(x=>x.id===id?item:x):[...featureData.additional,item];
+ if(await featureSave('additional',rows,'محتوى التعليم الإضافي')){featureData.additional=rows;resetFeatureForm('additional');renderFeatureAdmin();featureStatus('تم حفظ المحتوى التعليمي.','ok');}
+}
+async function saveFeatureCalendar(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureCalendarId').value||crypto.randomUUID(),old=featureData.calendar.find(x=>x.id===id),file=$('featureCalendarImage').files?.[0];let imagePath=old?.imagePath||'';
+ if(file){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)return featureStatus('اختر صورة PNG أو JPG أو WebP لا تتجاوز 8MB.','error');imagePath=await featureUpload(file,'calendar');if(!imagePath)return;}
+ if(!imagePath)return featureStatus('اختر صورة للتقويم.','error');
+ const order=Number($('featureCalendarOrder').value||0);if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const st=$('featureCalendarStatus').value,item={id,title:$('featureCalendarTitle').value.trim(),description:$('featureCalendarDescription').value.trim(),year:$('featureCalendarYear').value.trim(),imagePath,order,status:st,active:st==='published'};
+ const rows=old?featureData.calendar.map(x=>x.id===id?item:x):[...featureData.calendar,item];
+ if(await featureSave('calendar',rows,'صور التقويم الدراسي')){featureData.calendar=rows;resetFeatureForm('calendar');renderFeatureAdmin();featureStatus('تم حفظ صورة التقويم.','ok');}
+}
+function refreshFeatureGameOptions(){
+ const select=$('featureGameMain');if(!select)return;
+ const fresh=Array.from($('featureGameFiles').files||[]).filter(f=>/\.html?$/i.test(f.name));
+ select.innerHTML='<option value="">اختر ملف HTML الرئيسي</option>'+fresh.map(f=>'<option value="new:'+featureEscape(f.webkitRelativePath||f.name)+'">'+featureEscape(f.webkitRelativePath||f.name)+'</option>').join('')+featureGameFiles.filter(f=>/\.html?$/i.test(f.relativePath||f.path||'')).map(f=>'<option value="old:'+featureEscape(f.path)+'">محفوظ: '+featureEscape(f.relativePath||f.path.split('/').pop())+'</option>').join('');
+ if(featureGameMainPath&&!fresh.length)select.value='old:'+featureGameMainPath;
+}
+async function saveFeatureGame(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureGameId').value||crypto.randomUUID(),old=featureData.games.find(x=>x.id===id),files=[...(old?.files||[])],selected=Array.from($('featureGameFiles').files||[]),uploaded=[];
+ if(selected.length){const batch=crypto.randomUUID();for(const file of selected){if(file.size>50*1024*1024)return featureStatus('أحد ملفات اللعبة يتجاوز 50MB.','error');const relative=String(file.webkitRelativePath||file.name).replace(/\\/g,'/'),path=await featureUpload(file,'games/'+batch,relative);if(!path)return;uploaded.push({path,relativePath:relative,name:file.name,type:file.type||''});}}
+ const allFiles=[...files,...uploaded],choice=$('featureGameMain').value;let mainPath=old?.mainPath||'';
+ if(choice.startsWith('new:'))mainPath=uploaded.find(f=>f.relativePath===choice.slice(4))?.path||mainPath;
+ else if(choice.startsWith('old:'))mainPath=choice.slice(4);
+ if(!mainPath)return featureStatus('اختر ملف HTML رئيسيًا للعبة.','error');
+ if(!allFiles.some(f=>f.path===mainPath))allFiles.push({path:mainPath,relativePath:mainPath.split('/').pop(),name:mainPath.split('/').pop(),type:'text/html'});
+ let coverPath=old?.coverPath||'';const cover=$('featureGameCover').files?.[0];if(cover){if(!['image/png','image/jpeg','image/webp'].includes(cover.type)||cover.size>5*1024*1024)return featureStatus('غلاف اللعبة يجب ألا يتجاوز 5MB وبصيغة صورة مدعومة.','error');coverPath=await featureUpload(cover,'game-covers');if(!coverPath)return;}
+ const order=Number($('featureGameOrder').value||0);if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const st=$('featureGameStatus').value,game={id,title:$('featureGameTitle').value.trim(),description:$('featureGameDescription').value.trim(),coverPath,files:allFiles,mainPath,order,status:st,active:st==='published'};
+ const rows=old?featureData.games.map(x=>x.id===id?game:x):[...featureData.games,game];
+ if(await featureSave('games',rows,'الألعاب التعليمية')){featureData.games=rows;resetFeatureForm('games');renderFeatureAdmin();featureStatus('تم حفظ اللعبة وملفاتها.','ok');}
+}
+async function mutateFeatureAdmin(type,id,action){
+ const rows=[...featureData[type]],item=rows.find(x=>String(x.id)===String(id));if(!item)return;
+ if(action==='edit')return editFeatureItem(type,id);
+ if(action==='delete'&&!confirm('حذف هذا العنصر من قائمة الموقع؟ ستبقى ملفاته الأصلية في التخزين.'))return;
+ const next=action==='delete'?rows.filter(x=>String(x.id)!==String(id)):rows.map(x=>String(x.id)===String(id)?{...x,status:featureItemStatus(x)==='published'?'archived':'published',active:featureItemStatus(x)!=='published'}:x);
+ if(await featureSave(type,next,type==='games'?'الألعاب التعليمية':type==='calendar'?'صور التقويم الدراسي':'محتوى التعليم الإضافي')){featureData[type]=next;renderFeatureAdmin();featureStatus('تم تحديث العنصر.','ok');}
+}
+async function saveFeatureCertificate(e){
+ e.preventDefault();const t={title:$('featureCertTitle').value.trim()||'شهادة تقدير',intro:$('featureCertIntro').value.trim(),body:$('featureCertBody').value.trim(),footer:$('featureCertFooter').value.trim(),school:$('featureCertSchool').value.trim(),teacher:$('featureCertTeacher').value.trim(),color:featureSafeColor($('featureCertColor').value,'#D9A441'),showBrand:$('featureCertBrand').checked};
+ if(await featureSave('certificate',t,'قالب شهادة التقدير')){featureData.certificate=t;featureStatus('تم حفظ قالب شهادة التقدير.','ok');}
+}
+function wireFeatureAdmin(){
+ $('featureCardsSave').addEventListener('click',saveFeatureCards);
+ $('featureAdditionalForm').addEventListener('submit',saveFeatureAdditional);
+ $('featureCalendarForm').addEventListener('submit',saveFeatureCalendar);
+ $('featureGameForm').addEventListener('submit',saveFeatureGame);
+ $('featureCertificateForm').addEventListener('submit',saveFeatureCertificate);
+ $('featureAdditionalReset').addEventListener('click',()=>resetFeatureForm('additional'));
+ $('featureCalendarReset').addEventListener('click',()=>resetFeatureForm('calendar'));
+ $('featureGameReset').addEventListener('click',()=>resetFeatureForm('games'));
+ $('featureGameFiles').addEventListener('change',refreshFeatureGameOptions);
+ document.body.addEventListener('click',e=>{const b=e.target.closest('[data-feature-edit],[data-feature-toggle],[data-feature-delete]');if(!b)return;const type=b.dataset.featureEdit||b.dataset.featureToggle||b.dataset.featureDelete,id=b.dataset.featureId,action=b.dataset.featureEdit?'edit':b.dataset.featureToggle?'toggle':'delete';mutateFeatureAdmin(type,id,action);});
+}
+
+wireFeatureAdmin();
 $('loginBtn').addEventListener('click',signIn);
+ $('tsLinkExistingAdmin').addEventListener('click',linkExistingTeacherSupplyAdmin);
+ $('tsUploadFormAdmin').addEventListener('submit',uploadTeacherSupplyAdmin);
+ $('hcSectionChoice').addEventListener('change',loadHomeContentSection);
+ $('hcContentType').addEventListener('change',updateHomeContentEditor);
+ $('hcSaveContent').addEventListener('click',saveHomeContentSection);
+ $('hcSaveMaterials').addEventListener('click',saveHomeContentMaterials);
+ $('amSearch').addEventListener('input',amRender);
+ $('amReload').addEventListener('click',loadAdminMaterialsManager);
+ $('amSelectAll').addEventListener('change',()=>{$('amList').querySelectorAll('.am-select').forEach(x=>x.checked=$('amSelectAll').checked);amUpdateSelected();});
+ $('amDeleteSelected').addEventListener('click',amDeleteSelected);
+
+
+
 document.querySelectorAll('[data-admin-nav]').forEach(btn=>btn.addEventListener('click',()=>{
  const target=$(btn.dataset.adminNav);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
 }));
