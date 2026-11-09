@@ -447,44 +447,7 @@
   };
 
 
-  /* إضافة أزرار مشاركة الصفحات */
-
-  function addPageShareButtons(){
-
-    const allowed=[
-      'gradesHubPage',
-      'gradePage',
-      'listingPage',
-      'gamesPage',
-      'additionalPage',
-      'calendarPage',
-      'certificatePage'
-    ];
-
-    allowed.forEach(id=>{
-
-      const page=document.getElementById(id);
-
-      const heading=page?.querySelector('.page-title');
-
-      if(!heading||heading.querySelector('[data-dhad-page-share]'))return;
-
-      const button=document.createElement('button');
-
-      button.type='button';
-      button.className='secondary ui-shape';
-      button.setAttribute('data-dhad-page-share','true');
-      button.textContent='🔗 نسخ رابط الصفحة';
-
-      button.addEventListener('click',()=>shareCurrentDhadPage());
-
-      heading.appendChild(button);
-
-    });
-
-  }
-
-  addPageShareButtons();
+  /* أُزيل زر «نسخ رابط الصفحة»؛ يبقى زر «مشاركة الصفحة» الأصلي في صفحة الصفوف. */
 
 
   /* نسخ النصوص */
