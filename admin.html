@@ -190,7 +190,7 @@ async function loadSectionManager(){
   $('sectionsList').innerHTML='<p class="note">تعذر تحميل الأقسام. إذا ظهرت رسالة عن عمود غير موجود، فهذا يعني أن ترقية الأقسام في فرع التطوير لم تُطبّق بعد. لم يتم تعديل أي بيانات.</p>';
   sectionStatus('تعذر تحميل بنية الأقسام: '+(error.message||'تحقق من الترقية وسياسات الوصول.'),'error');return;
  }
- managedSections=data||[];renderSectionManager();resetSectionForm();sectionStatus('تم تحميل '+managedSections.length+' قسمًا.','ok');
+ managedSections=data||[];resetSectionForm();renderSectionManager();sectionStatus('تم تحميل '+managedSections.length+' قسمًا.','ok');
 }
 async function saveManagedSection(){
  if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return sectionStatus('هذه العملية متاحة لمالك المنصة فقط.','error');
