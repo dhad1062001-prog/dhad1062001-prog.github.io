@@ -360,19 +360,19 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 @media(prefers-reduced-motion:reduce){#gradesHubPage .grade{transition:none!important}}
 
 
-/* مربعات الصفوف الدراسية: ترتيب موحد من رياض الأطفال حتى آخر صف */
-#gradesHubPage .grades{display:grid!important;grid-auto-flow:row!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-columns:auto!important;gap:14px!important;align-items:stretch!important}
-#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{aspect-ratio:1/1!important;min-height:0!important;height:auto!important;grid-row:auto!important;padding:15px!important;border-radius:19px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:9px!important}
-#gradesHubPage .grade .circle,#gradesHubPage .grade.kindergarten-grade .circle{width:58px!important;height:58px!important;min-width:58px!important;margin:0 auto!important;border-radius:17px!important;font-size:27px!important}
-#gradesHubPage .grade .name{margin:0!important;font-size:clamp(15px,1.35vw,19px)!important;line-height:1.45!important;text-align:center!important}
+/* مربعات الصفوف الدراسية: ترتيب موحد ومقاس أصغر قليلًا */
+#gradesHubPage .grades{display:grid!important;grid-auto-flow:row!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-columns:auto!important;gap:12px!important;align-items:stretch!important}
+#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{aspect-ratio:1/1!important;min-height:0!important;height:auto!important;grid-row:auto!important;padding:12px!important;border-radius:17px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:7px!important}
+#gradesHubPage .grade .circle,#gradesHubPage .grade.kindergarten-grade .circle{width:52px!important;height:52px!important;min-width:52px!important;margin:0 auto!important;border-radius:15px!important;font-size:24px!important}
+#gradesHubPage .grade .name{margin:0!important;font-size:clamp(14px,1.2vw,17px)!important;line-height:1.4!important;text-align:center!important}
 #gradesHubPage .grade .sub{margin:0!important;text-align:center!important}
 .grade-page-tools{display:flex;justify-content:flex-start;margin:0 0 8px}
 .page-share-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 11px!important;border:1px solid rgba(195,164,95,.48)!important;border-radius:999px!important;background:#34412F!important;color:#D2B574!important;font:700 12px Cairo,Tahoma,Arial,sans-serif!important;box-shadow:0 3px 10px rgba(0,0,0,.12)!important;transition:background .18s ease,transform .18s ease}
 .page-share-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .page-share-btn:hover{background:#20291C!important;transform:translateY(-1px)}
-@media(max-width:1080px){#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-@media(max-width:760px){#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{min-height:0!important;padding:10px!important}}
-@media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}#gradesHubPage .grade .circle{width:44px!important;height:44px!important;min-width:44px!important;font-size:21px!important;border-radius:14px!important}#gradesHubPage .grade .name{font-size:14px!important}}
+@media(max-width:1080px){#gradesHubPage .grades{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:760px){#gradesHubPage .grades{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}#gradesHubPage .grade,#gradesHubPage .grade.kindergarten-grade{min-height:0!important;padding:9px!important}}
+@media(max-width:480px){#gradesHubPage .grades{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}#gradesHubPage .grade .circle{width:42px!important;height:42px!important;min-width:42px!important;font-size:20px!important;border-radius:13px!important}#gradesHubPage .grade .name{font-size:13px!important}}
 </style>
 
 </head>
