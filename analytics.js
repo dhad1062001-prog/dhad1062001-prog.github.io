@@ -82,11 +82,6 @@ window.loadDhadAdminAnalytics=async function(){
 function start(){
  if(started||!api())return;started=true;hookNavigation();hookActions();hookAdminPage();pageView();
  const id=new URL(location.href).searchParams.get('material');if(id)record('material_view',id);
- const admin=document.getElementById('adminPage');
- if(admin&&typeof isFileManager==='function'&&isFileManager()){
-  const observer=new MutationObserver(()=>{if(admin.style.display!=='none')window.loadDhadAdminAnalytics();});
-  observer.observe(admin,{attributes:true,attributeFilter:['style']});
- }
 }
 start();addEventListener('supabase-loaded',start);addEventListener('load',start);
 })();
