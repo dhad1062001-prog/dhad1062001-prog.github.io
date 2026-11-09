@@ -500,6 +500,11 @@ async function startAdminUpload(){
  const childRow=childId?uploadSectionRows.find(x=>String(x.id)===String(childId)):null;
  if(!mainRow||(childId&&(!childRow||String(childRow.parent_id)!==String(mainId))))return uploadStatus('اختيار القسم الفرعي غير متوافق مع القسم الرئيسي. حدّث قائمة الأقسام وحاول مجددًا.','error');
  const description=$('adminUploadDescription').value.trim(),button=$('adminUploadStart');
+ const sectionIds=[Number(mainId),...(childId?[Number(childId)]:[])];
+ const {data:existingLinks,error:existingLinksError}=await client.from('home_section_materials').select('section_id,sort_order').in('section_id',sectionIds).order('sort_order',{ascending:false});
+ if(existingLinksError)return uploadStatus('تعذر قراءة ترتيب الملفات الحالية في الأقسام: '+existingLinksError.message,'error');
+ const nextOrder={};
+ sectionIds.forEach(id=>{const values=(existingLinks||[]).filter(x=>Number(x.section_id)===id).map(x=>Number(x.sort_order||0));nextOrder[id]=(values.length?Math.max(...values):0)+1;});
  button.disabled=true;$('adminUploadResults').textContent='';
  let succeeded=0,failed=0,linked=0;const messages=[];
  try{
@@ -513,8 +518,8 @@ async function startAdminUpload(){
     if(storageError)throw storageError;
     const {data:material,error:materialError}=await client.from('materials').insert({title:safeTitle,description:description||null,file_path:stored?.path||path,file_name:originalName,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id}).select('id').single();
     if(materialError||!material?.id){await client.storage.from('materials').remove([stored?.path||path]);throw materialError||new Error('تعذر إنشاء سجل الملف.');}
-    const linkRows=[{section_id:Number(mainId),material_id:material.id,sort_order:i+1,is_primary:childId?false:true}];
-    if(childId)linkRows.push({section_id:Number(childId),material_id:material.id,sort_order:i+1,is_primary:true});
+    const linkRows=[{section_id:Number(mainId),material_id:material.id,sort_order:nextOrder[Number(mainId)]++,is_primary:childId?false:true}];
+    if(childId)linkRows.push({section_id:Number(childId),material_id:material.id,sort_order:nextOrder[Number(childId)]++,is_primary:true});
     const {error:linkError}=await client.from('home_section_materials').insert(linkRows);
     succeeded++;
     if(linkError){messages.push(originalName+': حُفظ الملف لكن تعذر ربطه بالقسم ('+linkError.message+').');}
