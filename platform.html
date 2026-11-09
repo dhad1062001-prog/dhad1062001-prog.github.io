@@ -2440,25 +2440,23 @@ function renderPublicHomeSections(rows,directSectionId=null){
     const content=String(row.content||'');
     let body='';
     if(row.content_type==='text'){
-      if(!content.trim())return '';
-      body='<div class="home-section-text">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>';
+      if(content.trim())body='<div class="home-section-text">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>';
     }else if(row.content_type==='link'){
       const url=getSafeHomeSectionUrl(content);
-      if(!url)return '';
-      body='<a class="home-section-link" href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط ↗</a>';
+      if(url)body='<a class="home-section-link" href="'+escapeHtml(url)+'" target="_blank" rel="noopener noreferrer">فتح الرابط ↗</a>';
     }else if(row.content_type==='image'){
       const url=homeSectionAssetUrl(row.file_path);
-      if(!url)return '';
-      body='<img class="home-section-image" src="'+escapeHtml(url)+'" alt="'+title+'" loading="lazy">'+(content.trim()?'<div class="home-section-caption">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>':'')+'<div class="home-section-file-actions"><button class="download" type="button" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الصورة</button></div>';
+      if(url)body='<img class="home-section-image" src="'+escapeHtml(url)+'" alt="'+title+'" loading="lazy">'+(content.trim()?'<div class="home-section-caption">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>':'')+'<div class="home-section-file-actions"><button class="download" type="button" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الصورة</button></div>';
     }else if(row.content_type==='file'){
       const url=homeSectionAssetUrl(row.file_path);
-      if(!url)return '';
-      const ext=homeSectionExtension(row.file_path);
-      const previewable=['pdf','png','jpg','jpeg','gif','webp','svg','avif','mp4','webm','ogg','mp3','wav','m4a'].includes(ext);
-      body=(content.trim()?'<div class="home-section-text">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>':'')+
-        '<div class="home-section-file-actions">'+
-        (previewable?'<button type="button" class="preview" data-home-section-preview="'+escapeHtml(String(row.id))+'">👁 معاينة الملف</button>':'<button type="button" class="preview" data-home-section-open="'+escapeHtml(String(row.id))+'">فتح الملف</button>')+
-        '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
+      if(url){
+        const ext=homeSectionExtension(row.file_path);
+        const previewable=['pdf','png','jpg','jpeg','gif','webp','svg','avif','mp4','webm','ogg','mp3','wav','m4a'].includes(ext);
+        body=(content.trim()?'<div class="home-section-text">'+escapeHtml(content).replace(/\r?\n/g,'<br>')+'</div>':'')+
+          '<div class="home-section-file-actions">'+
+          (previewable?'<button type="button" class="preview" data-home-section-preview="'+escapeHtml(String(row.id))+'">👁 معاينة الملف</button>':'<button type="button" class="preview" data-home-section-open="'+escapeHtml(String(row.id))+'">فتح الملف</button>')+
+          '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
+      }
     }
     const linked=(homeSectionMaterialMap[String(row.id)]||[]).slice(0,Math.max(1,Math.min(50,Number(row.display_limit||6))));
     const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'<small class="dhad-download-count" data-material-count="'+escapeHtml(String(m.id))+'">⬇ مرات بدء التنزيل: <span data-count-value>'+Number(m.download_count||0).toLocaleString('ar')+'</span></small></div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
