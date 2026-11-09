@@ -990,105 +990,37 @@
       status.textContent='تم العثور على المادة التعليمية.';
 
 
-      /* وصف المادة */
+      /* إطار واحد مختصر لتفاصيل الملف */
 
-      const description=data.description||'';
+      const description=String(data.description||'').trim();
+      const fileName=String(data.file_name||'').trim();
 
-      const descriptionHTML=description?
+      const descriptionHTML=
         '<div class="dhad-direct-info-block">'+
-          '<h3>وصف المادة التعليمية</h3>'+
-          '<p class="dhad-direct-description">'+
-          safeText(description)+
-          '</p>'+
-        '</div>':
-        '';
+          '<h3>تفاصيل الملف</h3>'+
+          (description?
+            '<p class="dhad-direct-description">'+
+              safeText(description)+
+            '</p>':
+            '<p>لا يتوفر وصف إضافي لهذا الملف.</p>')+
+          (fileName?
+            '<p><b>اسم الملف:</b> '+safeText(fileName)+'</p>':
+            '')+
+        '</div>';
 
 
-      /* ملخص المحتوى */
+      /* عرض إطار التفاصيل نفسه في صفحتي التفاصيل والتنزيل */
 
-      const summaryHTML=data.content_summary?
-        '<div class="dhad-direct-info-block">'+
-          '<h3>محتوى المادة</h3>'+
-          '<p>'+safeText(data.content_summary)+'</p>'+
-        '</div>':
-        '';
-
-
-      /* الأهداف التعليمية */
-
-      const objectivesHTML=data.learning_objectives?
-        '<div class="dhad-direct-info-block">'+
-          '<h3>الأهداف التعليمية</h3>'+
-          '<p>'+safeText(data.learning_objectives)+'</p>'+
-        '</div>':
-        '';
-
-
-      /* الفئة المستهدفة */
-
-      const audienceHTML=data.target_audience?
-        '<div class="dhad-direct-info-block">'+
-          '<h3>الفئة المستهدفة</h3>'+
-          '<p>'+safeText(data.target_audience)+'</p>'+
-        '</div>':
-        '';
-
-
-      /* المعلومات الإضافية */
-
-      const extraInfo=
-        (data.page_count?
-          '<p><b>عدد الصفحات:</b> '+
-          safeText(data.page_count)+'</p>':'')+
-        (data.file_name?
-          '<p><b>اسم الملف:</b> '+
-          safeText(data.file_name)+'</p>':'')+
-        (data.file_size?
-          '<p><b>حجم الملف:</b> '+
-          safeText(formatFileSize(data.file_size))+'</p>':'')+
-        '<p><b>مرات بدء التنزيل:</b> <span class="dhad-download-count" data-material-count="'+safeText(String(data.id))+'"><span data-count-value>'+Number(data.download_count||0).toLocaleString('ar')+'</span></span></p>';
-
-
-      const extraHTML=extraInfo?
-        '<div class="dhad-direct-info-block">'+
-          '<h3>معلومات الملف</h3>'+
-          extraInfo+
-        '</div>':
-        '';
-
-
-      /* عرض تفاصيل المادة */
-
-      body.innerHTML=
-        descriptionHTML+
-        summaryHTML+
-        objectivesHTML+
-        audienceHTML+
-        '<div class="dhad-direct-meta">'+
-          meta.map(x=>'<span>'+safeText(x)+'</span>').join('')+
-          '<span>'+
-            safeText((data.file_type||'ملف').split('/').pop().toUpperCase())+
-          '</span>'+
-        '</div>'+
-        extraHTML;
-
-
-      /* تجهيز محتوى صفحة التنزيل */
+      body.innerHTML=descriptionHTML;
 
       document.getElementById('dhadDownloadMaterialDescription').innerHTML=
         descriptionHTML;
 
-      document.getElementById('dhadDownloadMaterialMeta').innerHTML=
-        meta.map(x=>'<span>'+safeText(x)+'</span>').join('')+
-        '<span>'+
-          safeText((data.file_type||'ملف').split('/').pop().toUpperCase())+
-        '</span>';
+      document.getElementById('dhadDownloadMaterialMeta').innerHTML='';
+      document.getElementById('dhadDownloadMaterialExtra').innerHTML='';
 
-      document.getElementById('dhadDownloadMaterialExtra').innerHTML=
-        summaryHTML+
-        objectivesHTML+
-        audienceHTML+
-        extraHTML;
+      const statusBox=document.getElementById('dhadDirectMaterialStatus');
+      if(statusBox)statusBox.style.display='none';
 
 
       /* زر التنزيل */
