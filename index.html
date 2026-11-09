@@ -2234,13 +2234,13 @@ function homeSectionDownloadUrl(row,url){
 }
 
 function homeSectionTypeLabel(type){
-  return ({text:'نص',image:'صورة',file:'ملف',link:'رابط'})[type]||'محتوى';
+  return ({text:'نص',image:'صورة',file:'ملف',link:'رابط',materials:'ملفات'})[type]||'محتوى';
 }
 
 function renderPublicHomeSections(rows){
   const container=document.getElementById('homeSectionsContainer');
   if(!container)return;
-  const sections=(rows||[]).filter(row=>row&&row.is_active&&row.title&&['text','image','file','link'].includes(row.content_type));
+  const sections=(rows||[]).filter(row=>row&&row.is_active&&row.title&&['text','image','file','link','materials'].includes(row.content_type));
   const markup=sections.map(row=>{
     const title=escapeHtml(row.title||'');
     const content=String(row.content||'');
