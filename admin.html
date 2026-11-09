@@ -55,6 +55,24 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
 
 
+
+ <section class="section" id="academicStructureEditor">
+  <h3>إدارة الصفوف والفصول والتصنيفات</h3>
+  <p class="note">إضافة الصفوف الدراسية والفصول والتصنيفات وتعديل أسمائها وترتيبها. لا نوفر الحذف من هذه الوحدة حتى لا تتأثر الملفات المرتبطة بها.</p>
+  <div class="grid2">
+   <div><label class="note" for="academicType">نوع البيانات</label><select id="academicType" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"><option value="grades">الصفوف الدراسية</option><option value="semesters">الفصول الدراسية</option><option value="categories">التصنيفات</option></select></div>
+   <div><label class="note" for="academicName">الاسم</label><input id="academicName" maxlength="140" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+  </div>
+  <div class="grid2">
+   <div id="academicSlugWrap"><label class="note" for="academicSlug">الرابط المختصر (إنجليزي)</label><input id="academicSlug" maxlength="120" placeholder="grade-10" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px;direction:ltr"></div>
+   <div><label class="note" for="academicSort">ترتيب العرض</label><input id="academicSort" type="number" min="0" step="1" value="0" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"></div>
+  </div>
+  <input id="academicEditId" type="hidden">
+  <div class="actions"><button id="academicSave" type="button" class="gold">إضافة سجل</button><button id="academicCancel" type="button" class="secondary">تفريغ النموذج</button><button id="academicReload" type="button" class="secondary">تحديث القائمة</button></div>
+  <div id="academicStatus" class="status" role="status" aria-live="polite"></div>
+  <div id="academicList" style="margin-top:14px">جارٍ تحميل البيانات…</div>
+ </section>
+
  <section class="section" id="sitePagesEditor">
   <h3>إدارة الصفحات التعريفية</h3>
   <div class="grid2">
@@ -175,7 +193,8 @@ function showState(){
  $('siteBrandingEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('sitePagesEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();}}
+ $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -229,6 +248,50 @@ async function loadAnalytics(){
 
 
 
+
+
+let academicRows=[];
+const academicConfig={grades:{table:'grades',hasSlug:true,label:'الصف الدراسي'},semesters:{table:'semesters',hasSlug:false,label:'الفصل الدراسي'},categories:{table:'categories',hasSlug:true,label:'التصنيف'}};
+function academicStatus(message,type){status('academicStatus',message,type);}
+function resetAcademicForm(){
+ $('academicEditId').value='';$('academicName').value='';$('academicSlug').value='';
+ $('academicSort').value=String(academicRows.length*10+10);
+ $('academicSave').textContent='إضافة سجل';
+}
+async function loadAcademicRows(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const type=$('academicType').value,config=academicConfig[type];
+ $('academicSlugWrap').classList.toggle('hidden',!config.hasSlug);
+ $('academicList').textContent='جارٍ تحميل البيانات…';
+ const fields=config.hasSlug?'id,name,slug,sort_order':'id,name,sort_order';
+ const {data,error}=await client.from(config.table).select(fields).order('sort_order',{ascending:true}).order('id',{ascending:true});
+ if(error){academicStatus('تعذر تحميل '+config.label+': '+error.message,'error');return;}
+ academicRows=data||[];resetAcademicForm();
+ $('academicList').innerHTML=academicRows.length?'<div class="table-wrap"><table><thead><tr><th>الاسم</th>'+(config.hasSlug?'<th>الرابط المختصر</th>':'')+'<th>الترتيب</th><th>إجراء</th></tr></thead><tbody>'+academicRows.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td>'+(config.hasSlug?'<td>'+escapeHtml(x.slug)+'</td>':'')+'<td>'+Number(x.sort_order||0)+'</td><td><button type="button" class="secondary" data-academic-edit="'+escapeHtml(String(x.id))+'">تعديل</button></td></tr>').join('')+'</tbody></table></div>':'<p class="note">لا توجد سجلات بعد.</p>';
+ $('academicList').querySelectorAll('[data-academic-edit]').forEach(btn=>btn.addEventListener('click',()=>editAcademicRow(btn.dataset.academicEdit)));
+ academicStatus('تم تحميل '+academicRows.length+' سجلًا.','ok');
+}
+function editAcademicRow(id){
+ const row=academicRows.find(x=>String(x.id)===String(id));if(!row)return;
+ $('academicEditId').value=row.id;$('academicName').value=row.name||'';
+ $('academicSlug').value=row.slug||'';$('academicSort').value=String(row.sort_order||0);
+ $('academicSave').textContent='حفظ التعديلات';
+}
+async function saveAcademicRow(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return academicStatus('هذه العملية متاحة لمالك المنصة فقط.','error');
+ const type=$('academicType').value,config=academicConfig[type],name=$('academicName').value.trim(),slug=$('academicSlug').value.trim(),id=$('academicEditId').value;
+ if(!name)return academicStatus('أدخل الاسم أولًا.','error');
+ if(config.hasSlug&&!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return academicStatus('أدخل رابطًا مختصرًا إنجليزيًا صحيحًا مثل grade-10.','error');
+ const payload={name,sort_order:Math.max(0,Number($('academicSort').value)||0)};
+ if(config.hasSlug)payload.slug=slug;
+ $('academicSave').disabled=true;academicStatus('جارٍ حفظ البيانات…');
+ try{
+  const query=id?client.from(config.table).update(payload).eq('id',Number(id)):client.from(config.table).insert(payload);
+  const {error}=await query;if(error)throw error;
+  await loadAcademicRows();academicStatus('تم حفظ '+config.label+' بنجاح.','ok');
+ }catch(error){console.error(error);academicStatus('تعذر حفظ البيانات: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('academicSave').disabled=false;}
+}
 
 function sitePageStatus(message,type){status('sitePageStatus',message,type);}
 async function loadSitePageEditor(){
@@ -491,6 +554,11 @@ $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
 $('homePageReload').addEventListener('click',loadHomePageEditor);
 $('brandReloadAdmin').addEventListener('click',loadAdminBranding);
 $('sitePageChoice').addEventListener('change',loadSitePageEditor);
+$('academicType').addEventListener('change',loadAcademicRows);
+$('academicReload').addEventListener('click',loadAcademicRows);
+$('academicSave').addEventListener('click',saveAcademicRow);
+$('academicCancel').addEventListener('click',resetAcademicForm);
+
 $('sitePageReload').addEventListener('click',loadSitePageEditor);
 $('sitePageSave').addEventListener('click',saveSitePageEditor);
 $('contactLinksReload').addEventListener('click',loadContactLinksEditor);
