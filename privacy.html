@@ -58,5 +58,5 @@ const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 (async()=>{try{const {data}=await supabaseClient.from('site_pages').select('title,content').eq('slug','privacy').maybeSingle();if(data){document.getElementById('pageTitle').textContent=data.title||'سياسة الخصوصية';document.getElementById('pageBody').textContent=data.content||'';}}catch(e){}})();
 try{if(localStorage.getItem('dhadTheme')==='dark')document.body.classList.add('dark')}catch(e){}
 </script>
-<script src="floating-back.js?v=20261109b"></script>
+<script src="floating-back.js?v=20261109c"></script>
 </body></html>
