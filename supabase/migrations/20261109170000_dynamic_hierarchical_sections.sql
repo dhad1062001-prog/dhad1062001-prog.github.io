@@ -18,9 +18,20 @@ create unique index if not exists home_sections_slug_unique
 create index if not exists home_sections_parent_sort_idx
   on public.home_sections (parent_id, sort_order, id);
 
-alter table public.home_sections
-  add constraint home_sections_not_own_parent
-  check (parent_id is null or parent_id <> id);
+do $
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'home_sections_not_own_parent'
+      and conrelid = 'public.home_sections'::regclass
+  ) then
+    alter table public.home_sections
+      add constraint home_sections_not_own_parent
+      check (parent_id is null or parent_id <> id);
+  end if;
+end;
+$;
 
 alter table public.home_section_materials
   add column if not exists is_primary boolean not null default false;
@@ -79,6 +90,9 @@ for each row execute function public.prevent_home_section_cycle();
 -- Replace the owner-only insert policy with the existing helper that includes
 -- the owner and authorized file managers. This avoids overlapping INSERT policies.
 drop policy if exists "Owner can insert section material links"
+  on public.home_section_materials;
+
+drop policy if exists "File managers can insert section material links"
   on public.home_section_materials;
 
 create policy "File managers can insert section material links"
