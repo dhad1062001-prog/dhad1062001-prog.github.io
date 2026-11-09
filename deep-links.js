@@ -185,6 +185,57 @@
     .dhad-uploaded-link button{
       white-space:nowrap;
     }
+
+    /* الهوية الزيتية والذهبية لصفحات تفاصيل الملفات والتنزيل */
+    #dhadMaterialDirectPage{
+      --panel:#2D3829;--soft:#34412F;--line:#59654D;
+      --text:#FFFFFF;--muted:#C8CEBF;--accent:#C3A45F;
+      color:#FFFFFF;
+    }
+    #dhadMaterialDirectPage .panel{color:#FFFFFF}
+    #dhadMaterialDirectPage .page-title{
+      background:linear-gradient(145deg,#34412F,#2D3829)!important;
+      border:1px solid #59654D!important;
+    }
+    #dhadMaterialDirectPage .page-title h2{color:#E4C982!important}
+    #dhadMaterialDirectPage .page-title p,
+    #dhadMaterialDirectPage .crumb{color:#C8CEBF!important}
+    #dhadMaterialDirectPage .dhad-direct-card{
+      background:linear-gradient(145deg,#34412F,#2D3829)!important;
+      color:#FFFFFF!important;border:1px solid #59654D!important;
+      box-shadow:0 12px 30px rgba(0,0,0,.22)!important;
+    }
+    #dhadMaterialDirectPage .dhad-direct-card h3{color:#E4C982!important}
+    #dhadMaterialDirectPage .dhad-direct-card p,
+    #dhadMaterialDirectPage .dhad-direct-description{color:#FFFFFF!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block{
+      background:#20291C!important;border:1px solid #59654D!important;
+      color:#FFFFFF!important;
+    }
+    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#E4C982!important}
+    #dhadMaterialDirectPage .dhad-direct-meta span{
+      background:#20291C!important;border:1px solid #59654D!important;
+      color:#E4C982!important;
+    }
+    #dhadMaterialDirectPage .dhad-direct-main-button,
+    #dhadMaterialDirectPage #dhadDirectDownloadButton{
+      background:linear-gradient(135deg,#E4C982,#C3A45F)!important;
+      color:#20291C!important;border:1px solid #E4C982!important;
+    }
+    #dhadMaterialDirectPage #dhadDirectPreviewButton{
+      background:#59654D!important;color:#FFFFFF!important;border:1px solid #748064!important;
+    }
+    #dhadMaterialDirectPage #dhadDirectShareButton,
+    #dhadMaterialDirectPage .back{
+      background:#34412F!important;color:#FFFFFF!important;border:1px solid #C3A45F!important;
+    }
+    #dhadMaterialDirectPage .empty{
+      background:#20291C!important;color:#C8CEBF!important;border-color:#59654D!important;
+    }
+    #dhadMaterialDirectPage .dhad-direct-card b{color:#E4C982!important}
+    @media(max-width:760px){
+      #dhadMaterialDirectPage .dhad-direct-download{grid-row:auto}
+    }
   `;
 
   document.head.appendChild(style);
