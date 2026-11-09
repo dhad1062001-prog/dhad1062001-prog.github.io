@@ -2465,7 +2465,7 @@ function renderPublicHomeSections(rows){
     const childMarkup=(childrenByParent.get(String(row.id))||[]).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)).map(renderSection).join('');
     const sectionDescription=row.section_description?'<p class="home-section-caption">'+escapeHtml(row.section_description)+'</p>':'';
     const sectionIcon=row.icon?escapeHtml(row.icon)+' ':'';
-    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
+    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   };
   const sections=allSections.filter(row=>(row.parent_id===null||row.parent_id===undefined)&&row.show_on_home!==false).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
   const markup=sections.map(renderSection).join('');
