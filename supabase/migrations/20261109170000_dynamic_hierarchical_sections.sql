@@ -75,6 +75,26 @@ create trigger home_sections_prevent_cycle
 before insert or update of parent_id on public.home_sections
 for each row execute function public.prevent_home_section_cycle();
 
+
+-- Existing file managers may associate uploaded materials with sections.
+-- Section structure CRUD remains owner-only under the existing home_sections policies.
+do $
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'home_section_materials'
+      and policyname = 'File managers can insert section material links'
+  ) then
+    create policy "File managers can insert section material links"
+      on public.home_section_materials
+      for insert
+      to authenticated
+      with check (public.dhad_is_file_manager());
+  end if;
+end
+$;
+
 comment on column public.home_sections.parent_id is
   'Optional parent section. NULL means top-level section.';
 comment on column public.home_sections.show_on_home is
