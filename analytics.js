@@ -14,6 +14,7 @@ function device(){const w=innerWidth||0;return w&&w<600?'mobile':w&&w<1024?'tabl
 function path(){const u=new URL(location.href);const q=u.searchParams.has('material')?'?material':u.searchParams.has('game')?'?game':'';return u.pathname+q+u.hash;}
 async function record(type,materialId){
  const client=api();if(!client?.functions)return null;
+ if(typeof isFileManager==='function'&&isFileManager())return null;
  try{
   const [v,s]=await Promise.all([visitor(),session()]);if(!v)return null;
   const body={event_id:randomId(),event_type:type,visitor_hash:v,session_hash:s,material_id:materialId?String(materialId):null,page_path:path(),referrer_host:(()=>{try{return document.referrer?new URL(document.referrer).hostname:'';}catch(e){return '';}})(),device_type:device()};
