@@ -18,20 +18,12 @@ create unique index if not exists home_sections_slug_unique
 create index if not exists home_sections_parent_sort_idx
   on public.home_sections (parent_id, sort_order, id);
 
-do $
-begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'home_sections_not_own_parent'
-      and conrelid = 'public.home_sections'::regclass
-  ) then
-    alter table public.home_sections
-      add constraint home_sections_not_own_parent
-      check (parent_id is null or parent_id <> id);
-  end if;
-end;
-$;
+alter table public.home_sections
+  drop constraint if exists home_sections_not_own_parent;
+
+alter table public.home_sections
+  add constraint home_sections_not_own_parent
+  check (parent_id is null or parent_id <> id);
 
 alter table public.home_section_materials
   add column if not exists is_primary boolean not null default false;
