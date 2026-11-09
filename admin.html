@@ -280,13 +280,13 @@ async function saveManagedSection(){
   const query=id?client.from('home_sections').update(payload).eq('id',Number(id)):client.from('home_sections').insert({...payload,content_type:'materials',content:''});
   const {error}=await query;
   if(error)throw error;
-  await loadSectionManager();sectionStatus(id?'تم تحديث القسم بنجاح.':'تم إنشاء القسم بنجاح.','ok');
+  await loadSectionManager();await loadUploadSectionChoices();sectionStatus(id?'تم تحديث القسم بنجاح.':'تم إنشاء القسم بنجاح.','ok');
  }catch(error){console.error(error);sectionStatus('تعذر حفظ القسم: '+(error.message||'خطأ غير معروف'),'error');}
  finally{$('sectionSave').disabled=false;}
 }
 
 $('loginBtn').addEventListener('click',signIn);
-$('sectionsReload').addEventListener('click',loadSectionManager);
+$('sectionsReload').addEventListener('click',()=>{loadSectionManager();loadUploadSectionChoices();});
 $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
 $('adminUploadStart').addEventListener('click',startAdminUpload);
 $('adminUploadClear').addEventListener('click',()=>{$('adminUploadFiles').value='';$('adminUploadDescription').value='';$('adminUploadResults').textContent='';uploadStatus('تم مسح اختيار الملفات.','ok');});
