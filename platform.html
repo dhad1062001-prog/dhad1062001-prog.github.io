@@ -1138,7 +1138,7 @@ function renderGrades(){
   };
   const displayGrades=[...grades].sort((a,b)=>gradeRank(a.name)-gradeRank(b.name));
   el.innerHTML=displayGrades.map((g,i)=>{
-    const isKindergarten=gradeRank(g.name)===6.5;
+    const isKindergarten=gradeRank(g.name)===5.5;
     return `
     <button class="grade ui-shape${isKindergarten?' kindergarten-grade':''}" onclick="showGrade(${g.id})">
       <span class="circle ${colors[i%colors.length]}">${icons[i%icons.length]}</span>
