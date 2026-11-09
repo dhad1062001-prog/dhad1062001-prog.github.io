@@ -4,11 +4,12 @@
 const EVENT_FN='record-analytics-event',ADMIN_FN='admin-analytics';
 let started=false,visitorHashPromise=null,sessionHashPromise=null,lastPagePath='',activeMaterialDownloadId=null;
 function api(){return typeof sb!=='undefined'&&sb?sb:null;}
-function randomId(){if(crypto?.randomUUID)return crypto.randomUUID();return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16);});}
-function stored(store,key){try{let v=store.getItem(key);if(!v){v=randomId();store.setItem(key,v);}return v;}catch(e){return randomId();}}
-async function digest(v){if(!crypto?.subtle)return null;const b=new TextEncoder().encode(v),d=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,'0')).join('');}
-function visitor(){if(!visitorHashPromise)visitorHashPromise=digest(stored(localStorage,'dhad_analytics_visitor_v1'));return visitorHashPromise;}
-function session(){if(!sessionHashPromise)sessionHashPromise=digest(stored(sessionStorage,'dhad_analytics_session_v1'));return sessionHashPromise;}
+function randomId(){if(window.crypto?.randomUUID)return window.crypto.randomUUID();return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16);});}
+function stored(store,key){try{if(!store)return randomId();let v=store.getItem(key);if(!v){v=randomId();store.setItem(key,v);}return v;}catch(e){return randomId();}}
+function storage(name){try{return window[name];}catch(e){return null;}}
+async function digest(v){if(!window.crypto?.subtle)return null;const b=new TextEncoder().encode(v),d=await window.crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(d)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function visitor(){if(!visitorHashPromise)visitorHashPromise=digest(stored(storage('localStorage'),'dhad_analytics_visitor_v1'));return visitorHashPromise;}
+function session(){if(!sessionHashPromise)sessionHashPromise=digest(stored(storage('sessionStorage'),'dhad_analytics_session_v1'));return sessionHashPromise;}
 function device(){const w=innerWidth||0;return w&&w<600?'mobile':w&&w<1024?'tablet':w?'desktop':'unknown';}
 function path(){const u=new URL(location.href);const q=u.searchParams.has('material')?'?material':u.searchParams.has('game')?'?game':'';return u.pathname+q+u.hash;}
 async function record(type,materialId){
