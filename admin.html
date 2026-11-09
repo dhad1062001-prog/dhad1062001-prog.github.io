@@ -737,7 +737,7 @@ function amRender(){
  $('amList').querySelectorAll('.am-select').forEach(x=>x.addEventListener('change',amUpdateSelected));
  $('amList').querySelectorAll('[data-am-preview]').forEach(b=>b.addEventListener('click',()=>amPreview(b.dataset.amPreview)));
  $('amList').querySelectorAll('[data-am-edit]').forEach(b=>b.addEventListener('click',()=>amEdit(b.dataset.amEdit)));
- $('amList').querySelectorAll('[data-am-share]').forEach(b=>b.addEventListener('click',()=>GenUI.openUrl(window.location.origin+window.location.pathname+'?material='+encodeURIComponent(b.dataset.amShare))));
+ $('amList').querySelectorAll('[data-am-share]').forEach(b=>b.addEventListener('click',async()=>{const url=window.location.origin+window.location.pathname+'?material='+encodeURIComponent(b.dataset.amShare);try{await navigator.clipboard.writeText(url);amStatus('تم نسخ رابط الملف.','ok');}catch(_){window.prompt('انسخ رابط الملف:',url);}}));
  $('amList').querySelectorAll('[data-am-toggle]').forEach(b=>b.addEventListener('click',()=>amTogglePublic(b.dataset.amToggle)));
  $('amList').querySelectorAll('[data-am-delete]').forEach(b=>b.addEventListener('click',()=>amDelete(b.dataset.amDelete)));
  amUpdateSelected();
@@ -757,7 +757,7 @@ function amPreview(id){
  const m=adminMaterialsRows.find(x=>String(x.id)===String(id));if(!m)return;
  if(!m.file_path)return amStatus('لا يوجد مسار ملف للمعاينة.','error');
  const {data}=client.storage.from('materials').getPublicUrl(m.file_path);
- if(data&&data.publicUrl)GenUI.openUrl(data.publicUrl);else amStatus('تعذر إنشاء رابط المعاينة.','error');
+ if(data&&data.publicUrl)window.open(data.publicUrl,'_blank','noopener,noreferrer');else amStatus('تعذر إنشاء رابط المعاينة.','error');
 }
 async function amEdit(id){
  if(!currentUser||!authorized())return;
