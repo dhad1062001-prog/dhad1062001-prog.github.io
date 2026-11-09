@@ -3015,7 +3015,8 @@ function initUI(){
 }
 
 wireMobileMenu();
-window.addEventListener('supabase-loaded',initUI);
+if(window.__SUPABASE_LOADED__)initUI();
+else window.addEventListener('supabase-loaded',initUI,{once:true});
 
 setTimeout(()=>{
   if(!window.__SUPABASE_LOADED__){
