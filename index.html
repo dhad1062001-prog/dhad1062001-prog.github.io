@@ -1853,10 +1853,10 @@ async function fetchAllAdminMaterials(){
   let all=[];
   for(let from=0;;from+=1000){
     let {data,error}=await sb.from('materials')
-      .select('id,title,description,content_summary,learning_objectives,target_audience,page_count,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,download_count,grades(name),semesters(name),categories(name)')
+      .select('id,title,description,content_summary,learning_objectives,target_audience,page_count,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,primary_section,additional_sections,download_count,grades(name),semesters(name),categories(name)')
       .order('created_at',{ascending:false}).range(from,from+999);
     if(error&&/content_summary|learning_objectives|target_audience|page_count/i.test(String(error.message||''))){
-      const fallback=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,download_count,grades(name),semesters(name),categories(name)').order('created_at',{ascending:false}).range(from,from+999);
+      const fallback=await sb.from('materials').select('id,title,description,file_path,file_name,file_type,file_size,created_at,is_public,track_name,field_name,primary_section,additional_sections,download_count,grades(name),semesters(name),categories(name)').order('created_at',{ascending:false}).range(from,from+999);
       data=fallback.data;error=fallback.error;
     }
     if(error)return {data:null,error};
@@ -1876,7 +1876,7 @@ async function loadAdminMaterials(){
  if(!data?.length){const msg='<div class="empty">لا توجد ملفات حتى الآن.</div>';if(compact)compact.innerHTML=msg;if(full)full.innerHTML=msg;const count=document.getElementById('filesCount');if(count)count.textContent='0 ملف';return;}
  window.__adminMaterials=data;
  const count=document.getElementById('filesCount');if(count)count.textContent=data.length+' '+(data.length===1?'ملف':'ملفات');
- const pathText=m=>escapeHtml(m.grades?.name||'')+(m.track_name?' ← '+escapeHtml(m.track_name):'')+(m.field_name?' ← '+escapeHtml(m.field_name):'')+' ← '+escapeHtml(m.semesters?.name||'')+' ← '+escapeHtml(m.categories?.name||'');
+ const sectionNames={school_grades:'الصفوف الدراسية',curricula:'المناهج الدراسية',teacher_supplies:'لوازم المعلمين',interactive_games:'الألعاب التفاعلية',supplementary_education:'التعليم الإضافي'};\n const pathText=m=>[sectionNames[m.primary_section]||'الصفوف الدراسية',m.grades?.name,m.track_name,m.field_name,m.semesters?.name,m.categories?.name].filter(Boolean).map(escapeHtml).join(' ← ');
  if(compact)compact.innerHTML=data.slice(0,8).map(m=>'<div class="admin-item"><div><b>'+escapeHtml(m.title)+'</b><small>'+pathText(m)+'</small></div><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button></div>').join('');
  if(full)full.innerHTML=data.map(m=>{const url=getMaterialUrl(m.file_path);return '<div class="admin-file-card"><label><input type="checkbox" class="admin-material-select" value="'+escapeHtml(String(m.id))+'" onchange="updateSelectedMaterialCount()"> تحديد</label><b>'+escapeHtml(m.title)+'</b><div class="admin-file-meta">'+escapeHtml(m.file_name||'')+'<br>'+pathText(m)+'<br>'+(m.file_size?formatBytes(m.file_size):'')+'</div><div class="admin-file-actions"><button class="preview ui-shape" onclick="previewAdminMaterial(\''+m.id+'\')">👁 معاينة</button>'+(url?'<button class="download ui-shape" type="button" onclick="downloadAdminMaterial(\''+m.id+'\')">⬇ تنزيل</button>':'')+(m.is_public?'<button class="secondary ui-shape" type="button" onclick="shareDhadLink(\'material\',\''+m.id+'\')">🔗 مشاركة الرابط</button>':'')+'<button class="edit ui-shape" onclick="editMaterial(\''+m.id+'\')">✏️ تعديل</button><button class="danger ui-shape" onclick="deleteMaterial(\''+m.id+'\')">🗑 حذف</button></div></div>';}).join('');
 }
