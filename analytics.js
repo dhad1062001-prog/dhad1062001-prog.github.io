@@ -36,6 +36,18 @@ function hookNavigation(){
  const replace=history.replaceState;history.replaceState=function(){const r=replace.apply(this,arguments);queueMicrotask(pageView);return r;};
  addEventListener('hashchange',pageView);addEventListener('popstate',pageView);
 }
+function hookAdminPage(){
+ if(typeof window.showAdminPage==='function'&&!window.showAdminPage.__dhadAnalytics){
+  const original=window.showAdminPage;
+  const wrapped=async function(){
+   const result=await original.apply(this,arguments);
+   if(typeof isFileManager==='function'&&isFileManager())window.loadDhadAdminAnalytics();
+   return result;
+  };
+  wrapped.__dhadAnalytics=true;
+  window.showAdminPage=wrapped;
+ }
+}
 function hookActions(){
  if(typeof window.openMaterialInfoPage==='function'&&!window.openMaterialInfoPage.__dhadAnalytics){const fn=window.openMaterialInfoPage;const w=async function(id){if(id)record('material_view',id);return fn.apply(this,arguments);};w.__dhadAnalytics=true;window.openMaterialInfoPage=w;}
  if(typeof window.previewMaterial==='function'&&!window.previewMaterial.__dhadAnalytics){const fn=window.previewMaterial;const w=function(id){if(id)record('preview',id);return fn.apply(this,arguments);};w.__dhadAnalytics=true;window.previewMaterial=w;}
@@ -68,7 +80,7 @@ window.loadDhadAdminAnalytics=async function(){
  }catch(e){console.warn('تعذر تحميل إحصائيات الإدارة:',e);setStatus('تعذر تحميل الإحصائيات. تحقق من تسجيل الدخول وصلاحية الإدارة ثم أعد المحاولة.','error');}
 };
 function start(){
- if(started||!api())return;started=true;hookNavigation();hookActions();pageView();
+ if(started||!api())return;started=true;hookNavigation();hookActions();hookAdminPage();pageView();
  const id=new URL(location.href).searchParams.get('material');if(id)record('material_view',id);
  const admin=document.getElementById('adminPage');
  if(admin&&typeof isFileManager==='function'&&isFileManager()){
