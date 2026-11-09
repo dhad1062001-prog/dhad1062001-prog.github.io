@@ -2198,7 +2198,7 @@ function homeSectionDownloadUrl(row,url){
 }
 
 function homeSectionTypeLabel(type){
-  return ({text:'نص',image:'صورة',file:'ملف',link:'رابط'})[type]||'محتوى';
+  return ({text:'نص',image:'صورة',file:'ملف',link:'رابط',materials:'مجموعة مواد'})[type]||'محتوى';
 }
 
 function renderPublicHomeSections(rows){
@@ -2346,11 +2346,12 @@ function updateHomeSectionEditor(){
   const fileLabel=document.getElementById('homeSectionFileLabel');
   const fileInput=document.getElementById('homeSectionFile');
   if(!label||!content||!fileWrap||!fileInput)return;
-  const labels={text:'النص',image:'وصف الصورة (اختياري)',file:'وصف الملف (اختياري)',link:'رابط المحتوى'};
-  const placeholders={text:'اكتب نص القسم هنا...',image:'يمكنك كتابة وصف أو تعليق على الصورة...',file:'اكتب وصفًا قصيرًا للملف إن لزم...',link:'https://example.com'};
+  const labels={text:'النص',image:'وصف الصورة (اختياري)',file:'وصف الملف (اختياري)',link:'رابط المحتوى',materials:'وصف القسم (اختياري)'};
+  const placeholders={text:'اكتب نص القسم هنا...',image:'يمكنك كتابة وصف أو تعليق على الصورة...',file:'اكتب وصفًا قصيرًا للملف إن لزم...',link:'https://example.com',materials:'تظهر الموارد المرتبطة بهذا القسم في صفحة مستقلة.'};
   label.textContent=labels[type]||'المحتوى';
   content.placeholder=placeholders[type]||'';
   content.required=(type==='text'||type==='link');
+  content.disabled=(type==='materials');
   fileWrap.style.display=(type==='image'||type==='file')?'grid':'none';
   fileLabel.textContent=type==='image'?'اختر صورة من جهازك':'اختر الملف من جهازك';
   fileInput.accept=type==='image'?'image/*':'.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.svg,.avif,.mp3,.wav,.m4a,.mp4,.webm,.ogg,.zip';
@@ -2391,6 +2392,7 @@ function previewHomeSection(){
       body='<span class="callout-help">اختر صورة من جهازك لمعاينتها قبل الحفظ.</span>';
     }
   }
+  if(type==='materials'){body='<div class="callout-help">تُعرض المواد المرتبطة بهذا القسم في صفحة مستقلة، وتُدار من قائمة الملفات المرتبطة أدناه.</div>'; }
   if(type==='file'){
     const fileName=file?.name||(homeSectionExistingFilePath?homeSectionExistingFilePath.split('/').pop():'');
     const ext=(file?.name||homeSectionExistingFilePath||'').split('.').pop().toLowerCase();
@@ -2526,7 +2528,7 @@ async function saveHomeSection(event){
   const file=document.getElementById('homeSectionFile').files?.[0]||null;
   const oldRow=homeSectionsAdmin.find(row=>String(row.id)===id);
   if(!title)return showStatus(status,'اكتب عنوان القسم أولًا.','error');
-  if(!['text','image','file','link'].includes(type))return showStatus(status,'نوع المحتوى غير صحيح.','error');
+  if(!['text','image','file','link','materials'].includes(type))return showStatus(status,'نوع المحتوى غير صحيح.','error');
   if(!Number.isInteger(sortOrder)||sortOrder<0)return showStatus(status,'أدخل رقم ترتيب صحيحًا يساوي صفرًا أو أكبر.','error');
   if(!Number.isInteger(displayLimit)||displayLimit<1||displayLimit>50)return showStatus(status,'عدد الملفات المعروضة يجب أن يكون بين 1 و50.','error');
   if((type==='text'||type==='link')&&!content)return showStatus(status,type==='link'?'أدخل رابط المحتوى.':'اكتب النص الذي سيظهر في القسم.','error');
