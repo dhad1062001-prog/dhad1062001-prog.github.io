@@ -76,13 +76,18 @@ before insert or update of parent_id on public.home_sections
 for each row execute function public.prevent_home_section_cycle();
 
 
--- Existing file managers may associate uploaded materials with sections.
--- Section structure CRUD remains owner-only under the existing home_sections policies.
+-- Replace the owner-only insert policy with the existing helper that includes
+-- the owner and authorized file managers. This avoids overlapping INSERT policies.
+drop policy if exists "Owner can insert section material links"
+  on public.home_section_materials;
+
 create policy "File managers can insert section material links"
   on public.home_section_materials
   for insert
   to authenticated
   with check (public.dhad_is_file_manager());
+
+-- Section structure CRUD remains owner-only under the existing home_sections policies.
 
 comment on column public.home_sections.parent_id is
   'Optional parent section. NULL means top-level section.';
