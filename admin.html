@@ -22,6 +22,62 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="olive-theme.css?v=20261109">
+
+  <style id="admin-olive-gold-overrides">
+  /* Admin-only visual refinement: olive canvas + transparent gold-outline surfaces */
+  :root{color-scheme:dark;--bg:#20291C;--paper:transparent;--ink:#FFFFFF;--muted:#C8CEBF;--line:#C3A45F;--gold:#C3A45F;--green:#20291C;--green2:#2D3829;--shadow:none}
+  body{background:#20291C!important;color:#FFFFFF!important}
+  main{max-width:1240px}
+  #dashboard .metric,#dashboard .section,#dashboard .panel,#loginPanel,#deniedPanel{
+    background:rgba(32,41,28,.28)!important;
+    color:#FFFFFF!important;
+    border:1px solid #C3A45F!important;
+    box-shadow:none!important;
+  }
+  #dashboard .metric{border-radius:15px;padding:18px}
+  #dashboard .metric .label,#dashboard .note{color:#C8CEBF!important}
+  #dashboard .metric strong,#dashboard .toolbar h2,#dashboard .section h3,
+  #dashboard h2,#dashboard h3{color:#E4C982!important}
+  #dashboard .toolbar p{color:#C8CEBF!important}
+  #adminNav{
+    background:transparent!important;
+    border:1px solid #C3A45F!important;
+    border-radius:15px!important;
+    padding:10px!important;
+  }
+  #adminNav button,#adminNav button.secondary{
+    background:transparent!important;color:#FFFFFF!important;
+    border:1px solid #C3A45F!important;border-radius:10px!important;
+    white-space:nowrap;
+  }
+  #adminNav button:hover,#adminNav button:focus-visible{
+    background:#34412F!important;color:#E4C982!important;
+  }
+  button.secondary,.btn.secondary{
+    background:transparent!important;color:#FFFFFF!important;
+    border:1px solid #C3A45F!important;
+  }
+  button.gold,button:not(.secondary),.btn:not(.secondary){
+    background:#C3A45F!important;color:#20291C!important;
+    border:1px solid #C3A45F!important;
+  }
+  input,select,textarea{
+    background:#20291C!important;color:#FFFFFF!important;
+    border:1px solid #8E7949!important;
+  }
+  input::placeholder,textarea::placeholder{color:#AEB8A7!important}
+  table th{background:#34412F!important;color:#E4C982!important}
+  table td{border-color:#59654D!important;color:#F0F1EC!important}
+  .status{border:1px solid #59654D!important}
+  .status.ok{background:#263E2C!important;color:#D7E9D7!important}
+  .status.error{background:#492B28!important;color:#FFE0DC!important}
+  .footer{color:#C8CEBF!important}
+  @media(max-width:800px){
+    main{padding-inline:12px}
+    #adminNav{position:sticky;top:6px}
+    #dashboard .section{padding:15px}
+  }
+  </style>
 </head>
 <body>
 <header><div class="head"><div class="brand"><div class="mark">ض</div><div><h1>إدارة منصة ضاد</h1><p>لوحة تحكم مستقلة — مساحة الإدارة</p></div></div><div class="userline" id="userLine">غير مسجل الدخول</div></div></header>
