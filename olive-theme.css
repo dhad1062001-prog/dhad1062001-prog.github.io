@@ -24,7 +24,7 @@ a:hover{color:#E4C982}
 main,.main,.admin-main,.admin-shell{color:#FFFFFF}
 .hero-visual{background-color:#2D3829!important;border-color:#59654D!important}
 .section,.panel,.card,.admin-card,.stat-card,.metric,.tile,.feature-card,
-.platform-card,.home-card,.grade,.term,.category-card,.material-card,
+.platform-card,.home-card,.term,.category-card,.material-card,
 .file-card,.contact-card,.page-body,.setup-box,.table-wrap,.login,
 .modal-card,.certificate-preview,.home-section-preview{
   background:#2D3829!important;color:#FFFFFF!important;
@@ -39,7 +39,7 @@ input::placeholder,textarea::placeholder{color:#AEB8A7!important}
 button,.btn{
   border-radius:11px;transition:background .18s ease,border-color .18s ease,transform .18s ease;
 }
-button:not(.secondary):not(.theme):not(.mobile-toggle):not(.modal-close):not(.danger),
+button:not(.secondary):not(.theme):not(.mobile-toggle):not(.modal-close):not(.danger):not(.grade),
 .btn:not(.secondary):not(.danger),.primary,.download,.download-app-link,.login-btn,.contact-btn{
   background:#C3A45F!important;color:#20291C!important;border:1px solid #C3A45F!important;
   font-weight:800;
