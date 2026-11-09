@@ -108,6 +108,7 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <button type="button" class="secondary" data-admin-nav="contactLinksEditor" data-admin-owner-nav>التواصل</button>
   <button type="button" class="secondary" data-admin-nav="teacherSuppliesManager" data-admin-owner-nav>لوازم المعلمين</button>
   <button type="button" class="secondary" data-admin-nav="homeContentManager" data-admin-owner-nav>محتوى الأقسام</button>
+  <button type="button" class="secondary" data-admin-nav="featureContentManager" data-admin-owner-nav>الألعاب والتقويم والشهادات</button>
  </nav>
 
  <div class="cards">
@@ -133,6 +134,76 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
 
 
+
+
+ <section class="section hidden" id="featureContentManager" data-admin-owner-nav>
+  <h3>إدارة الألعاب والتعليم الإضافي والتقويم والشهادات</h3>
+  <p class="note">هذه الوحدة تستخدم سجلات site_pages ومساحة materials الموجودتين بالفعل، وتحافظ على تنسيق البيانات الذي تقرؤه واجهة الموقع الحالية. لا تنفذ حذفًا لملفات التخزين عند حذف سجل من القائمة.</p>
+  <div id="featureAdminStatus" class="status" role="status" aria-live="polite"></div>
+  <section class="section">
+   <h3>بطاقات الصفحة الرئيسية</h3><p class="note">تحرير عناوين البطاقات وأوصافها وأيقوناتها وألوانها وترتيبها ووجهاتها وظهورها.</p>
+   <div id="featureCardsAdminList"></div>
+   <div class="actions"><button type="button" class="gold" id="featureCardsSave">حفظ البطاقات</button></div>
+  </section>
+  <div class="grid2">
+   <section class="section">
+    <h3>التعليم الإضافي</h3>
+    <form id="featureAdditionalForm">
+     <input id="featureAdditionalId" type="hidden">
+     <label>العنوان</label><input id="featureAdditionalTitle" maxlength="160" required>
+     <label>وصف مختصر</label><input id="featureAdditionalDescription" maxlength="240">
+     <label>المحتوى التعليمي</label><textarea id="featureAdditionalText" rows="5"></textarea>
+     <label>صور تعليمية (يمكن اختيار عدة صور)</label><input id="featureAdditionalImages" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+     <small id="featureAdditionalCurrent" class="note"></small>
+     <label>ترتيب العرض</label><input id="featureAdditionalOrder" type="number" min="0" step="1" value="1">
+     <label>حالة المحتوى</label><select id="featureAdditionalStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+     <div class="actions"><button class="gold" type="submit">حفظ المحتوى</button><button class="secondary" type="button" id="featureAdditionalReset">تفريغ</button></div>
+    </form>
+    <div id="featureAdditionalList"></div>
+   </section>
+   <section class="section">
+    <h3>التقويم الدراسي</h3>
+    <form id="featureCalendarForm">
+     <input id="featureCalendarId" type="hidden">
+     <label>عنوان الصورة</label><input id="featureCalendarTitle" maxlength="160" required>
+     <label>الوصف</label><textarea id="featureCalendarDescription" rows="3"></textarea>
+     <label>السنة أو الفصل الدراسي</label><input id="featureCalendarYear" maxlength="80" placeholder="2026 / الفصل الأول">
+     <label>صورة التقويم</label><input id="featureCalendarImage" type="file" accept="image/png,image/jpeg,image/webp">
+     <small id="featureCalendarCurrent" class="note"></small>
+     <label>ترتيب العرض</label><input id="featureCalendarOrder" type="number" min="0" step="1" value="1">
+     <label>حالة النشر</label><select id="featureCalendarStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+     <div class="actions"><button class="gold" type="submit">حفظ صورة التقويم</button><button class="secondary" type="button" id="featureCalendarReset">تفريغ</button></div>
+    </form>
+    <div id="featureCalendarList"></div>
+   </section>
+  </div>
+  <section class="section">
+   <h3>الألعاب التعليمية التفاعلية</h3>
+   <form id="featureGameForm">
+    <input id="featureGameId" type="hidden">
+    <div class="grid2"><div><label>اسم اللعبة</label><input id="featureGameTitle" maxlength="160" required></div><div><label>ترتيب العرض</label><input id="featureGameOrder" type="number" min="0" step="1" value="1"></div></div>
+    <label>الوصف</label><textarea id="featureGameDescription" rows="3"></textarea>
+    <div class="grid2"><div><label>صورة الغلاف (اختياري)</label><input id="featureGameCover" type="file" accept="image/png,image/jpeg,image/webp"></div><div><label>ملف HTML أو مجلد اللعبة ومواردها</label><input id="featureGameFiles" type="file" multiple webkitdirectory directory></div></div>
+    <label>ملف HTML الرئيسي</label><select id="featureGameMain"><option value="">اختر ملف HTML بعد تحديد المجلد</option></select>
+    <small id="featureGameCurrent" class="note"></small>
+    <label>حالة النشر</label><select id="featureGameStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="approved">معتمد</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select>
+    <div class="actions"><button class="gold" type="submit">حفظ اللعبة</button><button class="secondary" type="button" id="featureGameReset">تفريغ</button></div>
+   </form>
+   <div id="featureGamesList"></div>
+  </section>
+  <section class="section">
+   <h3>قالب شهادة التقدير</h3>
+   <form id="featureCertificateForm">
+    <label>عنوان الشهادة</label><input id="featureCertTitle" maxlength="120">
+    <label>عبارة التقديم</label><textarea id="featureCertIntro" rows="2" maxlength="200"></textarea>
+    <label>نص الشهادة</label><textarea id="featureCertBody" rows="4" maxlength="600"></textarea>
+    <label>العبارة الختامية</label><input id="featureCertFooter" maxlength="200">
+    <div class="grid2"><div><label>اسم المدرسة</label><input id="featureCertSchool" maxlength="120"></div><div><label>اسم المعلم</label><input id="featureCertTeacher" maxlength="120"></div></div>
+    <div class="grid2"><div><label>اللون الأساسي</label><input id="featureCertColor" type="color" value="#D9A441"></div><label style="display:flex;align-items:center;gap:8px"><input id="featureCertBrand" type="checkbox" checked> إظهار اسم ضاد</label></div>
+    <div class="actions"><button class="gold" type="submit">حفظ قالب الشهادة</button></div>
+   </form>
+  </section>
+ </section>
 
  <section class="section" id="academicStructureEditor">
   <h3>إدارة الصفوف والفصول والتصنيفات</h3>
@@ -347,7 +418,7 @@ function showState(){
  $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('teacherSuppliesManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('homeContentManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();loadHomeContentManager();loadAdminMaterialsManager();}}
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();loadHomeContentManager();loadAdminMaterialsManager();loadFeatureAdminData();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -996,6 +1067,153 @@ async function removeTeacherSupplyAdmin(id){
  await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تمت إزالة الارتباط فقط، وبقي الملف الأصلي محفوظًا.','ok');
 }
 
+
+/* إدارة الميزات الإضافية: توافق مباشر مع مخطط features.js القديم */
+const FEATURE_SLUGS={homeCards:'dhad-home-cards-v1',additional:'dhad-additional-items-v1',calendar:'dhad-calendar-items-v1',games:'dhad-games-v1',certificate:'dhad-certificate-v1'};
+const FEATURE_CARD_DEFAULTS=[
+ {id:'grades',title:'الصفوف الدراسية',description:'جميع الصفوف والمناهج في مكان واحد',icon:'🎓',color:'#3986D9',size:'normal',order:1,visible:true,target:'grades',url:'',imagePath:''},
+ {id:'games',title:'استديو الألعاب التفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#E85B68',size:'normal',order:2,visible:true,target:'games',url:'',imagePath:''},
+ {id:'additional',title:'التعليم الإضافي',description:'دروس وموارد إضافية لتعزيز مهاراتك',icon:'💡',color:'#35B6B0',size:'normal',order:3,visible:true,target:'additional',url:'',imagePath:''},
+ {id:'calendar',title:'التقويم الدراسي',description:'تابع مواعيدك الدراسية بكل سهولة',icon:'🗓️',color:'#F0A23B',size:'normal',order:4,visible:true,target:'calendar',url:'',imagePath:''},
+ {id:'certificate',title:'شهادات التقدير',description:'احصل على شهادتك بكل إنجاز',icon:'🏅',color:'#8764D8',size:'normal',order:5,visible:true,target:'certificate',url:'',imagePath:''}
+];
+const FEATURE_CERT_DEFAULT={title:'شهادة تقدير',intro:'تُمنح هذه الشهادة بكل فخر واعتزاز إلى',body:'تقديرًا لجهوده المميزة وإبداعه واجتهاده في تعلّم اللغة العربية. مع تمنياتنا له بدوام التوفيق والنجاح.',footer:'مع خالص التقدير',school:'',teacher:'',color:'#D9A441',showBrand:true};
+let featureData={homeCards:FEATURE_CARD_DEFAULTS.map(x=>({...x})),additional:[],calendar:[],games:[],certificate:{...FEATURE_CERT_DEFAULT}},featureGameFiles=[],featureGameMainPath='';
+function featureStatus(message,type){status('featureAdminStatus',message,type);}
+function featureIsOwner(){return !!currentUser&&String(currentUser.email||'').trim().toLowerCase()===OWNER;}
+function featureSafeColor(v,f){return /^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;}
+function featureItemStatus(x){return ['draft','review','approved','published','archived'].includes(x?.status)?x.status:(x?.active===false?'archived':'published');}
+function featurePublicUrl(v){try{const u=new URL(String(v||''));return ['http:','https:'].includes(u.protocol)?u.href:'';}catch(e){return '';}}
+function featureEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function featureSave(key,value,title){
+ if(!featureIsOwner())return false;
+ const {error}=await client.from('site_pages').upsert({slug:FEATURE_SLUGS[key],title,content:JSON.stringify(value),updated_at:new Date().toISOString()},{onConflict:'slug'});
+ if(error){featureStatus('تعذر الحفظ: '+error.message,'error');return false;}return true;
+}
+async function featureUpload(file,folder,relative){
+ if(!file||file.size>50*1024*1024){featureStatus('حجم الملف يتجاوز 50 ميجابايت.','error');return '';}
+ const parts=String(relative||file.name).replace(/\\/g,'/').split('/').filter(x=>x&&x!=='.'&&x!=='..').map(x=>x.replace(/[\u0000-\u001f?#%]/g,'_').trim()).filter(Boolean);
+ if(!parts.length)return '';
+ const path='dhad-content/'+folder+'/'+crypto.randomUUID()+'/'+parts.join('/');
+ let type=file.type||'application/octet-stream';const ext=(file.name.split('.').pop()||'').toLowerCase();if(ext==='html'||ext==='htm')type='text/html';else if(ext==='css')type='text/css';else if(ext==='js')type='text/javascript';
+ const {data,error}=await client.storage.from('materials').upload(path,file,{contentType:type,upsert:false});
+ if(error){featureStatus('تعذر رفع الملف: '+error.message,'error');return '';}return data?.path||path;
+}
+async function loadFeatureAdminData(){
+ if(!featureIsOwner())return;
+ featureStatus('جارٍ تحميل بيانات الأقسام الإضافية…','info');
+ const slugs=Object.values(FEATURE_SLUGS);
+ const {data,error}=await client.from('site_pages').select('slug,content').in('slug',slugs);
+ if(error){featureStatus('تعذر تحميل بيانات الأقسام: '+error.message,'error');return;}
+ featureData={homeCards:FEATURE_CARD_DEFAULTS.map(x=>({...x})),additional:[],calendar:[],games:[],certificate:{...FEATURE_CERT_DEFAULT}};
+ for(const row of data||[]){let v;try{v=JSON.parse(row.content||'null')}catch(e){continue;}
+  if(row.slug===FEATURE_SLUGS.homeCards&&Array.isArray(v))featureData.homeCards=FEATURE_CARD_DEFAULTS.map(base=>({...base,...(v.find(x=>x?.id===base.id)||{}),visible:(v.find(x=>x?.id===base.id)||{}).visible!==false}));
+  if(row.slug===FEATURE_SLUGS.additional&&Array.isArray(v))featureData.additional=v;
+  if(row.slug===FEATURE_SLUGS.calendar&&Array.isArray(v))featureData.calendar=v;
+  if(row.slug===FEATURE_SLUGS.games&&Array.isArray(v))featureData.games=v;
+  if(row.slug===FEATURE_SLUGS.certificate&&v&&typeof v==='object')featureData.certificate={...FEATURE_CERT_DEFAULT,...v};
+ }
+ renderFeatureAdmin();featureStatus('تم تحميل البيانات.','ok');
+}
+function featureRenderList(id,rows,type){
+ const el=$(id);if(!el)return;
+ if(!rows.length){el.innerHTML='<p class="note">لا توجد عناصر محفوظة.</p>';return;}
+ el.innerHTML=rows.slice().sort((a,b)=>Number(a.order||0)-Number(b.order||0)).map(x=>'<div class="actions" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0"><span><b>'+featureEscape(x.title||'عنصر دون عنوان')+'</b><small class="note"> · '+featureEscape(featureItemStatus(x))+' · ترتيب '+Number(x.order||0)+'</small></span><span class="actions"><button type="button" class="secondary" data-feature-edit="'+type+'" data-feature-id="'+featureEscape(x.id)+'">تعديل</button><button type="button" class="secondary" data-feature-toggle="'+type+'" data-feature-id="'+featureEscape(x.id)+'">'+(featureItemStatus(x)==='published'?'أرشفة':'نشر')+'</button><button type="button" class="secondary" data-feature-delete="'+type+'" data-feature-id="'+featureEscape(x.id)+'">حذف</button></span></div>').join('');
+}
+function renderFeatureAdmin(){
+ const cards=$('featureCardsAdminList');if(cards)cards.innerHTML=featureData.homeCards.slice().sort((a,b)=>a.order-b.order).map(c=>'<div data-feature-card="'+featureEscape(c.id)+'" style="border-bottom:1px solid var(--line);padding:12px 0"><b>'+featureEscape(c.title)+'</b><div class="grid2"><div><label>العنوان</label><input data-cf="title" value="'+featureEscape(c.title)+'"></div><div><label>الوصف</label><input data-cf="description" value="'+featureEscape(c.description)+'"></div><div><label>الرمز</label><input data-cf="icon" value="'+featureEscape(c.icon)+'"></div><div><label>اللون</label><input data-cf="color" type="color" value="'+featureSafeColor(c.color,'#C3A45F')+'"></div><div><label>الحجم</label><select data-cf="size"><option value="compact" '+(c.size==='compact'?'selected':'')+'>صغير</option><option value="normal" '+(c.size==='normal'?'selected':'')+'>متوسط</option><option value="large" '+(c.size==='large'?'selected':'')+'>كبير</option></select></div><div><label>الوجهة</label><select data-cf="target">'+[['grades','الصفوف'],['games','الألعاب'],['additional','التعليم الإضافي'],['calendar','التقويم'],['certificate','الشهادات']].map(([v,l])=>'<option value="'+v+'" '+((c.target||c.id)===v?'selected':'')+'>'+l+'</option>').join('')+'</select></div><div><label>رابط خارجي</label><input data-cf="url" value="'+featureEscape(c.url||'')+'" placeholder="https://"></div><div><label>الترتيب</label><input data-cf="order" type="number" min="0" value="'+Number(c.order||0)+'"></div></div><label><input data-cf="visible" type="checkbox" '+(c.visible?'checked':'')+'> إظهار البطاقة</label></div>').join('');
+ featureRenderList('featureAdditionalList',featureData.additional,'additional');featureRenderList('featureCalendarList',featureData.calendar,'calendar');featureRenderList('featureGamesList',featureData.games,'games');
+ const t=featureData.certificate;$('featureCertTitle').value=t.title||'';$('featureCertIntro').value=t.intro||'';$('featureCertBody').value=t.body||'';$('featureCertFooter').value=t.footer||'';$('featureCertSchool').value=t.school||'';$('featureCertTeacher').value=t.teacher||'';$('featureCertColor').value=featureSafeColor(t.color,'#D9A441');$('featureCertBrand').checked=t.showBrand!==false;
+}
+async function saveFeatureCards(){
+ const rows=[];
+ for(const el of document.querySelectorAll('[data-feature-card]')){
+  const old=featureData.homeCards.find(x=>x.id===el.dataset.featureCard)||{},get=k=>el.querySelector('[data-cf="'+k+'"]');
+  const order=Number(get('order').value),title=get('title').value.trim(),url=get('url').value.trim();
+  if(!title||!Number.isInteger(order)||order<0||url&&!featurePublicUrl(url))return featureStatus('تحقق من عنوان البطاقة وترتيبها والرابط الخارجي.','error');
+  rows.push({...old,title,description:get('description').value.trim(),icon:get('icon').value.trim(),color:featureSafeColor(get('color').value,old.color),size:get('size').value,target:get('target').value,url,order,visible:get('visible').checked});
+ }
+ if(await featureSave('homeCards',rows,'بطاقات الصفحة الرئيسية')){featureData.homeCards=rows;featureStatus('تم حفظ بطاقات الصفحة الرئيسية.','ok');}
+}
+function resetFeatureForm(type){
+ const prefix=type==='additional'?'featureAdditional':type==='calendar'?'featureCalendar':'featureGame';
+ $(prefix+'Form').reset();$(prefix+'Id').value='';$(prefix+(type==='additional'?'Order':type==='calendar'?'Order':'Order')).value=String(featureData[type].length+1);
+ if(type==='additional'){$('featureAdditionalStatus').value='draft';$('featureAdditionalCurrent').textContent='';}
+ if(type==='calendar'){$('featureCalendarStatus').value='draft';$('featureCalendarCurrent').textContent='';}
+ if(type==='games'){featureGameFiles=[];featureGameMainPath='';$('featureGameStatus').value='draft';$('featureGameCurrent').textContent='';refreshFeatureGameOptions();}
+}
+function editFeatureItem(type,id){
+ const x=featureData[type].find(v=>String(v.id)===String(id));if(!x)return;
+ if(type==='additional'){$('featureAdditionalId').value=x.id;$('featureAdditionalTitle').value=x.title||'';$('featureAdditionalDescription').value=x.description||'';$('featureAdditionalText').value=x.text||'';$('featureAdditionalOrder').value=x.order||0;$('featureAdditionalStatus').value=featureItemStatus(x);$('featureAdditionalCurrent').textContent=(x.images||[]).length?'الصور السابقة محفوظة؛ الصور الجديدة تضاف إليها.':'';$('featureAdditionalForm').scrollIntoView({behavior:'smooth'});}
+ if(type==='calendar'){$('featureCalendarId').value=x.id;$('featureCalendarTitle').value=x.title||'';$('featureCalendarDescription').value=x.description||'';$('featureCalendarYear').value=x.year||'';$('featureCalendarOrder').value=x.order||0;$('featureCalendarStatus').value=featureItemStatus(x);$('featureCalendarCurrent').textContent=x.imagePath?'الصورة الحالية محفوظة.':'';$('featureCalendarForm').scrollIntoView({behavior:'smooth'});}
+ if(type==='games'){$('featureGameId').value=x.id;$('featureGameTitle').value=x.title||'';$('featureGameDescription').value=x.description||'';$('featureGameOrder').value=x.order||0;$('featureGameStatus').value=featureItemStatus(x);featureGameFiles=x.files||[];featureGameMainPath=x.mainPath||'';$('featureGameCurrent').textContent=featureGameFiles.length+' ملفًا محفوظًا.';refreshFeatureGameOptions();$('featureGameForm').scrollIntoView({behavior:'smooth'});}
+}
+async function saveFeatureAdditional(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureAdditionalId').value||crypto.randomUUID(),old=featureData.additional.find(x=>x.id===id),order=Number($('featureAdditionalOrder').value||0);
+ if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const images=[...(old?.images||[])];
+ for(const file of Array.from($('featureAdditionalImages').files||[])){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>5*1024*1024)return featureStatus('الصور يجب أن تكون PNG أو JPG أو WebP وبحد 5MB للصورة.','error');const path=await featureUpload(file,'additional');if(!path)return;images.push({path,name:file.name});}
+ const item={id,title:$('featureAdditionalTitle').value.trim(),description:$('featureAdditionalDescription').value.trim(),text:$('featureAdditionalText').value.trim(),images,order,status:$('featureAdditionalStatus').value,active:$('featureAdditionalStatus').value==='published'};
+ const rows=old?featureData.additional.map(x=>x.id===id?item:x):[...featureData.additional,item];
+ if(await featureSave('additional',rows,'محتوى التعليم الإضافي')){featureData.additional=rows;resetFeatureForm('additional');renderFeatureAdmin();featureStatus('تم حفظ المحتوى التعليمي.','ok');}
+}
+async function saveFeatureCalendar(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureCalendarId').value||crypto.randomUUID(),old=featureData.calendar.find(x=>x.id===id),file=$('featureCalendarImage').files?.[0];let imagePath=old?.imagePath||'';
+ if(file){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)return featureStatus('اختر صورة PNG أو JPG أو WebP لا تتجاوز 8MB.','error');imagePath=await featureUpload(file,'calendar');if(!imagePath)return;}
+ if(!imagePath)return featureStatus('اختر صورة للتقويم.','error');
+ const order=Number($('featureCalendarOrder').value||0);if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const st=$('featureCalendarStatus').value,item={id,title:$('featureCalendarTitle').value.trim(),description:$('featureCalendarDescription').value.trim(),year:$('featureCalendarYear').value.trim(),imagePath,order,status:st,active:st==='published'};
+ const rows=old?featureData.calendar.map(x=>x.id===id?item:x):[...featureData.calendar,item];
+ if(await featureSave('calendar',rows,'صور التقويم الدراسي')){featureData.calendar=rows;resetFeatureForm('calendar');renderFeatureAdmin();featureStatus('تم حفظ صورة التقويم.','ok');}
+}
+function refreshFeatureGameOptions(){
+ const select=$('featureGameMain');if(!select)return;
+ const fresh=Array.from($('featureGameFiles').files||[]).filter(f=>/\.html?$/i.test(f.name));
+ select.innerHTML='<option value="">اختر ملف HTML الرئيسي</option>'+fresh.map(f=>'<option value="new:'+featureEscape(f.webkitRelativePath||f.name)+'">'+featureEscape(f.webkitRelativePath||f.name)+'</option>').join('')+featureGameFiles.filter(f=>/\.html?$/i.test(f.relativePath||f.path||'')).map(f=>'<option value="old:'+featureEscape(f.path)+'">محفوظ: '+featureEscape(f.relativePath||f.path.split('/').pop())+'</option>').join('');
+ if(featureGameMainPath&&!fresh.length)select.value='old:'+featureGameMainPath;
+}
+async function saveFeatureGame(e){
+ e.preventDefault();if(!featureIsOwner())return;
+ const id=$('featureGameId').value||crypto.randomUUID(),old=featureData.games.find(x=>x.id===id),files=[...(old?.files||[])],selected=Array.from($('featureGameFiles').files||[]),uploaded=[];
+ if(selected.length){const batch=crypto.randomUUID();for(const file of selected){if(file.size>50*1024*1024)return featureStatus('أحد ملفات اللعبة يتجاوز 50MB.','error');const relative=String(file.webkitRelativePath||file.name).replace(/\\/g,'/'),path=await featureUpload(file,'games/'+batch,relative);if(!path)return;uploaded.push({path,relativePath:relative,name:file.name,type:file.type||''});}}
+ const allFiles=[...files,...uploaded],choice=$('featureGameMain').value;let mainPath=old?.mainPath||'';
+ if(choice.startsWith('new:'))mainPath=uploaded.find(f=>f.relativePath===choice.slice(4))?.path||mainPath;
+ else if(choice.startsWith('old:'))mainPath=choice.slice(4);
+ if(!mainPath)return featureStatus('اختر ملف HTML رئيسيًا للعبة.','error');
+ if(!allFiles.some(f=>f.path===mainPath))allFiles.push({path:mainPath,relativePath:mainPath.split('/').pop(),name:mainPath.split('/').pop(),type:'text/html'});
+ let coverPath=old?.coverPath||'';const cover=$('featureGameCover').files?.[0];if(cover){if(!['image/png','image/jpeg','image/webp'].includes(cover.type)||cover.size>5*1024*1024)return featureStatus('غلاف اللعبة يجب ألا يتجاوز 5MB وبصيغة صورة مدعومة.','error');coverPath=await featureUpload(cover,'game-covers');if(!coverPath)return;}
+ const order=Number($('featureGameOrder').value||0);if(!Number.isInteger(order)||order<0)return featureStatus('أدخل ترتيبًا صحيحًا.','error');
+ const st=$('featureGameStatus').value,game={id,title:$('featureGameTitle').value.trim(),description:$('featureGameDescription').value.trim(),coverPath,files:allFiles,mainPath,order,status:st,active:st==='published'};
+ const rows=old?featureData.games.map(x=>x.id===id?game:x):[...featureData.games,game];
+ if(await featureSave('games',rows,'الألعاب التعليمية')){featureData.games=rows;resetFeatureForm('games');renderFeatureAdmin();featureStatus('تم حفظ اللعبة وملفاتها.','ok');}
+}
+async function mutateFeatureAdmin(type,id,action){
+ const rows=[...featureData[type]],item=rows.find(x=>String(x.id)===String(id));if(!item)return;
+ if(action==='edit')return editFeatureItem(type,id);
+ if(action==='delete'&&!confirm('حذف هذا العنصر من قائمة الموقع؟ ستبقى ملفاته الأصلية في التخزين.'))return;
+ const next=action==='delete'?rows.filter(x=>String(x.id)!==String(id)):rows.map(x=>String(x.id)===String(id)?{...x,status:featureItemStatus(x)==='published'?'archived':'published',active:featureItemStatus(x)!=='published'}:x);
+ if(await featureSave(type,next,type==='games'?'الألعاب التعليمية':type==='calendar'?'صور التقويم الدراسي':'محتوى التعليم الإضافي')){featureData[type]=next;renderFeatureAdmin();featureStatus('تم تحديث العنصر.','ok');}
+}
+async function saveFeatureCertificate(e){
+ e.preventDefault();const t={title:$('featureCertTitle').value.trim()||'شهادة تقدير',intro:$('featureCertIntro').value.trim(),body:$('featureCertBody').value.trim(),footer:$('featureCertFooter').value.trim(),school:$('featureCertSchool').value.trim(),teacher:$('featureCertTeacher').value.trim(),color:featureSafeColor($('featureCertColor').value,'#D9A441'),showBrand:$('featureCertBrand').checked};
+ if(await featureSave('certificate',t,'قالب شهادة التقدير')){featureData.certificate=t;featureStatus('تم حفظ قالب شهادة التقدير.','ok');}
+}
+function wireFeatureAdmin(){
+ $('featureCardsSave').addEventListener('click',saveFeatureCards);
+ $('featureAdditionalForm').addEventListener('submit',saveFeatureAdditional);
+ $('featureCalendarForm').addEventListener('submit',saveFeatureCalendar);
+ $('featureGameForm').addEventListener('submit',saveFeatureGame);
+ $('featureCertificateForm').addEventListener('submit',saveFeatureCertificate);
+ $('featureAdditionalReset').addEventListener('click',()=>resetFeatureForm('additional'));
+ $('featureCalendarReset').addEventListener('click',()=>resetFeatureForm('calendar'));
+ $('featureGameReset').addEventListener('click',()=>resetFeatureForm('games'));
+ $('featureGameFiles').addEventListener('change',refreshFeatureGameOptions);
+ document.body.addEventListener('click',e=>{const b=e.target.closest('[data-feature-edit],[data-feature-toggle],[data-feature-delete]');if(!b)return;const type=b.dataset.featureEdit||b.dataset.featureToggle||b.dataset.featureDelete,id=b.dataset.featureId,action=b.dataset.featureEdit?'edit':b.dataset.featureToggle?'toggle':'delete';mutateFeatureAdmin(type,id,action);});
+}
+
+wireFeatureAdmin();
 $('loginBtn').addEventListener('click',signIn);
  $('tsLinkExistingAdmin').addEventListener('click',linkExistingTeacherSupplyAdmin);
  $('tsUploadFormAdmin').addEventListener('submit',uploadTeacherSupplyAdmin);
