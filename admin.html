@@ -720,16 +720,17 @@ function hcSafeUrl(value){
 async function loadHomeContentManager(){
  if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
  const select=$('hcSectionChoice');select.innerHTML='<option value="">جارٍ تحميل الأقسام…</option>';
- const [sections,materials]=await Promise.all([
+ const [sectionsResult,materials]=await Promise.all([
   client.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style').order('sort_order',{ascending:true}).order('id',{ascending:true}),
   client.from('materials').select('id,title,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000)
  ]);
+ let sections=sectionsResult;
+ if(sections.error&&/display_limit|display_style/i.test(sections.error.message||''))sections=await client.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active').order('sort_order',{ascending:true}).order('id',{ascending:true});
  if(sections.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل الأقسام: '+sections.error.message,'error');}
  if(materials.error){select.innerHTML='<option value="">تعذر تحميل الأقسام</option>';return hcStatus('تعذر تحميل ملفات المكتبة: '+materials.error.message,'error');}
  homeContentSectionsAdmin=sections.data||[];homeContentMaterialsAdmin=materials.data||[];
  select.innerHTML='<option value="">اختر القسم</option>'+homeContentSectionsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
  $('hcMaterials').innerHTML=homeContentMaterialsAdmin.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.title||'ملف')+'</option>').join('');
- $('hcContentType').addEventListener('change',updateHomeContentEditor,{once:false});
  if(select.value)await loadHomeContentSection();
 }
 function updateHomeContentEditor(){
