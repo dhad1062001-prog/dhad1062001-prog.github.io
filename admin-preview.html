@@ -48,6 +48,15 @@
 @media(max-width:1050px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.columns{grid-template-columns:1fr}.content{padding:22px 18px}}
 @media(max-width:720px){.layout{grid-template-columns:1fr}.sidebar{position:fixed;right:0;top:0;width:270px;transform:translateX(105%);transition:transform .25s;box-shadow:-10px 0 30px #0001}.sidebar.open{transform:translateX(0)}.menu-btn{display:inline-flex}.topbar{height:65px;padding:0 14px}.content{padding:19px 13px}.page-head{align-items:flex-start;flex-direction:column}.bottom-grid{grid-template-columns:1fr}.top-actions .btn{padding:9px 10px}.breadcrumb{font-size:10px}}
 @media(max-width:420px){.metrics{gap:9px}.metric{padding:12px}.metric strong{font-size:21px}.metric-top{font-size:10px}.top-actions .hide-mobile{display:none}}
+
+/* Section manager preview */
+.manager-grid{display:grid;grid-template-columns:minmax(250px,.85fr) minmax(0,1.5fr);gap:16px}
+.manager-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:var(--shadow);min-width:0}
+.manager-card h3{font-size:14px;color:var(--olive-dark);margin:0 0 13px}
+.tree{display:grid;gap:8px}.tree-item{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;font-size:12px}.tree-item.child{margin-right:20px;background:#fafbf8}.tree-item.selected{border-color:var(--gold);background:var(--gold-soft)}.tree-item button{margin-right:auto;border:0;background:transparent;color:var(--olive-dark);font-size:11px}
+.manager-form{display:grid;gap:11px}.manager-form label{font-size:11px;color:var(--muted);font-weight:700;display:grid;gap:5px}.manager-form input,.manager-form textarea,.manager-form select{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit;font-size:12px;background:#fff;color:var(--ink)}.manager-form textarea{min-height:75px;resize:vertical}.manager-actions{display:flex;gap:8px;flex-wrap:wrap}.manager-items{display:grid;gap:8px;margin-top:13px}.manager-content-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:9px;font-size:11px}.manager-content-item small{color:var(--muted)}.manager-hint{font-size:10px;color:var(--muted);line-height:1.8;margin:10px 0 0}
+@media(max-width:800px){.manager-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -97,6 +106,42 @@
    <section class="panel"><div class="panel-head"><h3>تنبيهات الإدارة</h3><small>نموذج العرض</small></div><div class="quick"><span class="quick-icon">ⓘ</span><div><b>مركز التنبيهات</b><small>سيعرض أخطاء الرفع والملفات الناقصة ومشكلات التخزين.</small></div></div></section></div>
   </section>
   <section id="otherSection" class="section-placeholder"><div class="page-head"><div><h2 id="otherTitle">إدارة الملفات</h2><p>وحدة مستقلة ضمن لوحة إدارة ضاد.</p></div></div><div class="demo-note">هذه النسخة تعرض شكل التنقل وتقسيم الوحدات فقط؛ لم تُفعّل بعد أي عمليات تعديل أو حذف أو حفظ.</div><div class="panel"><div class="placeholder-copy"><div class="empty-icon" id="otherIcon">▤</div><h3 id="otherHeading">إدارة الملفات</h3><p id="otherDesc">سيتم بناء هذه الوحدة وربطها بالبيانات الحالية بعد اعتماد شكل لوحة التحكم. ستبقى الملفات وسجلاتها الحالية محفوظة دون تغيير.</p><a class="btn light" href="admin.html">فتح أدوات الإدارة الحالية ↗</a></div></div></section>
+
+  <section id="sectionManager" class="section-placeholder">
+   <div class="page-head"><div><h2>إدارة الأقسام والمحتوى</h2><p>أنشئ أقسامًا رئيسية وفرعية بمستويات متعددة، ثم أدر محتوى كل قسم بصورة مستقلة.</p></div><span class="pill gold">معاينة تفاعلية</span></div>
+   <div class="demo-note"><b>ⓘ</b> هذه تجربة للواجهة فقط: الإضافات والتعديلات هنا مؤقتة داخل الصفحة، ولا تُحفظ في Supabase أو تظهر للزوار حتى تنفيذ الربط البرمجي.</div>
+   <div class="manager-grid">
+    <div class="manager-card">
+     <h3>هيكل الأقسام</h3>
+     <div id="sectionTree" class="tree">
+      <div class="tree-item selected" data-id="root-teachers"><span>📁</span><b>لوازم المعلمين</b><button type="button" data-select="root-teachers">إدارة</button></div>
+      <div class="tree-item child" data-id="works"><span>📂</span>أوراق العمل<button type="button" data-select="works">إدارة</button></div>
+      <div class="tree-item child" data-id="prep"><span>📂</span>التحضير اليومي<button type="button" data-select="prep">إدارة</button></div>
+      <div class="tree-item child" data-id="slides"><span>📂</span>العروض التقديمية<button type="button" data-select="slides">إدارة</button></div>
+     </div>
+     <p class="manager-hint">يمكنك إنشاء قسم رئيسي أو إضافة قسم فرعي داخل القسم الذي تختاره، ثم التوسع إلى مستويات أخرى.</p>
+     <div class="manager-actions" style="margin-top:13px"><button class="btn" id="addRoot" type="button">＋ قسم رئيسي</button><button class="btn gold" id="addChild" type="button">＋ قسم فرعي</button></div>
+    </div>
+    <div class="manager-card">
+     <h3 id="selectedSectionTitle">لوازم المعلمين</h3>
+     <form class="manager-form" id="sectionForm">
+      <label>اسم القسم<input id="sectionName" value="لوازم المعلمين" required></label>
+      <label>وصف القسم<textarea id="sectionDescription">ملفات وأدوات وموارد تساعد المعلم في عمله.</textarea></label>
+      <div class="manager-actions"><button class="btn" type="submit">حفظ بيانات القسم</button><button class="btn light" id="toggleSection" type="button">إخفاء / إظهار</button></div>
+     </form>
+     <div style="border-top:1px solid var(--line);margin:16px 0"></div>
+     <h3>المحتوى الداخلي</h3>
+     <form class="manager-form" id="contentForm">
+      <label>عنوان المحتوى<input id="contentTitle" placeholder="مثال: ورقة عمل في الأسماء الخمسة" required></label>
+      <label>نوع المحتوى<select id="contentType"><option>ملف تعليمي</option><option>نص ومقال</option><option>صورة</option><option>رابط خارجي</option><option>لعبة أو نشاط</option></select></label>
+      <label>وصف المحتوى<textarea id="contentDescription" placeholder="اكتب وصفًا تعليميًا للمحتوى..."></textarea></label>
+      <div class="manager-actions"><button class="btn gold" type="submit">＋ إضافة محتوى للقسم</button></div>
+     </form>
+     <div id="contentItems" class="manager-items"><div class="manager-content-item"><span>📄 ورقة عمل في الأسماء الخمسة</span><small>ملف تعليمي · منشور</small></div></div>
+    </div>
+   </div>
+  </section>
+
   <div class="footer">ضاد – منصة اللغة العربية · معاينة أولية للوحة الإدارة · الهوية الزيتية والذهبية</div>
  </div>
 </main>
@@ -105,9 +150,22 @@
 (function(){
  const labels={files:['▤','إدارة الملفات','رفع فردي وجماعي، تنظيم المكتبة، أوصاف المواد، البحث والتصفية، والتعديل الآمن.'],sections:['▦','الأقسام والتصنيفات','إدارة الصفوف والفصول والتصنيفات والأقسام، مع ترتيب العرض والتحكم في الظهور.'],content:['✎','المحتوى والصفحات','تحرير الصفحة الرئيسية وصفحات المنصة ومحتوى لوازم المعلمين والألعاب والأنشطة.'],analytics:['▥','الإحصائيات والتقارير','لوحة الزيارات الحقيقية والزوار والتنزيلات والملفات الأكثر نشاطًا، مع تقارير قابلة للتصدير.'],storage:['▣','التخزين والنسخ الاحتياطي','متابعة مساحة Supabase، وإدارة مسارات التخزين، وإضافة حسابات Google Drive مستقبلًا.'],seo:['⌕','الظهور في محركات البحث','إدارة بيانات SEO والروابط المباشرة وملفات Sitemap ومتابعة الصفحات المفهرسة.'],security:['♙','الأمان والصلاحيات','إدارة أدوار المستخدمين وسجل العمليات ومحاولات الدخول والصلاحيات.'],settings:['⚙','الإعدادات','إعدادات المنصة والهوية والتنبيهات وتفضيلات لوحة الإدارة.']};
  const nav=document.getElementById('nav'),sidebar=document.getElementById('sidebar');
- nav.addEventListener('click',e=>{const b=e.target.closest('button[data-section]');if(!b)return;nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));const key=b.dataset.section;document.getElementById('crumb').textContent=b.dataset.title;document.getElementById('overview').classList.toggle('active',key==='overview');document.getElementById('otherSection').classList.toggle('active',key!=='overview');if(key!=='overview'){const d=labels[key];document.getElementById('otherTitle').textContent=d[1];document.getElementById('otherHeading').textContent=d[1];document.getElementById('otherIcon').textContent=d[0];document.getElementById('otherDesc').textContent=d[2];}sidebar.classList.remove('open');});
+ nav.addEventListener('click',e=>{const b=e.target.closest('button[data-section]');if(!b)return;nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));const key=b.dataset.section;document.getElementById('crumb').textContent=b.dataset.title;document.getElementById('overview').classList.toggle('active',key==='overview');document.getElementById('otherSection').classList.toggle('active',key!=='overview'&&key!=='sections');document.getElementById('sectionManager').classList.toggle('active',key==='sections');if(key!=='overview'&&key!=='sections'){const d=labels[key];document.getElementById('otherTitle').textContent=d[1];document.getElementById('otherHeading').textContent=d[1];document.getElementById('otherIcon').textContent=d[0];document.getElementById('otherDesc').textContent=d[2];}sidebar.classList.remove('open');});
  document.getElementById('menuBtn').addEventListener('click',()=>sidebar.classList.toggle('open'));
  document.addEventListener('click',e=>{if(innerWidth<=720&&sidebar.classList.contains('open')&&!sidebar.contains(e.target)&&!e.target.closest('#menuBtn'))sidebar.classList.remove('open');});
+
+ // Interactive, in-memory section/content prototype (not connected to the database).
+ const tree=document.getElementById('sectionTree'),sectionName=document.getElementById('sectionName'),sectionDescription=document.getElementById('sectionDescription'),selectedTitle=document.getElementById('selectedSectionTitle'),contentItems=document.getElementById('contentItems');
+ let selected='root-teachers',seq=0,hidden=false;
+ const names={'root-teachers':'لوازم المعلمين','works':'أوراق العمل','prep':'التحضير اليومي','slides':'العروض التقديمية'};
+ function selectSection(id){selected=id;tree.querySelectorAll('.tree-item').forEach(x=>x.classList.toggle('selected',x.dataset.id===id));const name=names[id]||id;selectedTitle.textContent=name;sectionName.value=name;sectionDescription.value='وصف تعريفي للقسم ومحتواه التعليمي.';contentItems.innerHTML='<div class="manager-content-item"><span>لا توجد عناصر تجريبية أخرى في هذا القسم</span><small>—</small></div>';}
+ tree.addEventListener('click',e=>{const b=e.target.closest('[data-select]');if(b)selectSection(b.dataset.select);});
+ function addSection(parent){const name=prompt(parent?'اسم القسم الفرعي الجديد:':'اسم القسم الرئيسي الجديد:');if(!name||!name.trim())return;const id='new-'+(++seq);names[id]=name.trim();const item=document.createElement('div');item.className='tree-item'+(parent?' child':'');item.dataset.id=id;const icon=document.createElement('span');icon.textContent=parent?'📂':'📁';const label=document.createElement('b');label.textContent=name.trim();const manage=document.createElement('button');manage.type='button';manage.dataset.select=id;manage.textContent='إدارة';item.append(icon,label,manage);tree.append(item);selectSection(id);}
+ document.getElementById('addRoot').addEventListener('click',()=>addSection(false));document.getElementById('addChild').addEventListener('click',()=>addSection(true));
+ document.getElementById('sectionForm').addEventListener('submit',e=>{e.preventDefault();names[selected]=sectionName.value.trim();selectedTitle.textContent=sectionName.value.trim();const item=tree.querySelector('[data-id="'+selected+'"] b');if(item)item.textContent=sectionName.value.trim();alert('تم تحديث بيانات القسم في المعاينة فقط.');});
+ document.getElementById('toggleSection').addEventListener('click',()=>{hidden=!hidden;document.getElementById('toggleSection').textContent=hidden?'إظهار القسم':'إخفاء القسم';alert(hidden?'تم وضع القسم في حالة مخفي (معاينة).':'تمت إعادة إظهار القسم (معاينة).');});
+ document.getElementById('contentForm').addEventListener('submit',e=>{e.preventDefault();const title=document.getElementById('contentTitle').value.trim();const type=document.getElementById('contentType').value;if(!title)return;const row=document.createElement('div');row.className='manager-content-item';const label=document.createElement('span');label.textContent='📄 '+title;const meta=document.createElement('small');meta.textContent=type+' · مسودة';row.append(label,meta);contentItems.prepend(row);e.target.reset();});
+
 })();
 </script>
 </body></html>
