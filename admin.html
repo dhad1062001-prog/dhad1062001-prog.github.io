@@ -39,6 +39,18 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 </section>
 <section id="dashboard" class="hidden">
  <div class="toolbar"><div><h2>نظرة عامة</h2><p id="welcome">إحصائيات المنصة وأداء المحتوى</p></div><div class="actions"><select id="range" aria-label="الفترة الزمنية" style="border:1px solid var(--line);border-radius:10px;padding:9px;background:#fff;color:var(--ink)"><option value="7">آخر 7 أيام</option><option value="30" selected>آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option><option value="365">آخر سنة</option></select><button id="refreshBtn" type="button">تحديث الإحصائيات</button><a class="btn secondary" href="./">فتح الموقع</a><a class="btn secondary" href="./platform.html">أدوات الإدارة الحالية</a><button id="logoutBtn" class="secondary" type="button">خروج</button></div></div>
+
+ <nav id="adminNav" aria-label="التنقل في مركز إدارة ضاد" style="display:flex;gap:8px;overflow-x:auto;padding:10px;margin:0 0 16px;background:#2D3829;border:1px solid #59654D;border-radius:14px;position:sticky;top:8px;z-index:20">
+  <button type="button" class="secondary" data-admin-nav="dashboard">الإحصائيات</button>
+  <button type="button" class="secondary" data-admin-nav="homePageEditor">صفحة الاستقبال</button>
+  <button type="button" class="secondary" data-admin-nav="siteBrandingEditor">الهوية والصور</button>
+  <button type="button" class="secondary" data-admin-nav="sectionManager">الأقسام</button>
+  <button type="button" class="secondary" data-admin-nav="adminUploadPanel">رفع الملفات</button>
+  <button type="button" class="secondary" data-admin-nav="academicStructureEditor">الصفوف والفصول</button>
+  <button type="button" class="secondary" data-admin-nav="sitePagesEditor">الصفحات</button>
+  <button type="button" class="secondary" data-admin-nav="contactLinksEditor">التواصل</button>
+ </nav>
+
  <div class="cards">
   <article class="metric"><div class="label">مشاهدات الصفحات</div><strong id="pageViews">—</strong></article>
   <article class="metric"><div class="label">الزوار الفريدون (تقديري)</div><strong id="visitors">—</strong></article>
@@ -549,6 +561,10 @@ async function saveManagedSection(){
 }
 
 $('loginBtn').addEventListener('click',signIn);
+document.querySelectorAll('[data-admin-nav]').forEach(btn=>btn.addEventListener('click',()=>{
+ const target=$(btn.dataset.adminNav);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+
 $('sectionsReload').addEventListener('click',()=>{loadSectionManager();loadUploadSectionChoices();});
 $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
 $('homePageReload').addEventListener('click',loadHomePageEditor);
