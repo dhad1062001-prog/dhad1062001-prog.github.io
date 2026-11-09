@@ -186,51 +186,74 @@
       white-space:nowrap;
     }
 
-    /* الهوية الزيتية والذهبية لصفحات تفاصيل الملفات والتنزيل */
+    /* هوية صفحات تفاصيل الملفات والتنزيل: زيتي داكن وإطار ذهبي مفرغ */
     #dhadMaterialDirectPage{
-      --panel:#2D3829;--soft:#34412F;--line:#59654D;
-      --text:#FFFFFF;--muted:#C8CEBF;--accent:#C3A45F;
+      --panel:#303B27;--soft:#35432B;--line:#C3A45F;
+      --text:#FFFFFF;--muted:#D8DCCF;--accent:#D8B96E;
       color:#FFFFFF;
+      background:#20291C!important;
     }
-    #dhadMaterialDirectPage .panel{color:#FFFFFF}
+    #dhadMaterialDirectPage > .panel{
+      background:#20291C!important;
+      color:#FFFFFF!important;
+      border:2px solid #C3A45F!important;
+      border-radius:22px!important;
+      padding:clamp(14px,3vw,28px)!important;
+      box-shadow:0 14px 36px rgba(0,0,0,.28)!important;
+    }
     #dhadMaterialDirectPage .page-title{
-      background:linear-gradient(145deg,#34412F,#2D3829)!important;
-      border:1px solid #59654D!important;
+      background:#303B27!important;
+      border:2px solid #C3A45F!important;
+      border-radius:16px!important;
     }
-    #dhadMaterialDirectPage .page-title h2{color:#E4C982!important}
+    #dhadMaterialDirectPage .page-title h2,
+    #dhadMaterialDirectPage .dhad-direct-card h3,
+    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#E4C982!important}
     #dhadMaterialDirectPage .page-title p,
-    #dhadMaterialDirectPage .crumb{color:#C8CEBF!important}
+    #dhadMaterialDirectPage .crumb{color:#D8DCCF!important}
     #dhadMaterialDirectPage .dhad-direct-card{
-      background:linear-gradient(145deg,#34412F,#2D3829)!important;
-      color:#FFFFFF!important;border:1px solid #59654D!important;
-      box-shadow:0 12px 30px rgba(0,0,0,.22)!important;
+      background:#303B27!important;
+      color:#FFFFFF!important;
+      border:2px solid #C3A45F!important;
+      border-radius:18px!important;
+      box-shadow:0 10px 26px rgba(0,0,0,.24)!important;
     }
-    #dhadMaterialDirectPage .dhad-direct-card h3{color:#E4C982!important}
     #dhadMaterialDirectPage .dhad-direct-card p,
     #dhadMaterialDirectPage .dhad-direct-description{color:#FFFFFF!important}
     #dhadMaterialDirectPage .dhad-direct-info-block{
-      background:#20291C!important;border:1px solid #59654D!important;
+      background:#263121!important;
+      border:1.5px solid #C3A45F!important;
+      border-radius:14px!important;
       color:#FFFFFF!important;
     }
-    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#E4C982!important}
     #dhadMaterialDirectPage .dhad-direct-meta span{
-      background:#20291C!important;border:1px solid #59654D!important;
+      background:#263121!important;
+      border:1px solid #C3A45F!important;
       color:#E4C982!important;
     }
     #dhadMaterialDirectPage .dhad-direct-main-button,
-    #dhadMaterialDirectPage #dhadDirectDownloadButton{
-      background:linear-gradient(135deg,#E4C982,#C3A45F)!important;
-      color:#20291C!important;border:1px solid #E4C982!important;
-    }
-    #dhadMaterialDirectPage #dhadDirectPreviewButton{
-      background:#59654D!important;color:#FFFFFF!important;border:1px solid #748064!important;
-    }
+    #dhadMaterialDirectPage #dhadDirectDownloadButton,
+    #dhadMaterialDirectPage #dhadDirectPreviewButton,
     #dhadMaterialDirectPage #dhadDirectShareButton,
     #dhadMaterialDirectPage .back{
-      background:#34412F!important;color:#FFFFFF!important;border:1px solid #C3A45F!important;
+      background:transparent!important;
+      color:#E4C982!important;
+      border:2px solid #C3A45F!important;
+      border-radius:12px!important;
+      box-shadow:inset 0 0 0 1px rgba(195,164,95,.12)!important;
+    }
+    #dhadMaterialDirectPage .dhad-direct-main-button:hover,
+    #dhadMaterialDirectPage #dhadDirectDownloadButton:hover,
+    #dhadMaterialDirectPage #dhadDirectPreviewButton:hover,
+    #dhadMaterialDirectPage #dhadDirectShareButton:hover,
+    #dhadMaterialDirectPage .back:hover{
+      background:#35432B!important;
+      border-color:#E4C982!important;
     }
     #dhadMaterialDirectPage .empty{
-      background:#20291C!important;color:#C8CEBF!important;border-color:#59654D!important;
+      background:#263121!important;
+      color:#D8DCCF!important;
+      border:1px solid #C3A45F!important;
     }
     #dhadMaterialDirectPage .dhad-direct-card b{color:#E4C982!important}
     @media(max-width:760px){
