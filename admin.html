@@ -119,6 +119,7 @@ function showState(){
  $('deniedPanel').classList.toggle('hidden',!currentUser||authorized());
  $('dashboard').classList.toggle('hidden',!currentUser||!authorized());
  $('userLine').textContent=currentUser?(currentProfile?.full_name||currentUser.email||'حساب الإدارة'):'غير مسجل الدخول';
+ $('sectionManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER)loadSectionManager();}
 }
 async function loadProfile(){
