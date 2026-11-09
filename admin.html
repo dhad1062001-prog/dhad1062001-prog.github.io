@@ -51,6 +51,21 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
  </div>
  <section class="section"><h3>الإحصائيات اليومية</h3><div class="table-wrap" id="daily">جارٍ التحميل…</div><p class="note">الزوار الفريدون تقديريون ويُحسبون باستخدام معرّف مجهول محفوظ في المتصفح. عدد التنزيلات يعبر عن مرات بدء طلب التنزيل، ولا يثبت اكتمال حفظ الملف على جهاز الزائر.</p></section>
 
+
+ <section class="section" id="adminUploadPanel">
+  <h3>رفع الملفات إلى الأقسام</h3>
+  <p class="note">اختر القسم الرئيسي أولًا، ثم القسم الفرعي إن وجد، وبعدها اختر ملفًا واحدًا أو مجموعة ملفات. تُحفظ علاقة الملف بالأقسام في جدول الربط، ولا تُكتب أسماء الأقسام المخصصة في حقل التصنيف القديم.</p>
+  <div class="grid2">
+   <div><label class="note" for="uploadMainSection">القسم الرئيسي</label><select id="uploadMainSection" style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px"><option value="">جارٍ تحميل الأقسام…</option></select></div>
+   <div><label class="note" for="uploadChildSection">القسم الفرعي (اختياري)</label><select id="uploadChildSection" disabled style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px"><option value="">لا يوجد قسم فرعي</option></select></div>
+  </div>
+  <label class="note" for="adminUploadDescription">وصف موحد للملفات (اختياري)</label><textarea id="adminUploadDescription" rows="3" maxlength="5000" placeholder="أضف وصفًا يظهر مع الملفات..." style="width:100%;padding:11px;border-radius:10px;margin:5px 0 12px;resize:vertical"></textarea>
+  <label class="note" for="adminUploadFiles">اختيار الملفات (يمكن تحديد عدة ملفات)</label><input id="adminUploadFiles" type="file" multiple style="width:100%;padding:12px;border:1px dashed var(--line);border-radius:10px;margin:5px 0 14px">
+  <div class="actions"><button id="adminUploadStart" type="button" class="gold">بدء رفع الملفات</button><button id="adminUploadClear" type="button" class="secondary">مسح الاختيار</button></div>
+  <div id="adminUploadStatus" class="status" role="status" aria-live="polite"></div>
+  <div id="adminUploadResults" class="note" aria-live="polite"></div>
+ </section>
+
  <section class="section" id="sectionManager">
   <div class="toolbar" style="margin-bottom:14px"><div><h3 style="margin:0">إدارة الأقسام الرئيسية والفرعية</h3><p class="note" style="margin:3px 0">إنشاء الأقسام وتنظيم مكان ظهورها يدويًا. لا تُحذف أي بيانات عند تعديل ترتيب الأقسام.</p></div><button id="sectionsReload" class="secondary" type="button">تحديث القائمة</button></div>
   <div class="grid2">
@@ -104,7 +119,7 @@ function showState(){
  $('deniedPanel').classList.toggle('hidden',!currentUser||authorized());
  $('dashboard').classList.toggle('hidden',!currentUser||!authorized());
  $('userLine').textContent=currentUser?(currentProfile?.full_name||currentUser.email||'حساب الإدارة'):'غير مسجل الدخول';
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();if(String(currentUser.email||'').toLowerCase()===OWNER)loadSectionManager();}
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER)loadSectionManager();}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -153,6 +168,65 @@ async function loadAnalytics(){
  }catch(e){
   console.error(e);status('globalStatus','تعذر تحميل الإحصائيات. تحقق من صلاحية الحساب والاتصال ثم أعد المحاولة.','error');
  }finally{$('refreshBtn').disabled=false;}
+}
+
+
+let uploadSectionRows=[];
+function uploadStatus(message,type){status('adminUploadStatus',message,type);}
+async function loadUploadSectionChoices(){
+ if(!currentUser||!authorized())return;
+ const main=$('uploadMainSection'),child=$('uploadChildSection');
+ main.innerHTML='<option value="">جارٍ تحميل الأقسام…</option>';
+ const {data,error}=await client.from('home_sections').select('id,title,parent_id,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('id',{ascending:true});
+ if(error){main.innerHTML='<option value="">تعذر تحميل الأقسام</option>';uploadStatus('تعذر تحميل الأقسام. تأكد من تطبيق ترقية الأقسام أولًا: '+error.message,'error');return;}
+ uploadSectionRows=data||[];
+ const roots=uploadSectionRows.filter(x=>x.parent_id===null);
+ main.innerHTML='<option value="">اختر القسم الرئيسي</option>'+roots.map(x=>'<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ child.innerHTML='<option value="">لا يوجد قسم فرعي</option>';child.disabled=true;
+ if(!roots.length)uploadStatus('أنشئ قسمًا رئيسيًا أولًا من وحدة إدارة الأقسام.','error');
+}
+function updateUploadChildChoices(){
+ const parentId=$('uploadMainSection').value,child=$('uploadChildSection');
+ const children=uploadSectionRows.filter(x=>String(x.parent_id)===String(parentId));
+ child.innerHTML='<option value="">لا يوجد قسم فرعي</option>'+children.map(x=>'<option value="'+escapeHtml(String(x.id))+'">'+escapeHtml(x.title||'قسم دون عنوان')+'</option>').join('');
+ child.disabled=!parentId||!children.length;
+}
+async function startAdminUpload(){
+ if(!currentUser||!authorized())return uploadStatus('يجب تسجيل الدخول بحساب مخوّل لرفع الملفات.','error');
+ const mainId=$('uploadMainSection').value,childId=$('uploadChildSection').value;
+ const files=Array.from($('adminUploadFiles').files||[]);
+ if(!mainId)return uploadStatus('اختر القسم الرئيسي أولًا.','error');
+ if(!files.length)return uploadStatus('اختر ملفًا واحدًا على الأقل.','error');
+ if(files.some(file=>file.size>50*1024*1024))return uploadStatus('يوجد ملف يتجاوز الحد الحالي 50 ميجابايت. أزل الملف الكبير ثم أعد المحاولة.','error');
+ const mainRow=uploadSectionRows.find(x=>String(x.id)===String(mainId));
+ const childRow=childId?uploadSectionRows.find(x=>String(x.id)===String(childId)):null;
+ if(!mainRow||(childId&&(!childRow||String(childRow.parent_id)!==String(mainId))))return uploadStatus('اختيار القسم الفرعي غير متوافق مع القسم الرئيسي. حدّث قائمة الأقسام وحاول مجددًا.','error');
+ const description=$('adminUploadDescription').value.trim(),button=$('adminUploadStart');
+ button.disabled=true;$('adminUploadResults').textContent='';
+ let succeeded=0,failed=0,linked=0;const messages=[];
+ try{
+  for(let i=0;i<files.length;i++){
+   const file=files[i];uploadStatus('جارٍ رفع الملف '+(i+1)+' من '+files.length+': '+file.name,'info');
+   const originalName=file.name||'file',dot=originalName.lastIndexOf('.'),extension=dot>0?originalName.slice(dot+1).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12):'bin';
+   const safeTitle=dot>0?originalName.slice(0,dot):originalName;
+   const path='admin-managed/'+crypto.randomUUID()+'.'+(extension||'bin');
+   try{
+    const {data:stored,error:storageError}=await client.storage.from('materials').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+    if(storageError)throw storageError;
+    const {data:material,error:materialError}=await client.from('materials').insert({title:safeTitle,description:description||null,file_path:stored?.path||path,file_name:originalName,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id}).select('id').single();
+    if(materialError||!material?.id){await client.storage.from('materials').remove([stored?.path||path]);throw materialError||new Error('تعذر إنشاء سجل الملف.');}
+    const linkRows=[{section_id:Number(mainId),material_id:material.id,sort_order:i+1,is_primary:childId?false:true}];
+    if(childId)linkRows.push({section_id:Number(childId),material_id:material.id,sort_order:i+1,is_primary:true});
+    const {error:linkError}=await client.from('home_section_materials').insert(linkRows);
+    succeeded++;
+    if(linkError){messages.push(originalName+': حُفظ الملف لكن تعذر ربطه بالقسم ('+linkError.message+').');}
+    else linked++;
+   }catch(error){failed++;messages.push(originalName+': '+(error.message||'فشل غير معروف'));}
+  }
+  $('adminUploadResults').textContent=messages.length?messages.join(' | '):'اكتملت جميع العمليات بنجاح.';
+  uploadStatus('انتهت الدفعة: حُفظ '+succeeded+' ملفًا، فشل '+failed+'، وتم ربط '+linked+' ملفًا بالأقسام.','ok');
+  if(succeeded) $('adminUploadFiles').value='';
+ }finally{button.disabled=false;}
 }
 
 let managedSections=[];
@@ -212,6 +286,10 @@ async function saveManagedSection(){
 
 $('loginBtn').addEventListener('click',signIn);
 $('sectionsReload').addEventListener('click',loadSectionManager);
+$('uploadMainSection').addEventListener('change',updateUploadChildChoices);
+$('adminUploadStart').addEventListener('click',startAdminUpload);
+$('adminUploadClear').addEventListener('click',()=>{$('adminUploadFiles').value='';$('adminUploadDescription').value='';$('adminUploadResults').textContent='';uploadStatus('تم مسح اختيار الملفات.','ok');});
+
 $('sectionSave').addEventListener('click',saveManagedSection);
 $('sectionCancel').addEventListener('click',resetSectionForm);
 
