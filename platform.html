@@ -2432,8 +2432,10 @@ function homeSectionTypeLabel(type){
 function renderPublicHomeSections(rows){
   const container=document.getElementById('homeSectionsContainer');
   if(!container)return;
-  const sections=(rows||[]).filter(row=>row&&row.is_active&&row.title&&['text','image','file','link','materials'].includes(row.content_type));
-  const markup=sections.map(row=>{
+  const allSections=(rows||[]).filter(row=>row&&row.is_active&&row.title&&['text','image','file','link','materials'].includes(row.content_type));
+  const childrenByParent=new Map();
+  allSections.forEach(row=>{if(row.parent_id!==null&&row.parent_id!==undefined){const key=String(row.parent_id);if(!childrenByParent.has(key))childrenByParent.set(key,[]);childrenByParent.get(key).push(row);}});
+  const renderSection=row=>{
     const title=escapeHtml(row.title||'');
     const content=String(row.content||'');
     let body='';
@@ -2460,8 +2462,13 @@ function renderPublicHomeSections(rows){
     }
     const linked=(homeSectionMaterialMap[String(row.id)]||[]).slice(0,Math.max(1,Math.min(50,Number(row.display_limit||6))));
     const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'<small class="dhad-download-count" data-material-count="'+escapeHtml(String(m.id))+'">⬇ مرات بدء التنزيل: <span data-count-value>'+Number(m.download_count||0).toLocaleString('ar')+'</span></small></div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
-    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+title+'</h3>'+body+linkedMarkup+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
-  }).join('');
+    const childMarkup=(childrenByParent.get(String(row.id))||[]).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)).map(renderSection).join('');
+    const sectionDescription=row.section_description?'<p class="home-section-caption">'+escapeHtml(row.section_description)+'</p>':'';
+    const sectionIcon=row.icon?escapeHtml(row.icon)+' ':'';
+    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
+  };
+  const sections=allSections.filter(row=>(row.parent_id===null||row.parent_id===undefined)&&row.show_on_home!==false).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0));
+  const markup=sections.map(renderSection).join('');
   container.innerHTML=markup;
   container.closest('.home-tiles-layout')?.classList.toggle('has-home-sections',Boolean(markup));
   container.querySelectorAll('[data-home-section-preview]').forEach(button=>{
@@ -2480,13 +2487,16 @@ async function loadHomeSectionsPublic(){
   if(!container||!sb)return;
   try{
     let {data,error}=await sb.from('home_sections')
-      .select('id,title,content_type,content,file_path,sort_order,is_active,created_at,display_limit,display_style')
+      .select('id,title,content_type,content,file_path,sort_order,is_active,created_at,display_limit,display_style,parent_id,section_description,icon,show_on_home')
       .eq('is_active',true)
       .order('sort_order',{ascending:true})
       .order('created_at',{ascending:true});
-    if(error&&String(error.message||'').match(/display_limit|display_style/i)){
+    if(error&&/parent_id|section_description|icon|show_on_home/i.test(String(error.message||''))){
+      const fallback=await sb.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active,created_at,display_limit,display_style').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});
+      data=(fallback.data||[]).map(x=>({...x,parent_id:null,show_on_home:true}));error=fallback.error;
+    }else if(error&&/display_limit|display_style/i.test(String(error.message||''))){
       const fallback=await sb.from('home_sections').select('id,title,content_type,content,file_path,sort_order,is_active,created_at').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});
-      data=fallback.data;error=fallback.error;
+      data=(fallback.data||[]).map(x=>({...x,parent_id:null,show_on_home:true}));error=fallback.error;
     }
     if(error)throw error;
     homeSectionsPublic=data||[];
