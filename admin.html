@@ -54,6 +54,25 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
 
 
+
+ <section class="section" id="sitePagesEditor">
+  <h3>إدارة الصفحات التعريفية</h3>
+  <div class="grid2">
+   <div><label class="note" for="sitePageChoice">الصفحة</label><select id="sitePageChoice" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px"><option value="about">من نحن</option><option value="privacy">سياسة الخصوصية</option><option value="contact">اتصل بنا</option></select></div>
+   <div class="actions" style="align-items:end"><button id="sitePageReload" type="button" class="secondary">إعادة تحميل</button></div>
+  </div>
+  <label class="note" for="sitePageTitle">عنوان الصفحة</label><input id="sitePageTitle" maxlength="180" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px">
+  <label class="note" for="sitePageContent">محتوى الصفحة</label><textarea id="sitePageContent" rows="8" maxlength="30000" style="width:100%;padding:10px;border-radius:10px;margin:5px 0 12px;resize:vertical"></textarea>
+  <div class="actions"><button id="sitePageSave" type="button" class="gold">حفظ الصفحة</button></div>
+  <div id="sitePageStatus" class="status" role="status" aria-live="polite"></div>
+ </section>
+ <section class="section" id="contactLinksEditor">
+  <h3>إدارة روابط التواصل</h3><p class="note">تعديل روابط فيسبوك والبريد والواتساب ويوتيوب التي تظهر في صفحة التواصل. اترك الرابط فارغًا لإخفاء الزر إذا كان الموقع يدعم ذلك.</p>
+  <div id="contactLinksList" class="table-wrap">جارٍ تحميل الروابط…</div>
+  <div class="actions" style="margin-top:12px"><button id="contactLinksSave" type="button" class="gold">حفظ روابط التواصل</button><button id="contactLinksReload" type="button" class="secondary">إعادة تحميل</button></div>
+  <div id="contactLinksStatus" class="status" role="status" aria-live="polite"></div>
+ </section>
+
  <section class="section" id="siteBrandingEditor">
   <h3>إدارة هوية المنصة والصور</h3>
   <p class="note">تعديل اسم المنصة وشعارها والنص التعريفي وصورة واجهة الاستقبال. تُرفع الصور الجديدة إلى مساحة التخزين الحالية، مع الاحتفاظ بالصور السابقة دون حذفها.</p>
@@ -154,7 +173,9 @@ function showState(){
  $('sectionManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('homePageEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('siteBrandingEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();}}
+ $('sitePagesEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -207,6 +228,64 @@ async function loadAnalytics(){
 
 
 
+
+
+function sitePageStatus(message,type){status('sitePageStatus',message,type);}
+async function loadSitePageEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const slug=$('sitePageChoice').value;
+ const {data,error}=await client.from('site_pages').select('title,content').eq('slug',slug).maybeSingle();
+ if(error){sitePageStatus('تعذر تحميل الصفحة: '+error.message,'error');return;}
+ $('sitePageTitle').value=data?.title||'';
+ $('sitePageContent').value=data?.content||'';
+ sitePageStatus(data?'تم تحميل الصفحة.':'لا يوجد محتوى محفوظ لهذه الصفحة.','ok');
+}
+async function saveSitePageEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return sitePageStatus('تعديل الصفحات متاح لمالك المنصة فقط.','error');
+ const slug=$('sitePageChoice').value,title=$('sitePageTitle').value.trim(),content=$('sitePageContent').value.trim();
+ if(!title||!content)return sitePageStatus('أدخل عنوان الصفحة ومحتواها قبل الحفظ.','error');
+ $('sitePageSave').disabled=true;sitePageStatus('جارٍ حفظ الصفحة…');
+ try{
+  const {error}=await client.from('site_pages').upsert({slug,title,content,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'slug'});
+  if(error)throw error;
+  sitePageStatus('تم حفظ الصفحة بنجاح.','ok');
+ }catch(error){console.error(error);sitePageStatus('تعذر حفظ الصفحة: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('sitePageSave').disabled=false;}
+}
+let adminContactLinks=[];
+function contactLinksStatus(message,type){status('contactLinksStatus',message,type);}
+async function loadContactLinksEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return;
+ const {data,error}=await client.from('site_contact_links').select('key,title,url,sort_order').order('sort_order',{ascending:true});
+ if(error){contactLinksStatus('تعذر تحميل روابط التواصل: '+error.message,'error');return;}
+ adminContactLinks=data||[];
+ $('contactLinksList').innerHTML=adminContactLinks.length?'<table><thead><tr><th>نوع الرابط</th><th>العنوان</th><th>الرابط</th><th>الترتيب</th></tr></thead><tbody>'+adminContactLinks.map(x=>'<tr><td>'+escapeHtml(x.key)+'</td><td><input data-contact-title="'+escapeHtml(x.key)+'" value="'+escapeHtml(x.title||'')+'" style="width:100%;min-width:120px;padding:8px;border-radius:8px"></td><td><input data-contact-url="'+escapeHtml(x.key)+'" value="'+escapeHtml(x.url||'')+'" style="width:100%;min-width:220px;padding:8px;border-radius:8px;direction:ltr"></td><td><input data-contact-order="'+escapeHtml(x.key)+'" type="number" min="0" value="'+Number(x.sort_order||0)+'" style="width:75px;padding:8px;border-radius:8px"></td></tr>').join('')+'</tbody></table>':'<p class="note">لا توجد روابط تواصل محفوظة.</p>';
+ contactLinksStatus('تم تحميل '+adminContactLinks.length+' روابط.','ok');
+}
+function normalizeContactAdminUrl(key,value){
+ let raw=String(value||'').trim();if(!raw)return '';
+ if(key==='email'){
+  raw=raw.replace(/^(mailto:)+/i,'');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw))throw new Error('عنوان البريد الإلكتروني غير صالح.');
+  return 'mailto:'+raw;
+ }
+ if(!/^(https?:\/\/)/i.test(raw))raw='https://'+raw;
+ const u=new URL(raw);if(!['http:','https:'].includes(u.protocol))throw new Error('الرابط غير صالح.');
+ return u.href;
+}
+async function saveContactLinksEditor(){
+ if(!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER)return contactLinksStatus('تعديل روابط التواصل متاح لمالك المنصة فقط.','error');
+ const rows=adminContactLinks.map(x=>{
+  const key=x.key,title=document.querySelector('[data-contact-title="'+key+'"]').value.trim(),raw=document.querySelector('[data-contact-url="'+key+'"]').value.trim(),sort_order=Math.max(0,Number(document.querySelector('[data-contact-order="'+key+'"]').value)||0);
+  return {key,title:title||x.title,url:normalizeContactAdminUrl(key,raw),sort_order,updated_by:currentUser.id,updated_at:new Date().toISOString()};
+ });
+ $('contactLinksSave').disabled=true;contactLinksStatus('جارٍ حفظ روابط التواصل…');
+ try{
+  for(const row of rows){const {error}=await client.from('site_contact_links').upsert(row,{onConflict:'key'});if(error)throw error;}
+  contactLinksStatus('تم حفظ روابط التواصل بنجاح.','ok');
+ }catch(error){console.error(error);contactLinksStatus('تعذر حفظ روابط التواصل: '+(error.message||'خطأ غير معروف'),'error');}
+ finally{$('contactLinksSave').disabled=false;}
+}
 
 let adminBranding={name:'ضـــاد',tagline:'كل ما يحتاجه معلم اللغة العربية والطالب وولي الأمر',mark:'ض',logoPath:'',heroBackgroundPath:'',teacherText:'',appDownloadUrl:''};
 function brandAdminStatus(message,type){status('brandAdminStatus',message,type);}
@@ -407,6 +486,12 @@ $('sectionsReload').addEventListener('click',()=>{loadSectionManager();loadUploa
 $('uploadMainSection').addEventListener('change',updateUploadChildChoices);
 $('homePageReload').addEventListener('click',loadHomePageEditor);
 $('brandReloadAdmin').addEventListener('click',loadAdminBranding);
+$('sitePageChoice').addEventListener('change',loadSitePageEditor);
+$('sitePageReload').addEventListener('click',loadSitePageEditor);
+$('sitePageSave').addEventListener('click',saveSitePageEditor);
+$('contactLinksReload').addEventListener('click',loadContactLinksEditor);
+$('contactLinksSave').addEventListener('click',saveContactLinksEditor);
+
 $('brandSaveAdmin').addEventListener('click',saveAdminBranding);
 
 $('homePageSave').addEventListener('click',saveHomePageEditor);
