@@ -85,7 +85,7 @@ create policy "File managers can insert section material links"
   on public.home_section_materials
   for insert
   to authenticated
-  with check (public.dhad_is_file_manager());
+  with check ((select public.dhad_is_file_manager()));
 
 -- Section structure CRUD remains owner-only under the existing home_sections policies.
 
