@@ -41,13 +41,22 @@ The accompanying migration extends the existing section tables rather than repla
 
 The migration intentionally does not delete or rewrite existing materials, sections, users, analytics, storage objects, or legacy section keys.
 
+## Current implementation on `feature/admin-center-foundation`
+
+- The independent admin page now includes an owner-only section editor for top-level and child sections, optional unique slug, description, icon, sort order, active state, and manual homepage visibility.
+- The admin page now includes single/bulk upload controls: choose a top-level section, optionally choose one of its children, then select multiple files. Files are stored in the existing `materials` bucket and metadata in the existing `materials` table.
+- Upload associations are written to `home_section_materials`; when a child is selected, the parent association is retained and the child association is marked primary. The legacy `materials.primary_section` field is intentionally not populated with dynamic section slugs.
+- File-manager accounts can insert section-material associations through one narrowly scoped RLS policy in the migration; editing the section hierarchy remains owner-only.
+- Public rendering now nests child sections inside their parent and only renders top-level sections with `show_on_home = true`. A fallback query preserves compatibility before the new columns exist.
+- The admin and public inline JavaScript passed syntax compilation checks. Database integration testing is pending because the migration has not been applied.
+
 ## Rollout and safety gates
 
 1. Review the migration and schema diff.
 2. Apply the additive migration only after the owner approves the exact SQL.
-3. Build the section manager and dependent upload controls on this feature branch.
-4. Add public rendering for root sections and nested sections, with manual homepage placement and direct links.
-5. Verify one-file and multi-file uploads, file links, old materials, existing homepage blocks, and analytics.
+3. Test section creation/editing, parent-cycle rejection, manual homepage placement, and public nested rendering in a safe environment.
+4. Test one-file and multi-file uploads for owner and file-manager accounts, including the partial-failure case where metadata is saved but section linking is denied.
+5. Verify old materials, existing homepage blocks, file previews/downloads, and analytics remain unchanged.
 6. Build the remaining admin modules in separate tested increments.
 7. Merge only after the owner reviews and approves the pull request.
 
