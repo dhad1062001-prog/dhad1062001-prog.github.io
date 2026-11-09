@@ -42,13 +42,13 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
 
  <nav id="adminNav" aria-label="التنقل في مركز إدارة ضاد" style="display:flex;gap:8px;overflow-x:auto;padding:10px;margin:0 0 16px;background:#2D3829;border:1px solid #59654D;border-radius:14px;position:sticky;top:8px;z-index:20">
   <button type="button" class="secondary" data-admin-nav="dashboard">الإحصائيات</button>
-  <button type="button" class="secondary" data-admin-nav="homePageEditor">صفحة الاستقبال</button>
-  <button type="button" class="secondary" data-admin-nav="siteBrandingEditor">الهوية والصور</button>
-  <button type="button" class="secondary" data-admin-nav="sectionManager">الأقسام</button>
+  <button type="button" class="secondary" data-admin-nav="homePageEditor" data-admin-owner-nav>صفحة الاستقبال</button>
+  <button type="button" class="secondary" data-admin-nav="siteBrandingEditor" data-admin-owner-nav>الهوية والصور</button>
+  <button type="button" class="secondary" data-admin-nav="sectionManager" data-admin-owner-nav>الأقسام</button>
   <button type="button" class="secondary" data-admin-nav="adminUploadPanel">رفع الملفات</button>
-  <button type="button" class="secondary" data-admin-nav="academicStructureEditor">الصفوف والفصول</button>
-  <button type="button" class="secondary" data-admin-nav="sitePagesEditor">الصفحات</button>
-  <button type="button" class="secondary" data-admin-nav="contactLinksEditor">التواصل</button>
+  <button type="button" class="secondary" data-admin-nav="academicStructureEditor" data-admin-owner-nav>الصفوف والفصول</button>
+  <button type="button" class="secondary" data-admin-nav="sitePagesEditor" data-admin-owner-nav>الصفحات</button>
+  <button type="button" class="secondary" data-admin-nav="contactLinksEditor" data-admin-owner-nav>التواصل</button>
  </nav>
 
  <div class="cards">
@@ -203,6 +203,7 @@ function showState(){
  $('sectionManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('homePageEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('siteBrandingEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ document.querySelectorAll('[data-admin-owner-nav]').forEach(el=>el.classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER));
  $('sitePagesEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
