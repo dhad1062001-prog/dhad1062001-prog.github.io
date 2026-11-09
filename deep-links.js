@@ -4,7 +4,7 @@
 (function(){
   'use strict';
 
-  const DIRECT_KEYS=['material','game','additional','calendar','homeSection'];
+  const DIRECT_KEYS=['material','game','additional','calendar','homeSection','teacherSupplies'];
   const requestedAtBoot=new URL(location.href);
 
   const baseMetadata={
