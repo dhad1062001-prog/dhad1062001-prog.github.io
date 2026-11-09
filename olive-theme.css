@@ -1,0 +1,74 @@
+/* DHAD OLIVE & GOLD VISUAL IDENTITY — shared site theme */
+:root{
+  color-scheme:dark;
+  --bg:#20291C; --paper:#2D3829; --paper-2:#34412F;
+  --ink:#FFFFFF; --muted:#C8CEBF; --wine:#20291C; --wine-dark:#171E15;
+  --brown:#C3A45F; --sand:#C3A45F; --gold:#C3A45F; --line:#59654D;
+  --teal:#C3A45F; --green:#20291C; --green2:#2D3829;
+  --shadow:0 12px 32px rgba(0,0,0,.22); --shadow-lg:0 20px 55px rgba(0,0,0,.3);
+}
+html{background:#20291C!important;color-scheme:dark}
+body{background:#20291C!important;color:#FFFFFF!important}
+body,button,input,select,textarea{font-family:Cairo,Tahoma,Arial,sans-serif}
+h1,h2,h3,h4,h5,strong,b{color:#FFFFFF}
+p,.muted,.description,.subtitle,small{color:#C8CEBF}
+a{color:#D2B574}
+a:hover{color:#E4C982}
+.top,header,.topbar,.site-header{
+  background:linear-gradient(120deg,#20291C 0%,#2D3829 100%)!important;
+  color:#FFFFFF!important;border-color:#59654D!important;
+}
+.nav,.links,.nav a{color:#FFFFFF}
+.brand-mark,.mark,.logo-mark{background:#C3A45F!important;color:#20291C!important}
+.hero,.hero-wrap,.hero-copy,.page-hero,.page-title,.content-page,
+main,.main,.admin-main,.admin-shell{color:#FFFFFF}
+.hero-visual{background-color:#2D3829!important;border-color:#59654D!important}
+.section,.panel,.card,.admin-card,.stat-card,.metric,.tile,.feature-card,
+.platform-card,.home-card,.grade,.term,.category-card,.material-card,
+.file-card,.contact-card,.page-body,.setup-box,.table-wrap,.login,
+.modal-card,.certificate-preview,.home-section-preview{
+  background:#2D3829!important;color:#FFFFFF!important;
+  border-color:#59654D!important;box-shadow:0 12px 32px rgba(0,0,0,.2)!important;
+}
+.section-head,.panel-head,.toolbar{color:#FFFFFF}
+input,select,textarea{
+  background:#20291C!important;color:#FFFFFF!important;
+  border:1px solid #59654D!important;
+}
+input::placeholder,textarea::placeholder{color:#AEB8A7!important}
+button,.btn{
+  border-radius:11px;transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+button:not(.secondary):not(.theme):not(.mobile-toggle):not(.modal-close):not(.danger),
+.btn:not(.secondary):not(.danger),.primary,.download,.download-app-link,.login-btn,.contact-btn{
+  background:#C3A45F!important;color:#20291C!important;border:1px solid #C3A45F!important;
+  font-weight:800;
+}
+button:not(:disabled):hover,.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.secondary,.back,.theme,.mobile-toggle,.modal-close,
+.admin-nav-btn,.logout-btn{
+  background:#34412F!important;color:#FFFFFF!important;
+  border:1px solid #C3A45F!important;
+}
+.secondary svg,.back svg,.theme svg,.admin-nav-btn svg,
+.icon,.gold,svg.icon{color:#D2B574!important;stroke:currentColor}
+.danger{background:#713B35!important;color:#FFFFFF!important;border:1px solid #A86B5F!important}
+hr,.divider,.footer-bottom{border-color:#59654D!important}
+.foot,footer{
+  background:#171E15!important;color:#FFFFFF!important;border-color:#59654D!important;
+}
+.foot a,footer a{color:#D2B574!important}
+.badge,.status,.count-badge{background:#34412F!important;color:#E4C982!important;border-color:#59654D!important}
+table th{background:#34412F!important;color:#FFFFFF!important}
+table td{color:#E9EDE5!important;border-color:#59654D!important}
+.admin-sidebar{background:#20291C!important;border-color:#59654D!important}
+.admin-sidebar a.active,.admin-menu .active{background:#34412F!important;color:#E4C982!important}
+#dhadDirectBoot{background:#20291C!important;color:#FFFFFF!important}
+#dhadDirectBoot .dhad-boot-mark{background:#C3A45F!important;color:#20291C!important}
+#dhadDirectBoot .dhad-boot-spinner{border-color:rgba(195,164,95,.25)!important;border-top-color:#C3A45F!important}
+#dhadDirectBoot small{color:#C8CEBF!important}
+@media(max-width:700px){
+  .top,.site-header{border-bottom:1px solid #59654D!important}
+  .hero-wrap,.page-hero{background:#20291C!important}
+  .foot{padding-bottom:24px}
+}
