@@ -105,6 +105,7 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <button type="button" class="secondary" data-admin-nav="academicStructureEditor" data-admin-owner-nav>الصفوف والفصول</button>
   <button type="button" class="secondary" data-admin-nav="sitePagesEditor" data-admin-owner-nav>الصفحات</button>
   <button type="button" class="secondary" data-admin-nav="contactLinksEditor" data-admin-owner-nav>التواصل</button>
+  <button type="button" class="secondary" data-admin-nav="teacherSuppliesManager" data-admin-owner-nav>لوازم المعلمين</button>
  </nav>
 
  <div class="cards">
@@ -236,6 +237,33 @@ button,.btn,select{font:inherit}button,.btn{border:0;border-radius:11px;padding:
   <p class="note">ملاحظة: هذه الوحدة تحتاج إلى ترقية مخطط قاعدة البيانات الموجودة في فرع التطوير. إذا لم تكن الترقية قد طُبقت بعد، ستظهر رسالة توضح ذلك ولن تُجرى أي كتابة.</p>
  </section>
 
+ <section class="section hidden" id="teacherSuppliesManager" data-admin-owner-nav>
+  <h3>إدارة لوازم المعلمين</h3>
+  <p class="note">إدارة الملفات المرتبطة بقسم لوازم المعلمين. إزالة الملف من هذا القسم تفصل الارتباط فقط ولا تحذف الأصل من مكتبة الملفات أو التخزين.</p>
+  <div class="grid2">
+   <div class="panel" style="box-shadow:none">
+    <h3>إضافة ملف موجود من المكتبة</h3>
+    <label for="tsExistingMaterialAdmin">اختر ملفًا عامًا من المكتبة</label>
+    <select id="tsExistingMaterialAdmin" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0 12px;background:#20291C;color:#fff"><option value="">جارٍ تحميل المكتبة…</option></select>
+    <button type="button" id="tsLinkExistingAdmin">ربط الملف بالقسم</button>
+   </div>
+   <form class="panel" id="tsUploadFormAdmin" style="box-shadow:none">
+    <h3>رفع ملف جديد</h3>
+    <label for="tsTitleAdmin">اسم الملف</label><input id="tsTitleAdmin" required maxlength="180" style="width:100%;padding:10px;margin:6px 0 10px;border:1px solid var(--line);border-radius:10px;background:#20291C;color:#fff">
+    <label for="tsDescriptionAdmin">وصف الملف</label><textarea id="tsDescriptionAdmin" rows="3" style="width:100%;padding:10px;margin:6px 0 10px;border:1px solid var(--line);border-radius:10px;background:#20291C;color:#fff"></textarea>
+    <div class="grid2">
+     <div><label for="tsGradeAdmin">الصف (اختياري)</label><select id="tsGradeAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+     <div><label for="tsSemesterAdmin">الفصل (اختياري)</label><select id="tsSemesterAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+     <div><label for="tsCategoryAdmin">التصنيف (اختياري)</label><select id="tsCategoryAdmin" style="width:100%;padding:10px;margin:6px 0 10px;background:#20291C;color:#fff;border:1px solid var(--line);border-radius:10px"></select></div>
+    </div>
+    <label for="tsFileAdmin">الملف (حتى 50 ميجابايت)</label><input id="tsFileAdmin" type="file" required style="display:block;width:100%;margin:8px 0 14px">
+    <button type="submit">رفع وإضافة إلى القسم</button>
+   </form>
+  </div>
+  <div id="teacherSuppliesAdminStatus" class="status" role="status" aria-live="polite"></div>
+  <div class="panel" style="box-shadow:none;margin-top:14px"><h3>الملفات المرتبطة بالقسم</h3><div id="teacherSuppliesAdminList"><p class="note">سيتم تحميل الملفات بعد تسجيل الدخول.</p></div></div>
+ </section>
+
  <section class="section"><h3>إدارة المنصة</h3><p style="color:var(--muted);line-height:1.9;margin-top:0">هذه هي الصفحة المستقلة الجديدة. أدوات إدارة الملفات والأقسام والمحتوى ما زالت تعمل في اللوحة الحالية داخل الموقع، وسيتم نقلها تدريجيًا بعد اختبار كل وحدة دون حذف النسخة القديمة.</p><div class="actions"><a class="btn" href="./platform.html">فتح أدوات الإدارة الحالية</a></div></section>
 </section>
 <div id="globalStatus" class="status" role="status" aria-live="polite"></div>
@@ -270,7 +298,8 @@ function showState(){
  $('sitePagesEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('contactLinksEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
  $('academicStructureEditor').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
- if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();}}
+ $('teacherSuppliesManager').classList.toggle('hidden',!currentUser||String(currentUser.email||'').toLowerCase()!==OWNER);
+ if(currentUser&&authorized()){$('welcome').textContent='مرحبًا '+(currentProfile?.full_name||currentUser.email)+' — الإحصائيات للإدارة فقط';loadAnalytics();loadUploadSectionChoices();if(String(currentUser.email||'').toLowerCase()===OWNER){loadSectionManager();loadHomePageEditor();loadAdminBranding();loadSitePageEditor();loadContactLinksEditor();loadAcademicRows();loadTeacherSupplyLookupsAdmin();loadTeacherSuppliesAdmin();}}
 }
 async function loadProfile(){
  currentProfile=null;
@@ -643,7 +672,107 @@ async function saveManagedSection(){
  finally{$('sectionSave').disabled=false;}
 }
 
+
+const TEACHER_SUPPLIES_SECTION_ID=2;
+let teacherSupplyRowsAdmin=[];
+function teacherSupplyStatusAdmin(message,type){
+ const el=$('teacherSuppliesAdminStatus');if(!el)return;
+ el.textContent=message||'';el.className='status'+(message?' show':'')+(type?' '+type:'');
+}
+function teacherSupplyOwnerAdmin(){
+ return !!currentUser&&String(currentUser.email||'').trim().toLowerCase()===OWNER;
+}
+function teacherSupplyEscapeAdmin(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function teacherSupplyBytesAdmin(value){
+ const n=Number(value||0);if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB';
+}
+async function loadTeacherSupplyLookupsAdmin(){
+ const specs=[['tsGradeAdmin','grades','الصف'],['tsSemesterAdmin','semesters','الفصل'],['tsCategoryAdmin','categories','التصنيف']];
+ for(const [id,table,label] of specs){
+  const el=$(id);if(!el)continue;
+  const {data,error}=await client.from(table).select('id,name').order('sort_order',{ascending:true});
+  if(error){el.innerHTML='<option value="">تعذر تحميل '+label+'</option>';continue;}
+  el.innerHTML='<option value="">'+label+' (اختياري)</option>'+(data||[]).map(x=>'<option value="'+teacherSupplyEscapeAdmin(x.id)+'">'+teacherSupplyEscapeAdmin(x.name)+'</option>').join('');
+ }
+}
+async function loadTeacherSuppliesAdmin(){
+ if(!teacherSupplyOwnerAdmin())return;
+ const list=$('teacherSuppliesAdminList');if(!list)return;
+ list.innerHTML='<p class="note">جارٍ تحميل الملفات…</p>';
+ try{
+  const [mr,lr]=await Promise.all([
+   client.from('materials').select('id,title,description,file_name,file_type,file_size,grade_id,semester_id,category_id,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000),
+   client.from('home_section_materials').select('material_id,sort_order').eq('section_id',TEACHER_SUPPLIES_SECTION_ID).order('sort_order',{ascending:true})
+  ]);
+  if(mr.error)throw mr.error;if(lr.error)throw lr.error;
+  const byId=new Map((mr.data||[]).map(x=>[String(x.id),x]));
+  teacherSupplyRowsAdmin=(lr.data||[]).map(x=>({...byId.get(String(x.material_id)),sort_order:Number(x.sort_order||0)})).filter(x=>x.id);
+  const linked=new Set(teacherSupplyRowsAdmin.map(x=>String(x.id)));
+  $('tsExistingMaterialAdmin').innerHTML='<option value="">اختر ملفًا من المكتبة</option>'+(mr.data||[]).filter(x=>!linked.has(String(x.id))).map(x=>'<option value="'+teacherSupplyEscapeAdmin(x.id)+'">'+teacherSupplyEscapeAdmin(x.title||x.file_name||'ملف')+'</option>').join('');
+  renderTeacherSuppliesAdmin();
+ }catch(error){
+  list.innerHTML='<p class="note">تعذر تحميل الملفات المرتبطة بالقسم.</p>';
+  teacherSupplyStatusAdmin('تعذر تحميل ملفات لوازم المعلمين: '+(error.message||'خطأ غير معروف'),'error');
+ }
+}
+function renderTeacherSuppliesAdmin(){
+ const list=$('teacherSuppliesAdminList');if(!list)return;
+ if(!teacherSupplyRowsAdmin.length){list.innerHTML='<p class="note">لا توجد ملفات مرتبطة بالقسم حاليًا.</p>';return;}
+ list.innerHTML=teacherSupplyRowsAdmin.map((m,i)=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--line)"><div style="min-width:180px;flex:1"><b>'+teacherSupplyEscapeAdmin(m.title||m.file_name||'ملف')+'</b><div class="note">'+teacherSupplyEscapeAdmin(m.file_name||'')+' · '+teacherSupplyBytesAdmin(m.file_size)+'</div><div class="note">'+teacherSupplyEscapeAdmin(m.description||'لا يوجد وصف مضاف.')+'</div></div><div class="actions"><button type="button" class="secondary" data-ts-up="'+i+'" '+(i===0?'disabled':'')+'>↑</button><button type="button" class="secondary" data-ts-down="'+i+'" '+(i===teacherSupplyRowsAdmin.length-1?'disabled':'')+'>↓</button><button type="button" class="secondary" data-ts-remove="'+teacherSupplyEscapeAdmin(m.id)+'">إزالة من القسم</button></div></div>').join('');
+ list.querySelectorAll('[data-ts-up]').forEach(b=>b.addEventListener('click',()=>moveTeacherSupplyAdmin(Number(b.dataset.tsUp),-1)));
+ list.querySelectorAll('[data-ts-down]').forEach(b=>b.addEventListener('click',()=>moveTeacherSupplyAdmin(Number(b.dataset.tsDown),1)));
+ list.querySelectorAll('[data-ts-remove]').forEach(b=>b.addEventListener('click',()=>removeTeacherSupplyAdmin(b.dataset.tsRemove)));
+}
+async function linkExistingTeacherSupplyAdmin(){
+ if(!teacherSupplyOwnerAdmin())return;
+ const id=$('tsExistingMaterialAdmin').value;if(!id)return teacherSupplyStatusAdmin('اختر ملفًا من المكتبة أولًا.','error');
+ const {data:existing,error:readError}=await client.from('home_section_materials').select('material_id').eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',id).maybeSingle();
+ if(readError)return teacherSupplyStatusAdmin('تعذر التحقق من الارتباط: '+readError.message,'error');
+ if(existing)return teacherSupplyStatusAdmin('هذا الملف مرتبط بالقسم بالفعل.','error');
+ const order=teacherSupplyRowsAdmin.length?Math.max(...teacherSupplyRowsAdmin.map(x=>x.sort_order||0))+1:1;
+ const {error}=await client.from('home_section_materials').insert({section_id:TEACHER_SUPPLIES_SECTION_ID,material_id:id,sort_order:order});
+ if(error)return teacherSupplyStatusAdmin('تعذر ربط الملف: '+error.message,'error');
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم ربط الملف بالقسم دون نسخ الأصل.','ok');
+}
+async function uploadTeacherSupplyAdmin(event){
+ event.preventDefault();if(!teacherSupplyOwnerAdmin())return;
+ const title=$('tsTitleAdmin').value.trim(),description=$('tsDescriptionAdmin').value.trim(),file=$('tsFileAdmin').files?.[0];
+ if(!title)return teacherSupplyStatusAdmin('اكتب اسم الملف.','error');
+ if(!file)return teacherSupplyStatusAdmin('اختر الملف أولًا.','error');
+ if(file.size>50*1024*1024)return teacherSupplyStatusAdmin('حجم الملف يتجاوز 50 ميجابايت.','error');
+ const gradeId=$('tsGradeAdmin').value?Number($('tsGradeAdmin').value):null,semesterId=$('tsSemesterAdmin').value?Number($('tsSemesterAdmin').value):null,categoryId=$('tsCategoryAdmin').value?Number($('tsCategoryAdmin').value):null;
+ teacherSupplyStatusAdmin('جارٍ رفع الملف…','info');
+ const ext=(file.name.split('.').pop()||'bin').toLowerCase(),folders=[gradeId?'grade-'+gradeId:null,semesterId?'semester-'+semesterId:null,categoryId?'category-'+categoryId:null].filter(Boolean);
+ const path=(folders.length?folders.join('/'):'teacher-supplies')+'/'+crypto.randomUUID()+'.'+ext;
+ const {data:uploaded,error:uploadError}=await client.storage.from('materials').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+ if(uploadError)return teacherSupplyStatusAdmin('فشل رفع الملف: '+uploadError.message,'error');
+ const {data:saved,error:dbError}=await client.from('materials').insert({title,description:description||null,content_summary:null,learning_objectives:null,target_audience:null,page_count:null,grade_id:gradeId,semester_id:semesterId,category_id:categoryId,primary_section:'teacher_supplies',additional_sections:[],file_path:uploaded.path,file_name:file.name,file_type:file.type||null,file_size:file.size,is_public:true,created_by:currentUser.id,track_name:null,field_name:null}).select('id').single();
+ if(dbError||!saved?.id){await client.storage.from('materials').remove([uploaded.path]);return teacherSupplyStatusAdmin('تعذر حفظ بيانات الملف: '+(dbError?.message||'لم يتم استرجاع معرّف الملف'),'error');}
+ const sortOrder=teacherSupplyRowsAdmin.length?Math.max(...teacherSupplyRowsAdmin.map(x=>x.sort_order||0))+1:1;
+ const {error:linkError}=await client.from('home_section_materials').insert({section_id:TEACHER_SUPPLIES_SECTION_ID,material_id:saved.id,sort_order:sortOrder});
+ if(linkError){await loadTeacherSuppliesAdmin();return teacherSupplyStatusAdmin('رُفع الملف وحُفظ في المكتبة، لكن تعذر ربطه بالقسم: '+linkError.message,'error');}
+ $('tsUploadFormAdmin').reset();await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم رفع الملف وإضافته إلى قسم لوازم المعلمين.','ok');
+}
+async function moveTeacherSupplyAdmin(index,delta){
+ if(!teacherSupplyOwnerAdmin())return;const next=index+delta;if(next<0||next>=teacherSupplyRowsAdmin.length)return;
+ const rows=teacherSupplyRowsAdmin.slice();[rows[index],rows[next]]=[rows[next],rows[index]];
+ for(let i=0;i<rows.length;i++){const {error}=await client.from('home_section_materials').update({sort_order:i+1}).eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',rows[i].id);if(error)return teacherSupplyStatusAdmin('تعذر حفظ الترتيب: '+error.message,'error');}
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تم تحديث ترتيب الملفات.','ok');
+}
+async function removeTeacherSupplyAdmin(id){
+ if(!teacherSupplyOwnerAdmin())return;
+ const m=teacherSupplyRowsAdmin.find(x=>String(x.id)===String(id));if(!m||!confirm('إزالة «'+(m.title||m.file_name||'الملف')+'» من قسم لوازم المعلمين؟ لن يُحذف الملف الأصلي.'))return;
+ const {error}=await client.from('home_section_materials').delete().eq('section_id',TEACHER_SUPPLIES_SECTION_ID).eq('material_id',id);
+ if(error)return teacherSupplyStatusAdmin('تعذر إزالة الارتباط: '+error.message,'error');
+ await loadTeacherSuppliesAdmin();teacherSupplyStatusAdmin('تمت إزالة الارتباط فقط، وبقي الملف الأصلي محفوظًا.','ok');
+}
+
 $('loginBtn').addEventListener('click',signIn);
+ $('tsLinkExistingAdmin').addEventListener('click',linkExistingTeacherSupplyAdmin);
+ $('tsUploadFormAdmin').addEventListener('submit',uploadTeacherSupplyAdmin);
+
 document.querySelectorAll('[data-admin-nav]').forEach(btn=>btn.addEventListener('click',()=>{
  const target=$(btn.dataset.adminNav);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
 }));
