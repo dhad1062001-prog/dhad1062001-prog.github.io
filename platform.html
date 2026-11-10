@@ -747,6 +747,7 @@ const DHAD_APK_URL = '';
 
 let sb=null;
 let homeSectionsPublic=[];
+let homeSectionContentItemsMap={};
 let homeSectionsAdmin=[];
 let homeSectionMaterialMap={};
 let homeSectionMaterialAdminMap={};
@@ -2538,12 +2539,25 @@ function renderPublicHomeSections(rows,directSectionId=null){
           '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
       }
     }
+    const sectionContentMarkup=(homeSectionContentItemsMap[String(row.id)]||[]).map(item=>{
+      const itemTitle=escapeHtml(item.title||'');
+      const itemDescription=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
+      if(item.content_type==='text'){
+        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\\r?\\n/g,'<br>')+'</div></article>';
+      }
+      if(item.content_type==='html'&&item.storage_path){
+        const htmlUrl=getMaterialUrl(item.storage_path);
+        if(!htmlUrl)return '';
+        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<iframe class="home-section-html-frame" title="'+itemTitle+'" src="'+escapeHtml(htmlUrl)+'" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe></article>';
+      }
+      return '';
+    }).join('');
     const linked=(homeSectionMaterialMap[String(row.id)]||[]).slice(0,Math.max(1,Math.min(50,Number(row.display_limit||6))));
     const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'<small class="dhad-download-count" data-material-count="'+escapeHtml(String(m.id))+'">⬇ مرات بدء التنزيل: <span data-count-value>'+Number(m.download_count||0).toLocaleString('ar')+'</span></small></div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
     const childMarkup=(childrenByParent.get(String(row.id))||[]).filter(child=>child.show_on_home!==false).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)).map(renderSection).join('');
     const sectionDescription=row.section_description?'<p class="home-section-caption">'+escapeHtml(row.section_description)+'</p>':'';
     const sectionIcon=row.icon?escapeHtml(row.icon)+' ':'';
-    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
+    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+sectionContentMarkup+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   };
   let directRootId=null;
   if(directSectionId){
@@ -2593,6 +2607,13 @@ async function loadHomeSectionsPublic(directSectionId=null){
     }
     if(error)throw error;
     homeSectionsPublic=data||[];
+    homeSectionContentItemsMap={};
+    const sectionIds=homeSectionsPublic.map(x=>x.id);
+    if(sectionIds.length){
+      const contentResult=await sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,sort_order').eq('status','published').in('section_id',sectionIds).order('sort_order',{ascending:true});
+      if(contentResult.error)throw contentResult.error;
+      (contentResult.data||[]).forEach(item=>{(homeSectionContentItemsMap[String(item.section_id)] ||= []).push(item);});
+    }
     await loadHomeSectionRelations(false,homeSectionsPublic.map(x=>x.id));
     renderPublicHomeSections(homeSectionsPublic,directSectionId);
   }catch(error){
