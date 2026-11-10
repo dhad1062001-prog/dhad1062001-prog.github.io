@@ -162,22 +162,32 @@ async function loadMaterialsList(){
  if(error){el.textContent="تعذر تحميل القائمة: "+error.message;return}
  if(!data?.length){el.innerHTML='<div class="empty">لا توجد ملفات مسجلة.</div>';return}
  window.__dhadAdminMaterials=data;
- el.innerHTML='<div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>نوعه</th><th>الحجم</th><th>التنزيلات</th><th>الحالة</th><th>تاريخ الإضافة</th><th>الإجراءات</th></tr></thead><tbody>'+data.map(m=>'<tr><td><b>'+esc(m.title||m.file_name)+'</b><div class="muted">'+esc(m.file_name||"")+'</div></td><td>'+esc(m.file_type||"—")+'</td><td>'+((Number(m.file_size||0)/1024/1024).toFixed(2))+' MB</td><td>'+Number(m.download_count||0)+'</td><td><span class="pill '+(m.is_public?"":"off")+'">'+(m.is_public?"منشور":"غير منشور")+'</span></td><td>'+new Date(m.created_at).toLocaleDateString("ar")+'</td><td><div class="row-actions"><button class="btn light tiny" data-material-edit="'+m.id+'">تعديل البيانات</button><button class="btn light tiny" data-material-toggle="'+m.id+'">'+(m.is_public?"إخفاء":"نشر")+'</button>'+(access?.permissions?.file_delete||access?.owner?'<button class="btn danger tiny" data-material-trash="'+m.id+'">أرشفة</button>':'')+'</div></td></tr>').join("")+'</tbody></table></div><div id="materialEditPanel"></div>';
+ el.innerHTML='<div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>نوعه</th><th>الحجم</th><th>التنزيلات</th><th>الحالة</th><th>تاريخ الإضافة</th><th>الإجراءات</th></tr></thead><tbody>'+data.map(m=>'<tr><td><b>'+esc(m.title||m.file_name)+'</b><div class="muted">'+esc(m.file_name||"")+'</div></td><td>'+esc(m.file_type||"—")+'</td><td>'+((Number(m.file_size||0)/1024/1024).toFixed(2))+' MB</td><td>'+Number(m.download_count||0)+'</td><td><span class="pill '+(m.is_public?"":"off")+'">'+(m.is_public?"منشور":"غير منشور")+'</span></td><td>'+new Date(m.created_at).toLocaleDateString("ar")+'</td><td><div class="row-actions"><button class="btn light tiny" data-material-edit="'+m.id+'">تعديل البيانات</button><button class="btn light tiny" data-material-toggle="'+m.id+'">'+(m.is_public?"إخفاء":"نشر")+'</button>'+(access?.owner||(!access?.staff&&access?.role==="admin")?'<button class="btn danger tiny" data-material-trash="'+m.id+'">أرشفة</button>':'')+'</div></td></tr>').join("")+'</tbody></table></div><div id="materialEditPanel"></div>';
  el.querySelectorAll("[data-material-edit]").forEach(btn=>btn.onclick=()=>editMaterial(btn.dataset.materialEdit));
  el.querySelectorAll("[data-material-toggle]").forEach(btn=>btn.onclick=()=>toggleMaterialVisibility(btn.dataset.materialToggle));
  el.querySelectorAll("[data-material-trash]").forEach(btn=>btn.onclick=()=>archiveMaterial(btn.dataset.materialTrash));
 }
-function editMaterial(id){
+async function editMaterial(id){
  const m=(window.__dhadAdminMaterials||[]).find(x=>x.id===id);if(!m)return;
  const panel=document.getElementById("materialEditPanel");if(!panel)return;
- panel.innerHTML='<div class="panel" style="margin-top:16px"><h3>تعديل بيانات الملف</h3><div class="notice">سيتم تعديل العنوان والوصف فقط. لن يتغير الملف الأصلي أو مساره أو تصنيفه أو ارتباطه بالأقسام.</div><form id="materialEditor"><div class="field"><label>عنوان الملف</label><input name="title" maxlength="180" required value="'+esc(m.title||"")+'"></div><div class="field"><label>وصف الملف</label><textarea name="description" rows="5">'+esc(m.description||"")+'</textarea></div><div class="toolbar"><button class="btn gold">حفظ التعديلات</button><button class="btn light" type="button" id="cancelMaterialEdit">إلغاء</button></div></form></div>';
+ const {data:linksNow,error:linksError}=await sb.from("home_section_materials").select("section_id,is_primary").eq("material_id",id);
+ if(linksError)return fail(linksError);
+ const currentPrimary=linksNow?.find(x=>x.is_primary)?.section_id||linksNow?.[0]?.section_id||"";
+ const options=sections.filter(s=>s.is_active!==false).map(s=>'<option value="'+s.id+'" '+(String(currentPrimary)===String(s.id)?"selected":"")+'>'+esc(s.title)+'</option>').join("");
+ panel.innerHTML='<div class="panel" style="margin-top:16px"><h3>تعديل بيانات الملف</h3><div class="notice">يمكنك تعديل العنوان والوصف والقسم الرئيسي. ستبقى روابط الأقسام الأخرى محفوظة، ولن يتغير ملف التخزين أو مساره.</div><form id="materialEditor"><div class="field"><label>عنوان الملف</label><input name="title" maxlength="180" required value="'+esc(m.title||"")+'"></div><div class="field"><label>وصف الملف</label><textarea name="description" rows="5">'+esc(m.description||"")+'</textarea></div><div class="field"><label>القسم الرئيسي للعرض</label><select name="section_id"><option value="">عدم تغيير ارتباط القسم</option>'+options+'</select></div><div class="toolbar"><button class="btn gold">حفظ التعديلات</button><button class="btn light" type="button" id="cancelMaterialEdit">إلغاء</button></div></form></div>';
  document.getElementById("cancelMaterialEdit").onclick=()=>panel.innerHTML="";
  document.getElementById("materialEditor").onsubmit=async e=>{
-  e.preventDefault();const f=new FormData(e.currentTarget),title=String(f.get("title")||"").trim(),description=String(f.get("description")||"").trim();
+  e.preventDefault();const f=new FormData(e.currentTarget),title=String(f.get("title")||"").trim(),description=String(f.get("description")||"").trim(),newSection=String(f.get("section_id")||"");
   if(!title){toast("عنوان الملف مطلوب.",true);return}
-  const submit=e.currentTarget.querySelector("button[type=submit],button:not([type])");if(submit)submit.disabled=true;
+  const submit=e.currentTarget.querySelector("button:not([type])");if(submit)submit.disabled=true;
   const {error}=await sb.from("materials").update({title,description:description||null,updated_at:new Date().toISOString()}).eq("id",id);
   if(error){if(submit)submit.disabled=false;return fail(error)}
+  if(newSection){
+   const {error:upsertError}=await sb.from("home_section_materials").upsert({section_id:Number(newSection),material_id:id,is_primary:true,sort_order:0},{onConflict:"section_id,material_id"});
+   if(upsertError){if(submit)submit.disabled=false;return fail(upsertError)}
+   const {error:demoteError}=await sb.from("home_section_materials").update({is_primary:false}).eq("material_id",id).neq("section_id",Number(newSection));
+   if(demoteError){if(submit)submit.disabled=false;return fail(demoteError)}
+  }
   toast("تم تحديث بيانات الملف.");await loadMaterialsList();
  };
 }
@@ -191,7 +201,7 @@ async function toggleMaterialVisibility(id){
  toast(next?"تم نشر الملف.":"تم إخفاء الملف.");await loadMaterialsList();
 }
 async function archiveMaterial(id){
- if(!(access?.owner||access?.permissions?.file_delete))return toast("ليس لديك صلاحية أرشفة الملفات.",true);
+ if(!(access?.owner||(!access?.staff&&access?.role==="admin")))return toast("أرشفة الملفات متاحة للمالك والمدير المعتمد فقط.",true);
  const m=(window.__dhadAdminMaterials||[]).find(x=>x.id===id);if(!m)return;
  if(!confirm("سيُنقل الملف إلى سلة المحذوفات ويُخفى عن الزوار دون حذف ملف التخزين. هل تريد المتابعة؟"))return;
  try{const result=await adminAction("trash_material",{id});toast(result.message||"تمت أرشفة الملف.");await loadMaterialsList()}
