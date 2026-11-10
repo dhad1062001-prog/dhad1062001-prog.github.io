@@ -819,6 +819,15 @@
     moduleError(root, error?.message || "حدث خطأ غير متوقع.");
   }
   function ownerCanWrite() { return accessState?.owner === true; }
+  async function logAdminAction(action, targetType = "", targetId = "", details = {}) {
+    try {
+      await supabase.functions.invoke("admin-control", {
+        body: { action: "audit_record", audit_action: action, target_type: targetType, target_id: String(targetId || ""), details }
+      });
+    } catch (error) {
+      console.warn("تعذر تسجيل العملية في سجل الإدارة:", error);
+    }
+  }
   function ownerNotice() {
     return '<p class="data-note">العرض متاح، أما التعديل والحفظ فيتطلبان حساب مالك المنصة وفق صلاحيات قاعدة البيانات الحالية.</p>';
   }
@@ -839,6 +848,7 @@
         title: title.trim(), description: description.trim(), updated_at: new Date().toISOString()
       }).eq("id", id);
       if (error) throw error;
+      await logAdminAction("material_updated","material",id,{title:title.trim()});
       await loadMaterials(activeModule);
       return;
     }
@@ -849,6 +859,7 @@
         .update({ is_public: !row.is_public, updated_at: new Date().toISOString() })
         .eq("id", id).select("id").maybeSingle();
       if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات تغيير حالة النشر.");
+      await logAdminAction("material_visibility_changed","material",id,{is_public:!row.is_public});
       await loadMaterials(activeModule);
       return;
     }
@@ -942,6 +953,7 @@
       ? await supabase.from(table).insert(payload)
       : await supabase.from(table).update(payload).eq("id", id);
     if (result.error) throw result.error;
+    await logAdminAction(isNew?"lookup_created":"lookup_updated",kind,id||payload.slug||payload.name,{name:payload.name});
     if (activeModule === "academic") await loadAcademic(); else await loadSections();
   }
 
@@ -1003,6 +1015,7 @@
         updated_at:new Date().toISOString()
       }).eq("slug",slug);
       if(error)return moduleError(root,error.message);
+      await logAdminAction("site_page_updated","site_page",slug,{title:document.getElementById("adminPageTitle").value.trim()});
       await loadPages();
     });
     document.getElementById("adminContactForm").addEventListener("submit", async event => {
@@ -1014,6 +1027,7 @@
         const {error}=await supabase.from("site_contact_links").update({url:item.url,updated_at:new Date().toISOString()}).eq("key",item.key);
         if(error)return moduleError(root,error.message);
       }
+      await logAdminAction("contact_links_updated","site_contact_links","all",{count:updates.length});
       await loadPages();
     });
   }
@@ -1032,6 +1046,7 @@
       if(!value||typeof value!=="object"||Array.isArray(value))return moduleError(root,"يجب أن تكون بيانات الهوية كائن JSON.");
       const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(value),updated_at:new Date().toISOString()}).eq("slug","site-branding");
       if(saveError)return moduleError(root,saveError.message);
+      await logAdminAction("site_branding_updated","site_page","site-branding");
       moduleError(root,"تم حفظ إعدادات الهوية بنجاح.");
     });
   }
@@ -1064,6 +1079,7 @@
       const title=feature?.[1]||slug;
       const {error:saveError}=await supabase.from("site_pages").upsert({slug,title,content:JSON.stringify(value),is_visible:true,updated_at:new Date().toISOString()},{onConflict:"slug"});
       if(saveError)return moduleError(root,saveError.message);
+      await logAdminAction("feature_content_updated","site_page",slug,{title});
       moduleError(root,"تم حفظ المحتوى. حدّث الموقع العام للتحقق من ظهوره.");
     });
   }
@@ -1141,6 +1157,7 @@
       const payload={page_path,page_title:document.getElementById("seoTitle").value.trim(),meta_description:document.getElementById("seoDescription").value.trim(),canonical_url,robots:document.getElementById("seoRobots").value,og_title:document.getElementById("seoOgTitle").value.trim(),og_description:document.getElementById("seoOgDescription").value.trim(),og_image_url,is_published:document.getElementById("seoPublished").checked,updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null};
       const {error:saveError}=await supabase.from("site_seo").upsert(payload,{onConflict:"page_path"});
       if(saveError)return moduleError(root,saveError.message);
+      await logAdminAction("seo_metadata_saved","site_seo",page_path,{title:payload.page_title});
       await loadSeo();
     });
   }
@@ -1159,11 +1176,11 @@
   async function loadTrash() {
     const root=document.getElementById("moduleView");
     root.innerHTML='<div class="data-loading">جارٍ تحميل سلة المحذوفات…</div>';
-    if(!ownerCanWrite())return moduleError(root,"إدارة سلة المحذوفات متاحة لمالك المنصة فقط.");
+    if(!["owner","admin"].includes(accessState?.role))return moduleError(root,"عرض سلة المحذوفات متاح للحسابات الإدارية المعتمدة فقط.");
     try{
       const result=await invokeAdmin("trash_list");
       const entries=result.entries||[];
-      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات المؤرشفة</h2><p>النقل إلى السلة يخفي الملف ولا يحذف ملف التخزين. الحذف النهائي لا يتم إلا من هنا.</p></div><span class="data-count">'+numberFormat(entries.length)+' ملف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>تاريخ النقل</th><th>الحذف التلقائي</th><th>الإجراءات</th></tr></thead><tbody>'+(entries.map(x=>'<tr><td>'+escapeHtml(x.title)+'</td><td>'+fmtDate(x.deleted_at)+'</td><td>'+fmtDate(x.expires_at)+'</td><td><button type="button" data-admin-action="trash-restore" data-id="'+x.id+'">استعادة</button> <button type="button" data-admin-action="trash-purge" data-id="'+x.id+'">حذف نهائي</button></td></tr>').join("")||'<tr><td colspan="4">سلة المحذوفات فارغة.</td></tr>')+'</tbody></table></div><p class="data-note">النسخة الحالية تدعم أرشفة ملفات materials فقط. لا تُحذف الملفات تلقائيًا عند انتهاء 30 يومًا؛ يتطلب ذلك مهمة مجدولة منفصلة.</p></section>';
+      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات المؤرشفة</h2><p>النقل إلى السلة يخفي الملف ولا يحذف ملف التخزين. الحذف النهائي لا يتم إلا من هنا.</p></div><span class="data-count">'+numberFormat(entries.length)+' ملف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>تاريخ النقل</th><th>الحذف التلقائي</th><th>الإجراءات</th></tr></thead><tbody>'+(entries.map(x=>'<tr><td>'+escapeHtml(x.title)+'</td><td>'+fmtDate(x.deleted_at)+'</td><td>'+fmtDate(x.expires_at)+'</td><td>'+(ownerCanWrite()?'<button type="button" data-admin-action="trash-restore" data-id="'+x.id+'">استعادة</button> <button type="button" data-admin-action="trash-purge" data-id="'+x.id+'">حذف نهائي</button>':'متاح للمالك فقط')+'</td></tr>').join("")||'<tr><td colspan="4">سلة المحذوفات فارغة.</td></tr>')+'</tbody></table></div><p class="data-note">النسخة الحالية تدعم أرشفة ملفات materials فقط. لا تُحذف الملفات تلقائيًا عند انتهاء 30 يومًا؛ يتطلب ذلك مهمة مجدولة منفصلة.</p></section>';
     }catch(error){moduleError(root,error.message);}
   }
 
@@ -1211,7 +1228,13 @@
     ]);
     const error=m.error||g.error||s.error||c.error;
     if(error){root.innerHTML='<div class="data-error">تعذر تحميل الملفات: '+escapeHtml(error.message)+'</div>';return;}
-    const allMaterials=m.data||[], materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
+    let allMaterials=m.data||[];
+    try {
+      const {data:trashData}=await supabase.functions.invoke("admin-control",{body:{action:"trash_list"}});
+      const trashedIds=new Set((trashData?.entries||[]).map(item=>String(item.entity_id)));
+      allMaterials=allMaterials.filter(item=>!trashedIds.has(String(item.id)));
+    } catch(error) { console.warn("تعذر استبعاد الملفات المؤرشفة من قائمة الإدارة:",error); }
+    const materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
     const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
     window.__adminModuleMaterials=allMaterials;
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td><button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button></td></tr>';
