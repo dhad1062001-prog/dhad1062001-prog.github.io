@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/admin.css?v=20261110d">
+  <link rel="stylesheet" href="./assets/admin.css?v=20261110f">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
-  <script defer src="./js/app.js?v=20261110d"></script>
+  <script defer src="./js/app.js?v=20261110g"></script>
 </head>
 <body>
   <div id="app">
@@ -26,8 +26,10 @@
         <button class="nav-item active" data-module="overview"><span class="nav-icon">⌂</span><span>لوحة المعلومات</span></button>
         <div class="nav-group-label">إدارة المحتوى</div>
         <button class="nav-item" data-module="homepage"><span class="nav-icon">⌂</span><span>الصفحة الرئيسية</span></button>
+        <button class="nav-item" data-module="content"><span class="nav-icon">✎</span><span>محتوى الأقسام</span></button>
         <button class="nav-item" data-module="sections"><span class="nav-icon">▦</span><span>الأقسام والتصنيفات</span></button>
-        <button class="nav-item" data-module="file-center"><span class="nav-icon">⇧</span><span>مركز رفع وإدارة الملفات</span></button>
+        <button class="nav-item" data-module="section-workspace"><span class="nav-icon">⇧</span><span>إدارة الملفات داخل الأقسام</span></button>
+        <button class="nav-item" data-module="file-center"><span class="nav-icon">▤</span><span>مكتبة الملفات</span></button>
         <button class="nav-item" data-module="materials"><span class="nav-icon">▤</span><span>الملفات التعليمية</span></button>
         <button class="nav-item" data-module="supplies"><span class="nav-icon">▧</span><span>لوازم المعلمين</span></button>
         <button class="nav-item" data-module="academic"><span class="nav-icon">🎓</span><span>الصفوف والمناهج</span></button>
@@ -86,28 +88,9 @@
             <article class="stat-card"><div class="stat-top"><span>عمليات التنزيل</span><span class="stat-icon">↓</span></div><strong>—</strong><small>وفق تعريف القياس المعتمد</small></article>
           </div>
 
-          <div class="section-heading"><div><h2>أقسام لوحة التحكم</h2><p>اختر الوحدة التي تريد إدارتها. ستُفعّل الوحدات تدريجيًا بعد ربطها واختبارها.</p></div><span class="section-count">19 وحدة</span></div>
-          <div class="modules-grid" id="moduleCards">
-            <button class="module-card" data-module="homepage"><span class="module-icon">⌂</span><span class="module-text"><strong>الصفحة الرئيسية</strong><small>النصوص والواجهة والصور والأزرار</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="sections"><span class="module-icon">▦</span><span class="module-text"><strong>الأقسام والتصنيفات</strong><small>الأقسام الرئيسية والفرعية وترتيبها</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="file-center"><span class="module-icon">⇧</span><span class="module-text"><strong>مركز رفع وإدارة الملفات</strong><small>رفع موحّد وإدارة مكتبة جميع الأقسام</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="materials"><span class="module-icon">▤</span><span class="module-text"><strong>الملفات التعليمية</strong><small>استعراض الملفات التعليمية</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="supplies"><span class="module-icon">▧</span><span class="module-text"><strong>لوازم المعلمين</strong><small>المذكرات والنماذج والموارد المهنية</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="academic"><span class="module-icon">🎓</span><span class="module-text"><strong>الصفوف والمناهج</strong><small>الصفوف والفصول والوحدات والدروس</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="staff"><span class="module-icon">♙</span><span class="module-text"><strong>المستخدمون والصلاحيات</strong><small>الأدوار والصلاحيات الدقيقة</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="storage"><span class="module-icon">☁</span><span class="module-text"><strong>مساحات التخزين</strong><small>إدارة المسارات والملفات والمساحة</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="drive"><span class="module-icon">◫</span><span class="module-text"><strong>حسابات Google Drive</strong><small>ربط الحسابات والنسخ الاحتياطي الآمن</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="analytics"><span class="module-icon">▥</span><span class="module-text"><strong>الإحصائيات والتقارير</strong><small>الزيارات والتنزيلات والتقارير</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="pages"><span class="module-icon">▧</span><span class="module-text"><strong>صفحات الموقع</strong><small>من نحن والخصوصية والتواصل</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="seo"><span class="module-icon">⌕</span><span class="module-text"><strong>تحسين الظهور SEO</strong><small>العناوين والوصف والروابط والفهرسة</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="games"><span class="module-icon">◇</span><span class="module-text"><strong>الألعاب والأنشطة</strong><small>إدارة الأنشطة التعليمية التفاعلية</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="ads"><span class="module-icon">▣</span><span class="module-text"><strong>الإعلانات</strong><small>مواضع الإعلانات وحالة التكامل</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="settings"><span class="module-icon">⚙</span><span class="module-text"><strong>إعدادات المنصة</strong><small>الهوية والإعدادات العامة</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="security"><span class="module-icon">⬡</span><span class="module-text"><strong>الأمان والحماية</strong><small>الجلسات وسياسات الوصول</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="audit"><span class="module-icon">≡</span><span class="module-text"><strong>سجل العمليات</strong><small>من نفّذ الإجراء ومتى</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="backups"><span class="module-icon">⟲</span><span class="module-text"><strong>النسخ الاحتياطي</strong><small>خطط الاستعادة والتحقق من النسخ</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="trash"><span class="module-icon">▱</span><span class="module-text"><strong>سلة المحذوفات</strong><small>استعادة العناصر والحذف النهائي المقيّد</small></span><span class="module-arrow">←</span></button>
-          </div>
+          <section class="data-module" aria-label="إرشادات التنقل">
+            <div class="data-module-head"><div><h2>اختر وحدة الإدارة</h2><p>تجد جميع وحدات ضاد مرتبة في القائمة الجانبية. لكل وظيفة مكان واحد لتجنب تكرار أدوات الإدارة.</p></div></div>
+          </section>
           <div class="bottom-note"><span>✦</span><p>سيُضاف مساعد الذكاء الاصطناعي لاحقًا كمرحلة مستقلة، بناءً على توجيهك.</p></div>
         </div>
       </section>

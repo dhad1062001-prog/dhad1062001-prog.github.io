@@ -145,3 +145,12 @@ button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none
 .data-table input:not([type="checkbox"]),.data-table textarea,.data-table select{max-width:220px;min-width:125px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#20291c;color:var(--white);font:10px Cairo,Tahoma,sans-serif}
 .data-table textarea{min-width:180px;min-height:54px;white-space:normal;line-height:1.7;resize:vertical}
 .data-table input:focus,.data-table textarea:focus,.data-table select:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+/* Section content items: text and sandboxed interactive HTML. */
+.home-section-content-item{margin:16px 0;padding:14px;border:1px solid rgba(130,145,105,.24);border-radius:14px;background:rgba(255,255,255,.72)}
+.home-section-content-item h4{margin:0 0 8px;color:var(--olive-dark,#26351f)}
+.home-section-html-frame{display:block;width:100%;min-height:480px;border:1px solid rgba(130,145,105,.3);border-radius:12px;background:#fff}
+.content-manager .homepage-card{margin:18px 0}
+.content-manager .homepage-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.content-manager .homepage-label{display:block;margin:14px 0}
+.content-manager [hidden]{display:none!important}

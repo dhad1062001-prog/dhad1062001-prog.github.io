@@ -619,7 +619,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
         <h3>ضـــاد | الإدارة</h3><small>لوحة التحكم وإدارة المحتوى</small>
         <div class="admin-menu">
           <button class="active" type="button">▣ لوحة التحكم</button>
-          <button type="button" onclick="document.getElementById('uploadForm')?.scrollIntoView({behavior:'smooth'})">＋ رفع مادة</button>
+          <button type="button" onclick="location.href='/admin/'">＋ رفع الملفات من لوحة الإدارة</button>
           <button type="button" onclick="showFilesPage()">▤ الملفات المحملة</button>
           <button type="button" onclick="document.getElementById('dhadAdminAnalytics')?.scrollIntoView({behavior:'smooth',block:'start'})">▥ الإحصائيات</button>
           <button type="button" class="owner-only-control" onclick="showSitePagesPage()">▦ صفحات الموقع</button>
@@ -661,40 +661,9 @@ if(window.__DHAD_DIRECT_ENTRY__){
         </section>
         <div class="admin-grid">
           <div class="admin-card">
-            <h3>إضافة مادة</h3>
-            <form id="uploadForm" onsubmit="uploadMaterial(event)">
-              <div class="field"><label>عنوان المادة</label><input id="matTitle" required></div>
-              <div class="field"><label>الوصف</label><textarea id="matDescription"></textarea></div>
-              <div class="field"><label>نبذة عن محتويات الملف (اختياري)</label><textarea id="matSummary" placeholder="ماذا يتضمن الملف؟"></textarea></div>
-              <div class="field"><label>الأهداف التعليمية (اختياري)</label><textarea id="matObjectives" placeholder="ما المهارات أو المعارف التي يدعمها الملف؟"></textarea></div>
-              <div class="field"><label>الفئة المستهدفة (اختياري)</label><input id="matAudience" placeholder="مثال: طلبة الصف السادس أو معلمو اللغة العربية"></div>
-              <div class="field"><label>عدد الصفحات (اختياري)</label><input id="matPageCount" type="number" min="1" step="1" placeholder="مثال: 12"></div>
-              <div class="field"><label for="matPrimarySection">القسم الرئيسي للملف</label><select id="matPrimarySection" required>
-                <option value="school_grades" selected>الصفوف الدراسية</option>
-                <option value="curricula">المناهج الدراسية</option>
-                <option value="teacher_supplies">لوازم المعلمين</option>
-                <option value="interactive_games">الألعاب التفاعلية</option>
-                <option value="supplementary_education">التعليم الإضافي</option>
-              </select><small class="callout-help">اختر القسم الأساسي الذي ينتمي إليه الملف. يمكن ربطه بأقسام أخرى اختيارية.</small></div>
-              <div class="field"><label for="matAdditionalSections">أقسام إضافية (اختياري)</label><select id="matAdditionalSections" multiple size="5">
-                <option value="school_grades">الصفوف الدراسية</option>
-                <option value="curricula">المناهج الدراسية</option>
-                <option value="teacher_supplies">لوازم المعلمين</option>
-                <option value="interactive_games">الألعاب التفاعلية</option>
-                <option value="supplementary_education">التعليم الإضافي</option>
-              </select><small class="callout-help">يمكن اختيار أكثر من قسم. لن يتكرر رفع الملف؛ سيظهر في الأقسام المحددة.</small></div>
-              <div class="field" id="matGradeField"><label id="matGradeLabel">الصف أو المرحلة</label><select id="matGrade"></select></div>
-              <div class="field" id="trackWrap" style="display:none"><label>المسار</label><select id="matTrack"></select></div>
-              <div class="field" id="fieldWrap" style="display:none"><label>الحقل</label><select id="matField"></select></div>
-              <div class="field" id="matSemesterField"><label id="matSemesterLabel">الفصل الدراسي</label><select id="matSemester"></select></div>
-              <div class="field" id="matCategoryField"><label id="matCategoryLabel">المادة/التصنيف</label><select id="matCategory"></select></div>
-              <div class="field"><label for="matHomeSections">أقسام الصفحة الرئيسية (اختياري)</label><select id="matHomeSections" multiple size="4" aria-describedby="matHomeSectionsHelp"></select><small id="matHomeSectionsHelp" class="callout-help">يمكنك اختيار قسم أو أكثر ليظهر الملف ضمنها، مثل «لوازم المعلمين». لا يؤثر ذلك في تصنيفه الدراسي.</small></div>
-              <div class="field"><label>الملف</label><input type="file" id="matFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div>
-              <button class="primary" type="submit">رفع المادة</button>
-              <div class="status" id="uploadStatus"></div><div id="uploadedMaterialLink" class="dhad-uploaded-link" aria-live="polite"></div>
-            </form>
-            <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-            <section aria-labelledby="batchUploadTitle"><h3 id="batchUploadTitle">رفع عدة ملفات</h3><p class="callout-help">اختر ملفات متعددة، ثم حدّد الصف والفصل والقسم لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50MB.</p><div class="field"><label for="batchFilesInput">الملفات</label><input id="batchFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div><div id="batchFilesList" class="admin-list" aria-live="polite"><div class="empty">اختر ملفات لعرضها هنا.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="batchUploadButton" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button class="secondary" id="batchCancelButton" type="button" onclick="cancelMaterialBatch()" disabled>إلغاء الرفع</button></div><div class="status" id="batchUploadStatus" role="status" aria-live="polite"></div><div id="batchUploadedLinks" class="dhad-uploaded-link" aria-live="polite"></div></section>
+            <h3>إدارة رفع الملفات</h3>
+            <p class="callout-help">تم توحيد رفع الملفات من لوحة الإدارة المستقلة، بحيث تختار القسم أولًا ثم ترفع ملفاته من داخله. لم يعد الرفع متاحًا من هذه الشاشة لتجنب توزيع الملفات على أقسام غير مقصودة.</p>
+            <a class="primary" href="/admin/">فتح لوحة إدارة ضاد</a>
           </div>
           <div class="admin-card">
             <h3>آخر الملفات</h3>
@@ -747,6 +716,8 @@ const DHAD_APK_URL = '';
 
 let sb=null;
 let homeSectionsPublic=[];
+let homeSectionContentItemsMap={};
+let homePageContentItemsMap={};
 let homeSectionsAdmin=[];
 let homeSectionMaterialMap={};
 let homeSectionMaterialAdminMap={};
@@ -2509,6 +2480,41 @@ function homeSectionTypeLabel(type){
   return ({text:'نص',image:'صورة',file:'ملف',link:'رابط',materials:'ملفات'})[type]||'محتوى';
 }
 
+function renderPublishedPlacementContent(){
+  const destinations={
+    'page:grades':'#gradesHubPage',
+    'page:games':'#gamesPage',
+    'page:additional':'#additionalPage',
+    'page:calendar':'#calendarPage',
+    'page:certificate':'#certificatePage'
+  };
+  Object.entries(destinations).forEach(([key,selector])=>{
+    const page=document.querySelector(selector+' .panel');
+    if(!page)return;
+    let holder=page.querySelector('[data-placement-content="'+key+'"]');
+    const items=homePageContentItemsMap[key]||[];
+    if(!items.length){holder?.remove();return;}
+    if(!holder){
+      holder=document.createElement('section');
+      holder.className='home-section-content-placement';
+      holder.setAttribute('data-placement-content',key);
+      const heading=page.querySelector('.page-title');
+      if(heading)heading.insertAdjacentElement('afterend',holder);else page.appendChild(holder);
+    }
+    holder.innerHTML=items.map(item=>{
+      const itemTitle=escapeHtml(item.title||'');
+      const description=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
+      if(item.content_type==='text')return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\r?\n/g,'<br>')+'</div></article>';
+      if(item.content_type==='html'&&item.storage_path){
+        const url=getMaterialUrl(item.storage_path);
+        if(!url)return '';
+        return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<iframe class="home-section-html-frame" title="'+itemTitle+'" src="'+escapeHtml(url)+'" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe></article>';
+      }
+      return '';
+    }).join('');
+  });
+}
+
 function renderPublicHomeSections(rows,directSectionId=null){
   const container=document.getElementById('homeSectionsContainer');
   if(!container)return;
@@ -2538,12 +2544,25 @@ function renderPublicHomeSections(rows,directSectionId=null){
           '<button type="button" class="download" data-home-section-download="'+escapeHtml(String(row.id))+'">⬇ تنزيل الملف</button></div>';
       }
     }
+    const sectionContentMarkup=(homeSectionContentItemsMap[String(row.id)]||[]).map(item=>{
+      const itemTitle=escapeHtml(item.title||'');
+      const itemDescription=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
+      if(item.content_type==='text'){
+        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\r?\n/g,'<br>')+'</div></article>';
+      }
+      if(item.content_type==='html'&&item.storage_path){
+        const htmlUrl=getMaterialUrl(item.storage_path);
+        if(!htmlUrl)return '';
+        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<iframe class="home-section-html-frame" title="'+itemTitle+'" src="'+escapeHtml(htmlUrl)+'" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe></article>';
+      }
+      return '';
+    }).join('');
     const linked=(homeSectionMaterialMap[String(row.id)]||[]).slice(0,Math.max(1,Math.min(50,Number(row.display_limit||6))));
     const linkedMarkup=linked.length?'<div class="home-section-linked-materials '+(row.display_style==='list'?'is-list':'is-grid')+'"><h4>ملفات مرتبطة بالقسم</h4>'+linked.map(m=>'<article class="home-section-linked-material"><div><b>'+escapeHtml(m.title||'ملف تعليمي')+'</b>'+(m.description?'<p>'+escapeHtml(m.description)+'</p>':'')+'<small class="dhad-download-count" data-material-count="'+escapeHtml(String(m.id))+'">⬇ مرات بدء التنزيل: <span data-count-value>'+Number(m.download_count||0).toLocaleString('ar')+'</span></small></div><button type="button" class="primary" onclick="openMaterialInfoPage(\''+escapeHtml(String(m.id))+'\')">التفاصيل ←</button></article>').join('')+'</div>':'';
     const childMarkup=(childrenByParent.get(String(row.id))||[]).filter(child=>child.show_on_home!==false).sort((a,b)=>Number(a.sort_order||0)-Number(b.sort_order||0)).map(renderSection).join('');
     const sectionDescription=row.section_description?'<p class="home-section-caption">'+escapeHtml(row.section_description)+'</p>':'';
     const sectionIcon=row.icon?escapeHtml(row.icon)+' ':'';
-    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
+    return '<article class="home-section-card" id="homeSectionPublic_'+escapeHtml(String(row.id))+'"><h3>'+sectionIcon+title+'</h3>'+sectionDescription+body+sectionContentMarkup+linkedMarkup+(childMarkup?'<div class="home-section-children" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:14px">'+childMarkup+'</div>':'')+'<div class="home-section-file-actions"><button type="button" class="secondary" onclick="shareDhadLink(\'homeSection\',\''+escapeHtml(String(row.id))+ '\')">🔗 مشاركة هذا القسم</button></div></article>';
   };
   let directRootId=null;
   if(directSectionId){
@@ -2593,8 +2612,25 @@ async function loadHomeSectionsPublic(directSectionId=null){
     }
     if(error)throw error;
     homeSectionsPublic=data||[];
+    homeSectionContentItemsMap={};
+    homePageContentItemsMap={};
+    const sectionIds=homeSectionsPublic.map(x=>x.id);
+    const placementKeys=['page:grades','page:games','page:additional','page:calendar','page:certificate'];
+    const contentQueries=[];
+    if(sectionIds.length)contentQueries.push(sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,placement_key,sort_order').eq('status','published').in('section_id',sectionIds).order('sort_order',{ascending:true}));
+    contentQueries.push(sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,placement_key,sort_order').eq('status','published').in('placement_key',placementKeys).order('sort_order',{ascending:true}));
+    const contentResults=await Promise.all(contentQueries);
+    contentResults.forEach(result=>{
+      if(result.error)throw result.error;
+      (result.data||[]).forEach(item=>{
+        const targetMap=item.section_id!=null?homeSectionContentItemsMap:homePageContentItemsMap;
+        const key=item.section_id!=null?String(item.section_id):String(item.placement_key);
+        (targetMap[key] ||= []).push(item);
+      });
+    });
     await loadHomeSectionRelations(false,homeSectionsPublic.map(x=>x.id));
     renderPublicHomeSections(homeSectionsPublic,directSectionId);
+    renderPublishedPlacementContent();
   }catch(error){
     homeSectionsPublic=[];
     container.innerHTML='';
