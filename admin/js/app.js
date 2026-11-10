@@ -1332,6 +1332,7 @@
   let adminUploadBusy = false;
   let adminUploadMessage = "";
   let activeUploadPrimarySection = "school_grades";
+  let activeUploadHomeSections = [];
 
   function renderAdminMaterialQueue(grades,semesters,categories,homeSections=[]) {
     const root=document.getElementById("adminMaterialQueue");
@@ -1359,6 +1360,7 @@
     if(value<1024*1024)return (value/1024).toFixed(1)+" KB";
     return (value/1024/1024).toFixed(1)+" MB";
   }
+  const ADMIN_ALLOWED_MATERIAL_EXTENSIONS = new Set(["pdf","doc","docx","ppt","pptx","xls","xlsx","csv","txt","rtf","odt","ods","odp","jpg","jpeg","png","webp","gif","mp3","wav","m4a","ogg","mp4","webm","zip"]);
   function safeAdminFileName(name) {
     return String(name||"file").normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g,"-").replace(/-+/g,"-").replace(/^[-.]+|[-.]+$/g,"").slice(0,100)||"file";
   }
@@ -1381,6 +1383,8 @@
         const primarySection=row?.querySelector("[data-upload-section]")?.value||"school_grades";
         const setStatus=value=>{item.status=value;const cell=row?.querySelector("[data-upload-status]");if(cell)cell.textContent=value;};
         if(!title||!gradeId||!semesterId||!categoryId){setStatus("فشل: أكمل البيانات");failed++;continue;}
+        const fileExtension=(item.file.name.split(".").pop()||"").toLowerCase();
+        if(!ADMIN_ALLOWED_MATERIAL_EXTENSIONS.has(fileExtension)){setStatus("فشل: نوع الملف غير مسموح. ملفات HTML تُضاف من وحدة محتوى الأقسام.");failed++;continue;}
         if(item.file.size>50*1024*1024){setStatus("فشل: أكبر من 50MB");failed++;continue;}
         setStatus("جارٍ الرفع…");
         let uploadedPath="";
@@ -1444,6 +1448,7 @@
     const homeSectionsResult=await supabase.from("home_sections").select("id,title,parent_id,is_active").order("sort_order");
     if(homeSectionsResult.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام لربط الملفات: '+escapeHtml(homeSectionsResult.error.message)+'</div>';return;}
     const homeSections=homeSectionsResult.data||[];
+    activeUploadHomeSections = homeSections;
     let homeLinks=[];
     if(accessState?.owner===true){
       const linksResult=await supabase.from("home_section_materials").select("section_id,material_id,sort_order");
@@ -1457,7 +1462,7 @@
     window.__adminLookups={grades,semesters,categories};
     const writable=["owner","admin"].includes(accessState?.role);
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+(accessState?.owner===true?'<details><summary>إدارة الربط</summary><select multiple size="5" data-material-home-sections="'+item.id+'">'+homeOptionsFor(item)+'</select><button type="button" data-admin-action="material-sections-save" data-id="'+item.id+'">حفظ الأقسام</button></details>':(homeSections.length?'تدار من مركز الملفات بواسطة المالك':'—'))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button> <button type="button" data-admin-action="material-trash" data-id="'+item.id+'">إلى السلة</button>':'—')+'</td></tr>';
-    const uploadMarkup=viewKey==="section-workspace"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع الملفات من داخل القسم</h2><p>اختر وجهة من بنية ضاد الحالية أولًا، ثم أضف الملفات التابعة لها. لا يتم إنشاء أقسام جديدة هنا.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>القسم المستهدف<select id="adminUploadTarget"><option value="school_grades">الصفوف الدراسية</option><option value="curricula">المناهج</option><option value="teacher_supplies">لوازم المعلمين</option><option value="interactive_games">الألعاب التفاعلية</option><option value="supplementary_education">التعليم الإضافي</option></select></label><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
+    const uploadMarkup=viewKey==="section-workspace"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع الملفات من داخل القسم</h2><p>اختر وجهة من بنية ضاد الحالية أولًا، ثم أضف الملفات التابعة لها. لا يتم إنشاء أقسام جديدة هنا.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>القسم المستهدف<select id="adminUploadTarget"><option value="school_grades">الصفوف الدراسية</option><option value="curricula">المناهج</option><option value="teacher_supplies">لوازم المعلمين</option><option value="interactive_games">الألعاب التفاعلية</option><option value="supplementary_education">التعليم الإضافي</option></select></label><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.rtf,.odt,.ods,.odp,.jpg,.jpeg,.png,.webp,.gif,.mp3,.wav,.m4a,.ogg,.mp4,.webm,.zip"></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
     const uploadNotice=viewKey==="section-workspace"?"":'<p class="data-note">رفع الملفات الجديدة متاح من وحدة <strong>إدارة الملفات داخل الأقسام</strong> فقط.</p>';
     root.innerHTML=uploadMarkup+uploadNotice+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — الرفع الجديد حصريًا من وحدة إدارة الملفات داخل الأقسام.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>الأقسام الرئيسية والفرعية</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
     if(writable && viewKey==="section-workspace"){
@@ -1467,6 +1472,8 @@
         uploadTarget.value=activeUploadPrimarySection;
         uploadTarget.addEventListener("change",event=>{
           activeUploadPrimarySection=event.target.value;
+          adminMaterialQueue.forEach(item=>{if(item.status!=="تم الرفع")item.primarySection=activeUploadPrimarySection;});
+          renderAdminMaterialQueue(grades,semesters,categories,activeUploadHomeSections);
           materials=allMaterials.filter(x=>x.primary_section===activeUploadPrimarySection||(x.additional_sections||[]).includes(activeUploadPrimarySection));
           const body=document.getElementById("materialsRows");
           if(body)body.innerHTML=materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات مرتبطة بهذا القسم بعد.</td></tr>';
@@ -1482,7 +1489,7 @@
           adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
         }
         event.target.value="";
-        renderAdminMaterialQueue(grades,semesters,categories);
+        renderAdminMaterialQueue(grades,semesters,categories,activeUploadHomeSections);
       });
       document.getElementById("adminMaterialUploadButton")?.addEventListener("click",()=>uploadAdminMaterialBatch(viewKey,grades,semesters,categories));
       document.getElementById("adminMaterialClearButton")?.addEventListener("click",()=>{if(adminUploadBusy)return;adminMaterialQueue=[];renderAdminMaterialQueue(grades,semesters,categories);});
