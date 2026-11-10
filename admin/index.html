@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#20291C">
+  <title>لوحة إدارة ضاد</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/admin.css">
+  <script src="./js/app.js" defer></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" id="sidebar" aria-label="القائمة الرئيسية">
+      <a class="brand" href="./" aria-label="الرئيسية">
+        <span class="brand-mark">ض</span>
+        <span><strong>ضــاد</strong><small>لوحة الإدارة المركزية</small></span>
+      </a>
+      <div class="side-caption">مساحة الإدارة</div>
+      <nav class="nav-list">
+        <a class="nav-link active" href="#dashboard" data-view="dashboard"><span class="nav-icon">⌂</span>الرئيسية</a>
+        <a class="nav-link" href="#content" data-view="content"><span class="nav-icon">▤</span>المحتوى والصفحات</a>
+        <a class="nav-link" href="#sections" data-view="sections"><span class="nav-icon">▦</span>الأقسام والواجهة</a>
+        <a class="nav-link" href="#materials" data-view="materials"><span class="nav-icon">▧</span>الملفات والمواد</a>
+        <a class="nav-link" href="#education" data-view="education"><span class="nav-icon">⌑</span>الهيكل التعليمي</a>
+        <a class="nav-link" href="#analytics" data-view="analytics"><span class="nav-icon">▥</span>الإحصائيات</a>
+        <a class="nav-link" href="#storage" data-view="storage"><span class="nav-icon">☁</span>التخزين والنسخ</a>
+        <a class="nav-link" href="#team" data-view="team"><span class="nav-icon">♙</span>المستخدمون والصلاحيات</a>
+        <a class="nav-link" href="#security" data-view="security"><span class="nav-icon">◇</span>الأمان وسجل العمليات</a>
+        <a class="nav-link" href="#settings" data-view="settings"><span class="nav-icon">⚙</span>الإعدادات</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span class="status-dot"></span>
+        <span><b>بيئة تطوير مستقلة</b><small>لا تؤثر في الموقع العام</small></span>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-start">
+          <button class="icon-button menu-toggle" id="menuToggle" type="button" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+          <div><span class="eyebrow">منصة ضاد التعليمية</span><h1 id="pageTitle">الرئيسية</h1></div>
+        </div>
+        <div class="topbar-end">
+          <span class="environment-pill"><i></i> وضع التطوير</span>
+          <a class="site-link" href="https://dhad1062001-prog.github.io/" target="_blank" rel="noopener">عرض الموقع العام ↗</a>
+          <div class="user-avatar" title="حساب الإدارة">ض</div>
+        </div>
+      </header>
+
+      <div class="content-wrap">
+        <section class="welcome-panel" id="welcomePanel">
+          <div class="welcome-copy">
+            <span class="welcome-label">مركز التحكم</span>
+            <h2>مرحبًا بك في إدارة ضاد</h2>
+            <p>مساحة موحدة لإدارة محتوى المنصة وأقسامها وملفاتها ومستخدميها، مع الحفاظ على بيانات الموقع الحالية.</p>
+            <div class="welcome-note"><span>✦</span> هذه نسخة تأسيسية مستقلة. لن تُنفّذ أي عملية على البيانات قبل تفعيل الربط الآمن واختبار الصلاحيات.</div>
+          </div>
+          <div class="welcome-emblem" aria-hidden="true"><span>ض</span><i></i><b></b></div>
+        </section>
+
+        <section class="section-block" id="dashboardView" data-panel="dashboard">
+          <div class="section-heading"><div><span class="eyebrow">نظرة عامة</span><h2>أقسام لوحة الإدارة</h2><p>اختر الوحدة التي تريد العمل عليها. ستُفعّل وظائف كل وحدة على مراحل.</p></div></div>
+          <div class="module-grid">
+            <button class="module-card" data-view="content"><span class="module-icon">▤</span><span class="module-text"><b>المحتوى والصفحات</b><small>النصوص والصفحات الرئيسية والثابتة وروابط التواصل</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="sections"><span class="module-icon">▦</span><span class="module-text"><b>الأقسام والواجهة</b><small>إنشاء الأقسام وترتيبها وإدارة ظهورها في الموقع</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="materials"><span class="module-icon">▧</span><span class="module-text"><b>الملفات والمواد</b><small>رفع فردي وجماعي، الأوصاف، المعاينة والتنزيل</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="education"><span class="module-icon">⌑</span><span class="module-text"><b>الهيكل التعليمي</b><small>الصفوف والفصول والتصنيفات والمسارات التعليمية</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="analytics"><span class="module-icon">▥</span><span class="module-text"><b>الإحصائيات والتقارير</b><small>الزيارات والتنزيلات والأحداث والتقارير الإدارية</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="storage"><span class="module-icon">☁</span><span class="module-text"><b>التخزين والنسخ الاحتياطي</b><small>Supabase ومسارات التخزين وربط Google Drive لاحقًا</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="team"><span class="module-icon">♙</span><span class="module-text"><b>المستخدمون والصلاحيات</b><small>حسابات الإدارة والأدوار ونطاقات الصلاحيات</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="security"><span class="module-icon">◇</span><span class="module-text"><b>الأمان وسجل العمليات</b><small>سجل التدقيق والحذف الآمن وسلة المحذوفات</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-view="settings"><span class="module-icon">⚙</span><span class="module-text"><b>الإعدادات العامة</b><small>هوية المنصة والتهيئة وإعدادات الإدارة</small></span><span class="module-arrow">←</span></button>
+          </div>
+        </section>
+
+        <section class="section-block module-placeholder" data-panel="content" hidden><span class="large-module-icon">▤</span><span class="eyebrow">وحدة الإدارة</span><h2>المحتوى والصفحات</h2><p>ستُبنى هنا أدوات إدارة الصفحة الرئيسية والصفحات الثابتة والنصوص وروابط التواصل.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="sections" hidden><span class="large-module-icon">▦</span><span class="eyebrow">وحدة الإدارة</span><h2>الأقسام والواجهة</h2><p>ستُبنى هنا إدارة الأقسام الرئيسية والفرعية وترتيبها وطريقة ظهورها.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="materials" hidden><span class="large-module-icon">▧</span><span class="eyebrow">وحدة الإدارة</span><h2>الملفات والمواد</h2><p>ستُبنى هنا إدارة الملفات والرفع المتعدد والأوصاف وروابط التفاصيل والتنزيل.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="education" hidden><span class="large-module-icon">⌑</span><span class="eyebrow">وحدة الإدارة</span><h2>الهيكل التعليمي</h2><p>ستُبنى هنا إدارة الصفوف والفصول والتصنيفات والارتباطات التعليمية.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="analytics" hidden><span class="large-module-icon">▥</span><span class="eyebrow">وحدة الإدارة</span><h2>الإحصائيات والتقارير</h2><p>ستُربط هنا لوحة الإحصائيات الحالية مع التمييز بين النقر ومحاولة التنزيل واكتماله.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="storage" hidden><span class="large-module-icon">☁</span><span class="eyebrow">وحدة الإدارة</span><h2>التخزين والنسخ الاحتياطي</h2><p>ستُبنى هنا إدارة مسارات التخزين وربط حسابات Google Drive عبر خادم آمن دون كشف المفاتيح.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="team" hidden><span class="large-module-icon">♙</span><span class="eyebrow">وحدة الإدارة</span><h2>المستخدمون والصلاحيات</h2><p>ستُبنى هنا إدارة حسابات الفريق والأدوار والصلاحيات الفعلية على الخادم وقاعدة البيانات.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="security" hidden><span class="large-module-icon">◇</span><span class="eyebrow">وحدة الإدارة</span><h2>الأمان وسجل العمليات</h2><p>ستُبنى هنا مراجعة النشاط والحذف إلى سلة المحذوفات والاستعادة والحذف النهائي المقيّد.</p><span class="coming-label">قيد التأسيس</span></section>
+        <section class="section-block module-placeholder" data-panel="settings" hidden><span class="large-module-icon">⚙</span><span class="eyebrow">وحدة الإدارة</span><h2>الإعدادات العامة</h2><p>ستُبنى هنا إعدادات الهوية العامة وسلوك لوحة الإدارة وخيارات التهيئة.</p><span class="coming-label">قيد التأسيس</span></section>
+
+        <footer class="footer"><span>ضاد – منصة اللغة العربية</span><span>لوحة الإدارة المستقلة · الإصدار التأسيسي</span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="mobile-scrim" id="mobileScrim"></div>
+</body>
+</html>
