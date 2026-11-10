@@ -119,6 +119,7 @@
     const sidebar = document.getElementById("sidebar");
     const scrim = document.getElementById("sidebarScrim");
     const user = accessState?.staff;
+    if (accessState?.permissions?.analytics !== true) document.querySelectorAll('[data-module="analytics"]').forEach(el => el.remove());
     const userName = document.getElementById("userName");
     const userEmail = document.getElementById("userEmail");
     const avatar = document.getElementById("userAvatar");
@@ -140,8 +141,19 @@
       if (error) showLogin("تعذر تسجيل الخروج: " + error.message);
     });
     document.addEventListener("click", event => {
-      const button = event.target.closest("[data-module]");
-      if (button) showModule(button.dataset.module);
+      const moduleButton = event.target.closest("[data-module]");
+      if (moduleButton) {
+        showModule(moduleButton.dataset.module);
+        return;
+      }
+      const periodButton = event.target.closest("[data-analytics-period]");
+      if (periodButton && activeModule === "analytics") {
+        loadAnalytics(Number(periodButton.dataset.analyticsPeriod));
+        return;
+      }
+      if (event.target.closest("[data-analytics-refresh]") && activeModule === "analytics") {
+        loadAnalytics(currentAnalyticsDays);
+      }
     });
     window.addEventListener("hashchange", () => {
       const key = location.hash.replace(/^#/, "");
@@ -170,6 +182,12 @@
       subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
       breadcrumb.textContent = titles.overview;
       view.innerHTML = overviewMarkup;
+    } else if (key === "analytics") {
+      title.textContent = titles.analytics;
+      subtitle.textContent = "إحصائيات الاستخدام المسجلة خلال الفترة المحددة.";
+      breadcrumb.textContent = titles.analytics;
+      view.innerHTML = analyticsMarkup();
+      loadAnalytics(30);
     } else {
       title.textContent = titles[key];
       subtitle.textContent = "وحدة ضمن مركز إدارة ضاد المستقل.";
@@ -184,6 +202,112 @@
     }
     document.getElementById("sidebar")?.classList.remove("open");
     document.getElementById("sidebarScrim")?.classList.remove("show");
+  }
+
+  let currentAnalyticsDays = 30;
+  let analyticsRequestId = 0;
+
+  function analyticsMarkup() {
+    return `
+      <section class="analytics-panel">
+        <div class="analytics-toolbar">
+          <div>
+            <h2>ملخص أداء المنصة</h2>
+            <p>بيانات مسجلة من نظام الإحصائيات الحالي، وتظهر للإدارة المصرح لها فقط.</p>
+          </div>
+          <div class="analytics-controls">
+            <div class="period-switch" role="group" aria-label="الفترة الزمنية">
+              <button type="button" data-analytics-period="7">7 أيام</button>
+              <button type="button" data-analytics-period="30" class="selected">30 يومًا</button>
+              <button type="button" data-analytics-period="90">90 يومًا</button>
+            </div>
+            <button type="button" class="refresh-analytics" data-analytics-refresh>تحديث ↻</button>
+          </div>
+        </div>
+        <div id="analyticsResults" aria-live="polite">
+          <div class="analytics-loading">جارٍ تحميل الإحصائيات بأمان…</div>
+        </div>
+      </section>`;
+  }
+
+  function numberFormat(value) {
+    return new Intl.NumberFormat("ar-JO").format(Number(value) || 0);
+  }
+
+  function analyticsList(items, labelKey, valueKey, emptyText) {
+    if (!Array.isArray(items) || !items.length) return '<p class="analytics-empty">' + emptyText + '</p>';
+    const max = Math.max(1, ...items.map(item => Number(item[valueKey]) || 0));
+    return '<div class="analytics-list">' + items.map(item => {
+      const label = escapeHtml(item[labelKey] ?? "غير محدد");
+      const value = Number(item[valueKey]) || 0;
+      const width = Math.max(value > 0 ? 2 : 0, Math.min(100, value / max * 100));
+      return '<div class="analytics-list-row"><div class="analytics-list-label"><span title="' + label + '">' + label + '</span><strong>' + numberFormat(value) + '</strong></div><div class="analytics-track"><i style="width:' + width + '%"></i></div></div>';
+    }).join("") + '</div>';
+  }
+
+  function renderAnalytics(data, days) {
+    const root = document.getElementById("analyticsResults");
+    if (!root) return;
+    const totals = data?.totals || {};
+    const daily = Array.isArray(data?.daily) ? data.daily : [];
+    const topMaterials = Array.isArray(data?.top_materials) ? data.top_materials : [];
+    const topPages = Array.isArray(data?.top_pages) ? data.top_pages : [];
+    const devices = Array.isArray(data?.devices) ? data.devices : [];
+    const referrers = Array.isArray(data?.referrers) ? data.referrers : [];
+    const maxViews = Math.max(1, ...daily.map(row => Number(row.page_views) || 0));
+    const dailyMarkup = daily.length ? daily.map(row => {
+      const day = escapeHtml(String(row.day || "").slice(5));
+      const views = Number(row.page_views) || 0;
+      const downloads = Number(row.downloads) || 0;
+      return '<div class="daily-row"><span>' + day + '</span><div class="daily-bars"><i class="views-bar" style="width:' + Math.max(views ? 2 : 0, views / maxViews * 100) + '%"></i><i class="downloads-bar" style="width:' + Math.max(downloads ? 2 : 0, downloads / Math.max(1, ...daily.map(x => Number(x.downloads) || 0)) * 100) + '%"></i></div><strong>' + numberFormat(views) + '</strong></div>';
+    }).join("") : '<p class="analytics-empty">لا توجد بيانات يومية في هذه الفترة.</p>';
+    root.innerHTML = `
+      <div class="analytics-stats">
+        <article><span>مشاهدات الصفحات</span><strong>${numberFormat(totals.page_views)}</strong></article>
+        <article><span>الزوار المميزون</span><strong>${numberFormat(totals.unique_visitors)}</strong></article>
+        <article><span>عمليات التنزيل المسجلة</span><strong>${numberFormat(totals.downloads)}</strong></article>
+        <article><span>مشاهدات الملفات</span><strong>${numberFormat(totals.material_views)}</strong></article>
+        <article><span>معاينات الملفات</span><strong>${numberFormat(totals.previews)}</strong></article>
+        <article><span>بدء الألعاب</span><strong>${numberFormat(totals.game_starts)}</strong></article>
+      </div>
+      <div class="analytics-grid">
+        <section class="analytics-card analytics-wide">
+          <h3>الحركة اليومية</h3>
+          <div class="chart-legend"><span><i class="legend-view"></i> مشاهدات الصفحات</span><span><i class="legend-download"></i> عمليات التنزيل المسجلة</span></div>
+          <div class="daily-chart">${dailyMarkup}</div>
+        </section>
+        <section class="analytics-card"><h3>أكثر الملفات تفاعلًا</h3>${analyticsList(topMaterials.map(x => ({label: x.title, value: x.downloads})), "label", "value", "لا توجد تفاعلات للملفات.")}</section>
+        <section class="analytics-card"><h3>الصفحات الأكثر زيارة</h3>${analyticsList(topPages.map(x => ({label: x.path, value: x.views})), "label", "value", "لا توجد بيانات للصفحات.")}</section>
+        <section class="analytics-card"><h3>الأجهزة</h3>${analyticsList(devices.map(x => ({label: x.device_type || "غير محدد", value: x.events})), "label", "value", "لا توجد بيانات للأجهزة.")}</section>
+        <section class="analytics-card"><h3>مصادر الزيارة</h3>${analyticsList(referrers.map(x => ({label: x.source, value: x.visits})), "label", "value", "لا توجد بيانات للمصادر.")}</section>
+      </div>
+      <p class="analytics-disclaimer">تنبيه: «عمليات التنزيل المسجلة» تعكس أحداث التنزيل التي سجلها الموقع، ولا تثبت وحدها اكتمال نقل الملف إلى جهاز الزائر. كما أن الأرقام تخص آخر ${numberFormat(days)} يومًا.</p>`;
+    document.querySelectorAll("[data-analytics-period]").forEach(button => {
+      button.classList.toggle("selected", Number(button.dataset.analyticsPeriod) === days);
+    });
+  }
+
+  async function loadAnalytics(days = 30) {
+    const root = document.getElementById("analyticsResults");
+    if (!root) return;
+    const safeDays = [7, 30, 90].includes(days) ? days : 30;
+    currentAnalyticsDays = safeDays;
+    const requestId = ++analyticsRequestId;
+    root.innerHTML = '<div class="analytics-loading">جارٍ تحميل الإحصائيات…</div>';
+    try {
+      const to = new Date();
+      const from = new Date(to.getTime() - safeDays * 86400000);
+      const { data, error } = await supabase.functions.invoke("admin-analytics", {
+        body: { from: from.toISOString(), to: to.toISOString() }
+      });
+      if (requestId !== analyticsRequestId) return;
+      if (error) throw new Error(error.message || "تعذر جلب الإحصائيات.");
+      if (data?.error) throw new Error(data.error);
+      renderAnalytics(data, safeDays);
+    } catch (error) {
+      if (requestId !== analyticsRequestId) return;
+      root.innerHTML = '<div class="analytics-error"><strong>تعذر تحميل الإحصائيات</strong><p>' + escapeHtml(error.message || "حدث خطأ غير متوقع.") + '</p><small>تأكد من الدخول بحساب إداري مخوّل، ثم حاول التحديث.</small></div>';
+    }
   }
 
   const overviewMarkup = (() => {
