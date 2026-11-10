@@ -320,7 +320,6 @@
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
-      if (arguments[0] && false) throw new Error("unreachable");
       const page = pageResult.data || {};
       document.getElementById("homepageTitle").value = page.home_title || "رحلتك إلى التميز تبدأ من هنا";
       document.getElementById("homepageSubtitle").value = page.home_subtitle || "تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية";
@@ -500,7 +499,7 @@
 
   async function saveHomepageSectionLinks(sectionId) {
     if (accessState?.owner !== true) return setHomepageStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
-    const select = document.querySelector('[data-homepage-materials="' + CSS.escape(String(sectionId)) + '"]');
+    const select = document.querySelector('[data-homepage-materials="' + String(sectionId) + '"]');
     if (!select) return setHomepageStatus("تعذر العثور على قائمة الملفات لهذا القسم.", "error");
     const selected = Array.from(select.selectedOptions).map(option => String(option.value));
     const allowed = new Set(homepageMaterials.map(item => String(item.id)));
