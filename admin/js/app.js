@@ -205,7 +205,8 @@
       title.textContent = "مرحبًا بك في ضاد";
       subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
       breadcrumb.textContent = titles.overview;
-      view.innerHTML = overviewMarkup;
+      view.innerHTML = overviewMarkup + '<section class="data-module" id="overviewLiveStats"><div class="data-loading">جارٍ تحميل ملخص قاعدة البيانات…</div></section>';
+      loadOverviewSummary();
     } else if (key === "materials" || key === "supplies") {
       title.textContent = titles[key];
       subtitle.textContent = "عرض الملفات التعليمية المسجلة — دون تعديل البيانات.";
@@ -257,7 +258,22 @@
       breadcrumb.textContent = titles.analytics;
       view.innerHTML = analyticsMarkup();
       loadAnalytics(30);
-    } else if (["seo","ads","security","audit","backups","trash"].includes(key)) {
+    } else if (key === "seo") {
+      title.textContent = titles.seo;
+      subtitle.textContent = "إدارة بيانات العناوين والوصف والروابط الأساسية.";
+      breadcrumb.textContent = titles.seo;
+      loadSeo();
+    } else if (key === "audit") {
+      title.textContent = titles.audit;
+      subtitle.textContent = "سجل العمليات الإدارية المسجلة من الخدمات الخلفية.";
+      breadcrumb.textContent = titles.audit;
+      loadAudit();
+    } else if (key === "trash") {
+      title.textContent = titles.trash;
+      subtitle.textContent = "استعادة الملفات المؤرشفة أو حذفها نهائيًا.";
+      breadcrumb.textContent = titles.trash;
+      loadTrash();
+    } else if (["ads","security","backups"].includes(key)) {
       title.textContent = titles[key];
       subtitle.textContent = "معلومات موثوقة عن حالة الوحدة ومتطلبات تفعيلها.";
       breadcrumb.textContent = titles[key];
@@ -855,6 +871,47 @@
       await loadFeatureEditor(button.dataset.slug);
       return;
     }
+    if (action === "material-trash") {
+      if (!["owner","admin"].includes(accessState?.role)) throw new Error("هذه العملية متاحة للحسابات الإدارية المعتمدة فقط.");
+      if (!window.confirm("سيُنقل الملف إلى سلة المحذوفات ويُخفى عن الزوار، دون حذف ملف التخزين. متابعة؟")) return;
+      const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:"trash_material",id}});
+      if(error||data?.error) throw new Error(data?.detail||data?.error||error.message);
+      await loadMaterials(activeModule);
+      return;
+    }
+    if (action === "trash-restore" || action === "trash-purge") {
+      if (!ownerCanWrite()) throw new Error("إدارة سلة المحذوفات متاحة لمالك المنصة فقط.");
+      if (action === "trash-purge" && !window.confirm("تحذير: سيُحذف سجل الملف وروابطه وملف التخزين نهائيًا. لا يمكن التراجع. هل تريد المتابعة؟")) return;
+      const edgeAction=action==="trash-restore"?"trash_restore":"trash_purge";
+      const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:edgeAction,id}});
+      if(error||data?.error) throw new Error(data?.detail||data?.error||error.message);
+      await loadTrash();
+      return;
+    }
+    if (action === "seo-edit") {
+      const row=(window.__adminSeoEntries||[]).find(item=>item.page_path===id);
+      if(!row) throw new Error("لم يتم العثور على إعداد SEO.");
+      document.getElementById("seoPath").value=row.page_path;
+      document.getElementById("seoTitle").value=row.page_title||"";
+      document.getElementById("seoDescription").value=row.meta_description||"";
+      document.getElementById("seoCanonical").value=row.canonical_url||"";
+      document.getElementById("seoRobots").value=row.robots||"index,follow";
+      document.getElementById("seoOgTitle").value=row.og_title||"";
+      document.getElementById("seoOgDescription").value=row.og_description||"";
+      document.getElementById("seoOgImage").value=row.og_image_url||"";
+      document.getElementById("seoPublished").checked=!!row.is_published;
+      document.getElementById("seoPath").disabled=true;
+      document.getElementById("seoForm").scrollIntoView({behavior:"smooth",block:"start"});
+      return;
+    }
+    if (action === "seo-delete") {
+      if(!ownerCanWrite()) throw new Error("إدارة SEO متاحة لمالك المنصة فقط.");
+      if(!window.confirm("هل تريد حذف بيانات SEO لهذه الصفحة؟"))return;
+      const {error}=await supabase.from("site_seo").delete().eq("page_path",id);
+      if(error)throw error;
+      await loadSeo();
+      return;
+    }
   }
 
   async function editLookupRecord(kind, id) {
@@ -1048,13 +1105,73 @@
       root.innerHTML='<section class="data-module"><h2>الحسابات الإدارية المعتمدة</h2><p>الحسابان المضمنان يعملان من إعدادات الخادم ولا يحتاجان إلى سجل في admin_staff. لم تتم إضافة أي حساب جديد.</p><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الحساب</th><th>الصفة</th><th>المصدر</th></tr></thead><tbody><tr><td>dhad1062001@gmail.com</td><td>مالك المنصة</td><td>حساب مضمّن في الخادم</td></tr><tr><td>abeer112026@gmail.com</td><td>مشرف</td><td>حساب مضمّن في الخادم</td></tr>'+(staff.map(x=>'<tr><td>'+escapeHtml(x.email)+'</td><td>'+escapeHtml(x.role)+'</td><td>'+escapeHtml(x.status)+'</td></tr>').join(""))+'</tbody></table></div><p class="data-note">وفق القرار الحالي، لا توجد أزرار دعوة أو إضافة مشرفين. يمكن إضافة مشرف جديد يدويًا لاحقًا عند الحاجة.</p></section>';
     }catch(error){moduleError(root,error.message);}
   }
+
+  async function loadOverviewSummary() {
+    const root=document.getElementById("overviewLiveStats");
+    if(!root)return;
+    const [materials,grades,categories,pages,sections]=await Promise.all([
+      supabase.from("materials").select("id",{count:"exact",head:true}),
+      supabase.from("grades").select("id",{count:"exact",head:true}),
+      supabase.from("categories").select("id",{count:"exact",head:true}),
+      supabase.from("site_pages").select("id",{count:"exact",head:true}),
+      supabase.from("home_sections").select("id",{count:"exact",head:true})
+    ]);
+    const error=[materials,grades,categories,pages,sections].find(x=>x.error)?.error;
+    if(error)return moduleError(root,"تعذر تحميل الملخص: "+error.message);
+    root.innerHTML='<h2>ملخص قاعدة البيانات</h2><div class="analytics-stats"><article><span>الملفات التعليمية</span><strong>'+numberFormat(materials.count)+'</strong></article><article><span>الصفوف</span><strong>'+numberFormat(grades.count)+'</strong></article><article><span>التصنيفات</span><strong>'+numberFormat(categories.count)+'</strong></article><article><span>صفحات الموقع</span><strong>'+numberFormat(pages.count)+'</strong></article><article><span>أقسام الصفحة الرئيسية</span><strong>'+numberFormat(sections.count)+'</strong></article></div><p class="data-note">الأرقام مباشرة من قاعدة البيانات الحالية.</p>';
+  }
+
+  async function loadSeo() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل بيانات SEO…</div>';
+    const {data,error}=await supabase.from("site_seo").select("*").order("page_path");
+    if(error)return moduleError(root,error.message);
+    window.__adminSeoEntries=data||[];
+    const writable=ownerCanWrite();
+    const rows=(data||[]).map(x=>'<tr><td>'+escapeHtml(x.page_path)+'</td><td>'+escapeHtml(x.page_title)+'</td><td>'+(x.is_published?'منشور':'مسودة')+'</td><td>'+fmtDate(x.updated_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="seo-edit" data-id="'+escapeHtml(x.page_path)+'">تعديل</button> <button type="button" data-admin-action="seo-delete" data-id="'+escapeHtml(x.page_path)+'">حذف</button>':'—')+'</td></tr>').join("");
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>بيانات محركات البحث</h2><p>تُحفظ في جدول site_seo، وتُقرأ للزوار من خلال ملف seo.js.</p></div><span class="data-count">'+numberFormat((data||[]).length)+' صفحة</span></div><form id="seoForm"><label>مسار الصفحة<input id="seoPath" required placeholder="/platform.html" '+(!writable?'disabled':'')+'></label><label>عنوان SEO<input id="seoTitle" maxlength="180" required '+(!writable?'disabled':'')+'></label><label>الوصف التعريفي<textarea id="seoDescription" rows="3" maxlength="320" '+(!writable?'disabled':'')+'></textarea></label><label>الرابط الأساسي Canonical<input id="seoCanonical" type="url" '+(!writable?'disabled':'')+'></label><label>تعليمات الفهرسة<select id="seoRobots" '+(!writable?'disabled':'')+'><option value="index,follow">index,follow</option><option value="noindex,follow">noindex,follow</option><option value="noindex,nofollow">noindex,nofollow</option></select></label><label>عنوان المشاركة<input id="seoOgTitle" '+(!writable?'disabled':'')+'></label><label>وصف المشاركة<textarea id="seoOgDescription" rows="2" '+(!writable?'disabled':'')+'></textarea></label><label>رابط صورة المشاركة<input id="seoOgImage" type="url" '+(!writable?'disabled':'')+'></label><label><input id="seoPublished" type="checkbox" checked '+(!writable?'disabled':'')+'> نشر بيانات SEO للزوار</label>'+(writable?'<button type="submit">حفظ بيانات SEO</button><button type="button" id="seoNew">سجل جديد</button>':ownerNotice())+'</form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>المسار</th><th>العنوان</th><th>الحالة</th><th>آخر تحديث</th><th>الإجراءات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="5">لا توجد سجلات SEO بعد.</td></tr>')+'</tbody></table></div><p class="data-note">تحديث الوسوم في المتصفح لا يضمن وحده فهرسة فورية؛ ستظل ملفات HTML الثابتة هي النسخة الأولية التي قد يقرأها بعض الزواحف.</p></section>';
+    const form=document.getElementById("seoForm");
+    document.getElementById("seoNew")?.addEventListener("click",()=>{form.reset();document.getElementById("seoPath").disabled=false;document.getElementById("seoPublished").checked=true;});
+    form.addEventListener("submit",async event=>{
+      event.preventDefault();if(!ownerCanWrite())return;
+      const page_path=document.getElementById("seoPath").value.trim();
+      if(!page_path.startsWith("/")||page_path.includes(".."))return moduleError(root,"أدخل مسارًا داخليًا يبدأ بشرطة مائلة ولا يحتوي على ..");
+      const canonical_url=document.getElementById("seoCanonical").value.trim();
+      const og_image_url=document.getElementById("seoOgImage").value.trim();
+      const payload={page_path,page_title:document.getElementById("seoTitle").value.trim(),meta_description:document.getElementById("seoDescription").value.trim(),canonical_url,robots:document.getElementById("seoRobots").value,og_title:document.getElementById("seoOgTitle").value.trim(),og_description:document.getElementById("seoOgDescription").value.trim(),og_image_url,is_published:document.getElementById("seoPublished").checked,updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null};
+      const {error:saveError}=await supabase.from("site_seo").upsert(payload,{onConflict:"page_path"});
+      if(saveError)return moduleError(root,saveError.message);
+      await loadSeo();
+    });
+  }
+
+  async function loadAudit() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل سجل العمليات…</div>';
+    if(!ownerCanWrite())return moduleError(root,"عرض سجل العمليات متاح لمالك المنصة فقط.");
+    try{
+      const result=await invokeAdmin("audit_list");
+      const entries=result.entries||[];
+      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>سجل العمليات الإدارية</h2><p>سجل مركزي تحفظه الخدمات الخلفية للعمليات المدعومة.</p></div><span class="data-count">'+numberFormat(entries.length)+' عملية</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الوقت</th><th>الحساب</th><th>العملية</th><th>العنصر</th><th>النتيجة</th></tr></thead><tbody>'+(entries.map(x=>'<tr><td>'+fmtDate(x.created_at)+'</td><td>'+escapeHtml(x.actor_email)+'</td><td>'+escapeHtml(x.action)+'</td><td>'+escapeHtml(x.target_type)+' '+escapeHtml(x.target_id)+'</td><td>'+escapeHtml(x.result)+'</td></tr>').join("")||'<tr><td colspan="5">لا توجد عمليات مسجلة بعد.</td></tr>')+'</tbody></table></div><p class="data-note">السجل يبدأ من تاريخ تفعيل هذه الوظيفة، ولا يحتوي تلقائيًا على العمليات القديمة التي سبقت إنشاؤه.</p></section>';
+    }catch(error){moduleError(root,error.message);}
+  }
+
+  async function loadTrash() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل سلة المحذوفات…</div>';
+    if(!ownerCanWrite())return moduleError(root,"إدارة سلة المحذوفات متاحة لمالك المنصة فقط.");
+    try{
+      const result=await invokeAdmin("trash_list");
+      const entries=result.entries||[];
+      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات المؤرشفة</h2><p>النقل إلى السلة يخفي الملف ولا يحذف ملف التخزين. الحذف النهائي لا يتم إلا من هنا.</p></div><span class="data-count">'+numberFormat(entries.length)+' ملف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>تاريخ النقل</th><th>الحذف التلقائي</th><th>الإجراءات</th></tr></thead><tbody>'+(entries.map(x=>'<tr><td>'+escapeHtml(x.title)+'</td><td>'+fmtDate(x.deleted_at)+'</td><td>'+fmtDate(x.expires_at)+'</td><td><button type="button" data-admin-action="trash-restore" data-id="'+x.id+'">استعادة</button> <button type="button" data-admin-action="trash-purge" data-id="'+x.id+'">حذف نهائي</button></td></tr>').join("")||'<tr><td colspan="4">سلة المحذوفات فارغة.</td></tr>')+'</tbody></table></div><p class="data-note">النسخة الحالية تدعم أرشفة ملفات materials فقط. لا تُحذف الملفات تلقائيًا عند انتهاء 30 يومًا؛ يتطلب ذلك مهمة مجدولة منفصلة.</p></section>';
+    }catch(error){moduleError(root,error.message);}
+  }
+
   function loadIntegrationStatus(key) {
     const root=document.getElementById("moduleView");
     const messages={
-      seo:["تحسين الظهور SEO","بيانات SEO الحالية مضمنة في ملفات HTML الثابتة. ربط محرر SEO بقاعدة البيانات يحتاج جدول إعدادات SEO وآلية نشر/تحديث للوسوم؛ مجرد حفظها في قاعدة البيانات لن يغيّر الوسوم الثابتة التي يقرأها محرك البحث أولًا."],
       ads:["إدارة الإعلانات","تكامل AdSense يعمل من خلال كود الموقع ومعرّف الناشر الحالي. لا توجد واجهة API أو بيانات اعتماد AdSense مرتبطة بلوحة ضاد لإدارة الوحدات أو الأرباح؛ لذلك لن نعرض أزرارًا وهمية للتحكم بحساب Google."],
       security:["الأمان والحماية","فحص Supabase أظهر أن الجداول الحساسة admin_staff وstorage_accounts وprivate.analytics_events محمية بـ RLS ولا تملك سياسات مباشرة، ويجري الوصول إليها عبر Edge Functions الموثوقة. لا تغيّر هذه الحماية من الواجهة."],
-      audit:["سجل العمليات","لا يوجد جدول سجل إداري مستقل حاليًا. يلزم إنشاء سجل آمن وربط عمليات الحفظ والحذف به من الخادم قبل عرض سجل موثوق."],
       backups:["النسخ الاحتياطي","النسخ الاحتياطي الفعلي يُدار من Supabase Dashboard وخطة المشروع، ولا يمكن إنشاؤه من قاعدة البيانات نفسها دون تكامل Management API آمن."],
       trash:["سلة المحذوفات","لا يوجد نظام سلة أو أرشفة في المخطط الحالي. سنحتاج إلى آلية نقل واستعادة تحفظ سجل الملف ومساره قبل تفعيل الحذف من لوحة الإدارة."]
     };
