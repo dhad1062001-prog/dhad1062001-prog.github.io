@@ -1218,7 +1218,12 @@
       trash:["سلة المحذوفات","لا يوجد نظام سلة أو أرشفة في المخطط الحالي. سنحتاج إلى آلية نقل واستعادة تحفظ سجل الملف ومساره قبل تفعيل الحذف من لوحة الإدارة."]
     };
     const item=messages[key]||["الوحدة","لا تتوفر بيانات كافية لتفعيل هذه الوحدة."];
-    root.innerHTML='<section class="data-module"><h2>'+escapeHtml(item[0])+'</h2><p>'+escapeHtml(item[1])+'</p><p class="data-note">لن تُعرض أدوات شكلية أو عمليات غير موصولة فعليًا. ستُفعّل هذه الوحدة بعد إكمال متطلباتها الفنية واختبارها.</p></section>';
+    const links={
+      ads:'<a class="site-link" href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer">فتح حساب Google AdSense</a>',
+      backups:'<a class="site-link" href="https://supabase.com/dashboard/project/rjkrfvnexrhebvulrtgp" target="_blank" rel="noopener noreferrer">فتح لوحة مشروع Supabase</a>',
+      security:'<a class="site-link" href="https://supabase.com/dashboard/project/rjkrfvnexrhebvulrtgp" target="_blank" rel="noopener noreferrer">فتح إعدادات المشروع والحماية</a>'
+    };
+    root.innerHTML='<section class="data-module"><h2>'+escapeHtml(item[0])+'</h2><p>'+escapeHtml(item[1])+'</p>'+(links[key]||'')+'<p class="data-note">لن تُعرض أدوات شكلية أو عمليات غير موصولة فعليًا. بعض الإجراءات تتطلب صلاحيات أو مفاتيح تكامل خارجية.</p></section>';
   }
 
   function canAccessModule(key) {
