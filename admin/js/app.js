@@ -607,7 +607,9 @@
         const { error: cleanupError } = await supabase.storage.from(MATERIALS_BUCKET).remove([filePath]);
         if (cleanupError) console.warn("تعذر تنظيف الملف المرفوع بعد فشل الحفظ:", cleanupError);
       }
-      setHomepageStatus("تعذر حفظ القسم: " + (error?.message || "خطأ غير معروف"), "error");
+      setHomepageStatus(recordSaved
+        ? "تم حفظ القسم، لكن تعذر تحديث القائمة: " + (error?.message || "خطأ غير معروف")
+        : "تعذر حفظ القسم: " + (error?.message || "خطأ غير معروف"), "error");
     }
   }
 
@@ -632,15 +634,17 @@
     if (accessState?.owner !== true) return setHomepageStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
     const row = homepageSections.find(item => String(item.id) === String(id));
     if (!row) return;
+    let changed = false;
     try {
       const { data, error } = await supabase.from("home_sections")
         .update({ is_active: !row.is_active, updated_at: new Date().toISOString() })
         .eq("id", row.id).select("id").maybeSingle();
       if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات التغيير.");
+      changed = true;
       await loadHomepageSectionsOnly();
       setHomepageStatus(row.is_active ? "تم إخفاء القسم عن الزوار." : "تم إظهار القسم للزوار.", "success");
     } catch (error) {
-      setHomepageStatus("تعذر تغيير حالة القسم: " + (error?.message || "خطأ غير معروف"), "error");
+      setHomepageStatus((changed ? "تم تغيير حالة القسم، لكن تعذر تحديث القائمة: " : "تعذر تغيير حالة القسم: ") + (error?.message || "خطأ غير معروف"), "error");
     }
   }
 
@@ -652,13 +656,15 @@
       return setHomepageStatus("لا يمكن حذف هذا القسم قبل نقل أقسامه الفرعية إلى قسم آخر أو جعلها أقسامًا رئيسية.", "error");
     }
     if (!window.confirm("هل تريد حذف القسم «" + row.title + "»؟ لن يُحذف الملف من مساحة التخزين.")) return;
+    let deleted = false;
     try {
       const { data, error } = await supabase.from("home_sections").delete().eq("id", row.id).select("id").maybeSingle();
       if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات الحذف.");
+      deleted = true;
       await loadHomepageSectionsOnly();
       setHomepageStatus("تم حذف القسم. بقي الملف في مساحة التخزين دون حذف.", "success");
     } catch (error) {
-      setHomepageStatus("تعذر حذف القسم: " + (error?.message || "خطأ غير معروف"), "error");
+      setHomepageStatus((deleted ? "تم حذف القسم، لكن تعذر تحديث القائمة: " : "تعذر حذف القسم: ") + (error?.message || "خطأ غير معروف"), "error");
     }
   }
 
