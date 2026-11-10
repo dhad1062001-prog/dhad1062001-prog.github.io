@@ -872,6 +872,22 @@
       await loadMaterials(activeModule);
       return;
     }
+    if (action === "material-sections-save") {
+      if(!ownerCanWrite()) throw new Error("ربط الملفات بالأقسام الرئيسية والفرعية متاح لمالك المنصة فقط.");
+      const select=document.querySelector('[data-material-home-sections="'+String(id)+'"]');
+      if(!select) throw new Error("تعذر العثور على قائمة الأقسام لهذا الملف.");
+      const selected=Array.from(select.selectedOptions).map(option=>Number(option.value));
+      const {data:existing,error:readError}=await supabase.from("home_section_materials").select("section_id").eq("material_id",id);
+      if(readError) throw readError;
+      const current=(existing||[]).map(row=>Number(row.section_id));
+      const added=selected.filter(sectionId=>!current.includes(sectionId));
+      const removed=current.filter(sectionId=>!selected.includes(sectionId));
+      if(added.length){const {error}=await supabase.from("home_section_materials").insert(added.map((sectionId,index)=>({section_id:sectionId,material_id:Number(id),sort_order:index})));if(error)throw error;}
+      if(removed.length){const {error}=await supabase.from("home_section_materials").delete().eq("material_id",id).in("section_id",removed);if(error)throw error;}
+      await logAdminAction("material_home_sections_updated","material",id,{linked_count:selected.length,added_count:added.length,removed_count:removed.length});
+      await loadMaterials(activeModule);
+      return;
+    }
     if (action === "material-toggle") {
       const row = window.__adminModuleMaterials?.find(item => String(item.id) === String(id));
       if (!row) throw new Error("لم يتم العثور على الملف.");
@@ -1399,12 +1415,21 @@
     const homeSectionsResult=await supabase.from("home_sections").select("id,title,parent_id,is_active").order("sort_order");
     if(homeSectionsResult.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام لربط الملفات: '+escapeHtml(homeSectionsResult.error.message)+'</div>';return;}
     const homeSections=homeSectionsResult.data||[];
+    let homeLinks=[];
+    if(accessState?.owner===true){
+      const linksResult=await supabase.from("home_section_materials").select("section_id,material_id,sort_order");
+      if(linksResult.error){root.innerHTML='<div class="data-error">تعذر تحميل روابط الملفات بالأقسام: '+escapeHtml(linksResult.error.message)+'</div>';return;}
+      homeLinks=linksResult.data||[];
+    }
+    const linkedByMaterial=new Map();
+    homeLinks.forEach(link=>{const key=String(link.material_id);if(!linkedByMaterial.has(key))linkedByMaterial.set(key,[]);linkedByMaterial.get(key).push(link);});
+    const homeOptionsFor=(item)=>homeSections.map(section=>{const parent=homeSections.find(x=>String(x.id)===String(section.parent_id));const selected=(linkedByMaterial.get(String(item.id))||[]).some(link=>String(link.section_id)===String(section.id));return '<option value="'+escapeHtml(section.id)+'" '+(selected?'selected':'')+'>'+(parent?'↳ ':'')+escapeHtml(section.title)+'</option>';}).join('');
     window.__adminModuleMaterials=allMaterials;
     window.__adminLookups={grades,semesters,categories};
     const writable=["owner","admin"].includes(accessState?.role);
-    const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button> <button type="button" data-admin-action="material-trash" data-id="'+item.id+'">إلى السلة</button>':'—')+'</td></tr>';
+    const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+(accessState?.owner===true?'<details><summary>إدارة الربط</summary><select multiple size="5" data-material-home-sections="'+item.id+'">'+homeOptionsFor(item)+'</select><button type="button" data-admin-action="material-sections-save" data-id="'+item.id+'">حفظ الأقسام</button></details>':(homeSections.length?'تدار من مركز الملفات بواسطة المالك':'—'))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button> <button type="button" data-admin-action="material-trash" data-id="'+item.id+'">إلى السلة</button>':'—')+'</td></tr>';
     const uploadMarkup=viewKey==="file-center"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع ملفات جديدة</h2><p>هذه هي نقطة الرفع الوحيدة في لوحة الإدارة. اختر ملفًا أو عدة ملفات وحدد بيانات كل ملف وقسمه.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
-    root.innerHTML=uploadMarkup+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — تعديل النشر والوصف ورفع الملفات متاح للحسابات الإدارية المعتمدة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="8">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
+    root.innerHTML=uploadMarkup+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — تعديل النشر والوصف ورفع الملفات متاح للحسابات الإدارية المعتمدة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>الأقسام الرئيسية والفرعية</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
     if(writable && viewKey==="file-center"){
       renderAdminMaterialQueue(grades,semesters,categories,homeSections);
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
@@ -1421,7 +1446,7 @@
     }
     document.getElementById("materialsSearch").addEventListener("input",e=>{
       const q=e.target.value.trim().toLocaleLowerCase("ar");
-      document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name,x.description].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="8">لا توجد نتائج.</td></tr>';
+      document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name,x.description].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="9">لا توجد نتائج.</td></tr>';
     });
   }
 
