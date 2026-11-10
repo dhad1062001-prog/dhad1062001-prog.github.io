@@ -99,8 +99,8 @@ function staffInviteForm(){
  el.innerHTML='<div class="panel"><h3>دعوة موظف جديد</h3><form id="staffInviteForm"><div class="form-grid"><div class="field"><label>اسم الموظف</label><input name="display_name" required maxlength="120" placeholder="الاسم الكامل"></div><div class="field"><label>البريد الإلكتروني</label><input name="email" type="email" required maxlength="254" placeholder="name@example.com"></div></div><label><input type="checkbox" name="files" checked> منحه صلاحية رفع الملفات وتعديل بياناتها</label><div class="notice">سيتم إرسال دعوة إلى البريد إذا لم يكن الحساب مسجلاً مسبقاً. صلاحية حذف الملفات والأقسام غير مشمولة.</div><div class="toolbar"><button class="btn gold">إرسال الدعوة</button><button class="btn light" type="button" id="cancelStaffInvite">إلغاء</button></div></form></div>';
  document.getElementById("cancelStaffInvite").onclick=()=>el.innerHTML="";
  document.getElementById("staffInviteForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),email=String(f.get("email")||"").trim().toLowerCase(),display_name=String(f.get("display_name")||"").trim(),files=f.get("files")==="on",btn=e.submitter;if(btn)btn.disabled=true;
-  try{const result=await adminAction("staff_invite",{email,display_name,permissions:{files}});let auditOk=true;try{await adminAction("audit_record",{audit_action:"staff_invited",target_type:"staff",target_id:result.staff?.id||"",details:{email,display_name,files,invitation_sent:result.invitation_sent===true}})}catch(_){auditOk=false}
-   toast(result.invitation_sent?"أُرسلت دعوة الموظف إلى بريده الإلكتروني.": "تم تفعيل حساب الموظف الموجود وإضافته للفريق.",!auditOk);el.innerHTML="";await loadStaff(document.getElementById("view"));
+  try{const result=await adminAction("staff_invite",{email,display_name,permissions:{files}});
+   toast(result.invitation_sent?"أُرسلت دعوة الموظف إلى بريده الإلكتروني.": "تم تفعيل حساب الموظف الموجود وإضافته للفريق.");el.innerHTML="";await loadStaff(document.getElementById("view"));
   }catch(err){if(btn)btn.disabled=false;toast("تعذر إرسال الدعوة: "+err.message,true)}
  };
 }
@@ -117,15 +117,15 @@ function editStaff(id){
  el.innerHTML='<div class="panel"><h3>تعديل بيانات الموظف</h3><form id="staffEditForm"><div class="field"><label>البريد الإلكتروني</label><input value="'+esc(s.email)+'" disabled></div><div class="field"><label>اسم الموظف</label><input name="display_name" required maxlength="120" value="'+esc(s.display_name||"")+'"></div><label><input type="checkbox" name="files" '+(s.permissions?.files?"checked":"")+'> السماح بإدارة الملفات ورفعها وتعديل بياناتها</label><div class="notice">لا تتضمن هذه الصلاحية حذف الملفات أو أرشفتها. تبقى هذه العمليات لحسابات الإدارة المعتمدة.</div><div class="toolbar"><button class="btn gold">حفظ الصلاحيات</button><button type="button" class="btn light" id="cancelStaffEdit">إلغاء</button></div></form></div>';
  document.getElementById("cancelStaffEdit").onclick=()=>el.innerHTML="";
  document.getElementById("staffEditForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),display_name=String(f.get("display_name")||"").trim(),files=f.get("files")==="on",btn=e.submitter;if(btn)btn.disabled=true;
-  try{await adminAction("staff_update",{id,display_name,permissions:{files,file_delete:false}});let auditOk=true;try{await adminAction("audit_record",{audit_action:"staff_permissions_updated",target_type:"staff",target_id:id,details:{email:s.email,files}})}catch(_){auditOk=false}
-   toast(auditOk?"تم تحديث بيانات الموظف وتسجيل العملية.":"تم حفظ الصلاحيات، لكن تعذر تسجيل العملية في السجل.",!auditOk);el.innerHTML="";await loadStaff(document.getElementById("view"));
+  try{await adminAction("staff_update",{id,display_name,permissions:{files,file_delete:false}});
+   toast("تم تحديث بيانات الموظف وتسجيل العملية.");el.innerHTML="";await loadStaff(document.getElementById("view"));
   }catch(err){if(btn)btn.disabled=false;toast("تعذر تحديث الموظف: "+err.message,true)}
  };
 }
 async function disableStaff(id){
  const s=staffRows.find(x=>x.id===id);if(!s||!confirm("سيُمنع هذا الحساب من دخول لوحة الإدارة. هل تريد إيقاف "+s.email+"؟"))return;
- try{await adminAction("staff_disable",{id});let auditOk=true;try{await adminAction("audit_record",{audit_action:"staff_access_disabled",target_type:"staff",target_id:id,details:{email:s.email}})}catch(_){auditOk=false}
-  toast(auditOk?"تم إيقاف وصول الموظف وتسجيل العملية.":"تم إيقاف الحساب، لكن تعذر تسجيل العملية في السجل.",!auditOk);await loadStaff(document.getElementById("view"));
+ try{await adminAction("staff_disable",{id});
+  toast("تم إيقاف وصول الموظف وتسجيل العملية.");await loadStaff(document.getElementById("view"));
  }catch(e){toast("تعذر إيقاف الحساب: "+e.message,true)}
 }
 async function loadAudit(v){
@@ -255,6 +255,7 @@ async function uploadSelectedFiles(){
    const {error:linkError}=await sb.from("home_section_materials").insert({section_id:Number(item.sectionId),material_id:materialId,is_primary:true,sort_order:0});
    if(linkError)throw linkError;
    successes++;
+   try{await adminAction("audit_record",{audit_action:"material_uploaded",target_type:"material",target_id:materialId,details:{title:item.title.trim(),file_name:file.name,section_id:item.sectionId}})}catch(auditError){console.warn("upload audit failed",auditError)}
   }catch(e){
    let keepObject=false;
    if(materialId){const {error:rollbackError}=await sb.from("materials").delete().eq("id",materialId);if(rollbackError){keepObject=true;console.error("material rollback failed",rollbackError)}}
@@ -319,6 +320,7 @@ async function editMaterial(id){
    const {error:demoteError}=await sb.from("home_section_materials").update({is_primary:false}).eq("material_id",id).neq("section_id",Number(newSection));
    if(demoteError){if(submit)submit.disabled=false;return fail(demoteError)}
   }
+  try{await adminAction("audit_record",{audit_action:"material_updated",target_type:"material",target_id:id,details:{title}})}catch(auditError){console.warn("material edit audit failed",auditError)}
   toast("تم تحديث بيانات الملف.");await loadMaterialsList();
  };
 }
@@ -329,6 +331,7 @@ async function toggleMaterialVisibility(id){
  if(!confirm(next?"هل تريد نشر هذا الملف للزوار؟":"هل تريد إخفاء هذا الملف عن الزوار؟"))return;
  const {error}=await sb.from("materials").update({is_public:next,updated_at:new Date().toISOString()}).eq("id",id);
  if(error)return fail(error);
+ try{await adminAction("audit_record",{audit_action:"material_visibility_changed",target_type:"material",target_id:id,details:{is_public:next,title:m.title}})}catch(auditError){console.warn("visibility audit failed",auditError)}
  toast(next?"تم نشر الملف.":"تم إخفاء الملف.");await loadMaterialsList();
 }
 async function archiveMaterial(id){
