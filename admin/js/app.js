@@ -1032,10 +1032,6 @@
       document.getElementById("adminDriveForm").addEventListener("submit",async event=>{
         event.preventDefault();
         const label=document.getElementById("driveLabel").value.trim(),account_email=document.getElementById("driveEmail").value.trim();
-        try{
-          const saved=await invokeAdmin("storage_add");
-          // invokeAdmin accepts action only; send the validated form payload via the dedicated helper below.
-        }catch(_){}
         const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:"storage_add",label,account_email}});
         if(error||data?.error)return moduleError(root,data?.detail||data?.error||error.message);
         await loadDrive();
@@ -1102,10 +1098,10 @@
     const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
     window.__adminModuleMaterials=allMaterials;
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td><button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button></td></tr>';
-    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">يمكن تعديل عنوان الملف ووصفه وتغيير حالة نشره. لم يتم تفعيل الحذف النهائي أو استبدال ملفات التخزين في هذه المرحلة حفاظًا على الملفات الحالية.</p></section>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="8">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">يمكن تعديل عنوان الملف ووصفه وتغيير حالة نشره. لم يتم تفعيل الحذف النهائي أو استبدال ملفات التخزين في هذه المرحلة حفاظًا على الملفات الحالية.</p></section>';
     document.getElementById("materialsSearch").addEventListener("input",e=>{
       const q=e.target.value.trim().toLocaleLowerCase("ar");
-      document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="7">لا توجد نتائج.</td></tr>';
+      document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="8">لا توجد نتائج.</td></tr>';
     });
   }
   async function loadSections() {
