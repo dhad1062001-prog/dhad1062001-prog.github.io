@@ -218,10 +218,16 @@
 
   function canAccessModule(key) {
     const p = accessState?.permissions || {};
-    if (["materials","supplies"].includes(key)) return p.files === true || accessState?.owner === true;
-    if (["sections","academic"].includes(key)) return p.content === true || accessState?.owner === true;
-    if (key === "analytics") return p.analytics === true || accessState?.owner === true;
-    return true;
+    const isOwnerOrAdmin = accessState?.owner === true || accessState?.role === "admin";
+    if (key === "overview") return true;
+    if (isOwnerOrAdmin) return true;
+    if (["materials", "supplies"].includes(key)) return p.files === true;
+    if (key === "analytics") return p.analytics === true;
+    if (["homepage", "sections", "academic", "pages", "seo", "games"].includes(key)) return p.content === true;
+    if (["staff", "storage", "drive", "ads", "settings", "security", "audit", "backups", "trash"].includes(key)) {
+      return p.settings === true;
+    }
+    return false;
   }
   function hideUnauthorizedModules() {
     document.querySelectorAll("[data-module]").forEach(el => {
