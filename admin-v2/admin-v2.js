@@ -243,9 +243,9 @@ async function loadMaterialsList(){
 async function editMaterial(id){
  const m=(window.__dhadAdminMaterials||[]).find(x=>x.id===id);if(!m)return;
  const panel=document.getElementById("materialEditPanel");if(!panel)return;
- const {data:linksNow,error:linksError}=await sb.from("home_section_materials").select("section_id,is_primary").eq("material_id",id);
- if(linksError)return fail(linksError);
- const currentPrimary=linksNow?.find(x=>x.is_primary)?.section_id||linksNow?.[0]?.section_id||"";
+ let linksNow=[];
+ if(access?.owner){const {data,error}=await sb.from("home_section_materials").select("section_id,is_primary").eq("material_id",id);if(error)return fail(error);linksNow=data||[]}
+ const currentPrimary=linksNow.find(x=>x.is_primary)?.section_id||linksNow[0]?.section_id||"";
  const options=sections.filter(s=>s.is_active!==false).map(s=>'<option value="'+s.id+'" '+(String(currentPrimary)===String(s.id)?"selected":"")+'>'+esc(s.title)+'</option>').join("");
  const sectionField=access?.owner?'<div class="field"><label>القسم الرئيسي للعرض</label><select name="section_id"><option value="">عدم تغيير ارتباط القسم</option>'+options+'</select></div>':'<div class="notice">تغيير ارتباط القسم الرئيسي متاح لمالك المنصة فقط.</div>';
  panel.innerHTML='<div class="panel" style="margin-top:16px"><h3>تعديل بيانات الملف</h3><div class="notice">يمكنك تعديل العنوان والوصف. لن يتغير ملف التخزين أو مساره.</div><form id="materialEditor"><div class="field"><label>عنوان الملف</label><input name="title" maxlength="180" required value="'+esc(m.title||"")+'"></div><div class="field"><label>وصف الملف</label><textarea name="description" rows="5">'+esc(m.description||"")+'</textarea></div>'+sectionField+'<div class="toolbar"><button class="btn gold">حفظ التعديلات</button><button class="btn light" type="button" id="cancelMaterialEdit">إلغاء</button></div></form></div>';
