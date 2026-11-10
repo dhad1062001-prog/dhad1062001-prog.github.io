@@ -571,6 +571,7 @@
     setHomepageStatus("جارٍ حفظ القسم...");
     let filePath = needsFile ? (old?.content_type === type ? (old?.file_path || null) : null) : null;
     let uploadedNewFile = false;
+    let recordSaved = false;
     try {
       if (needsFile && file) {
         const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 120) || "file";
@@ -596,12 +597,13 @@
         ? await supabase.from("home_sections").update(payload).eq("id", homepageEditingId).select("id").maybeSingle()
         : await supabase.from("home_sections").insert(payload).select("id").single();
       if (result.error || !result.data) throw new Error(result.error?.message || "لم تؤكد قاعدة البيانات حفظ القسم.");
+      recordSaved = true;
 
       resetHomepageSectionForm();
       await loadHomepageSectionsOnly();
       setHomepageStatus("تم حفظ القسم بنجاح.", "success");
     } catch (error) {
-      if (uploadedNewFile && filePath) {
+      if (!recordSaved && uploadedNewFile && filePath) {
         const { error: cleanupError } = await supabase.storage.from(MATERIALS_BUCKET).remove([filePath]);
         if (cleanupError) console.warn("تعذر تنظيف الملف المرفوع بعد فشل الحفظ:", cleanupError);
       }
