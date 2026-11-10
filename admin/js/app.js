@@ -12,6 +12,7 @@
   const dashboardMarkup = app.innerHTML;
   const titles = {
     overview: "لوحة المعلومات",
+    content: "محتوى الأقسام والنصوص وHTML",
     homepage: "إدارة الصفحة الرئيسية",
     sections: "إدارة الأقسام والتصنيفات",
     materials: "إدارة الملفات التعليمية",
@@ -170,6 +171,16 @@
       if (event.target.closest("[data-analytics-refresh]") && activeModule === "analytics") {
         loadAnalytics(currentAnalyticsDays);
       }
+      if (activeModule === "content") {
+        if (event.target.closest("[data-content-refresh]")) loadContentManager();
+        const contentAction = event.target.closest("[data-content-action]");
+        if (contentAction) {
+          const action = contentAction.dataset.contentAction;
+          const id = contentAction.dataset.id;
+          if (action === "edit") editContentItem(id);
+          if (action === "delete") deleteContentItem(id);
+        }
+      }
       const adminAction = event.target.closest("[data-admin-action]");
       if (adminAction) {
         handleAdminAction(adminAction).catch(error => showModuleError(error));
@@ -203,6 +214,11 @@
       subtitle.textContent = "إدارة العنوان الترحيبي والوصف والأقسام المنشورة على الصفحة الرئيسية.";
       breadcrumb.textContent = titles.homepage;
       loadHomepage();
+    } else if (key === "content") {
+      title.textContent = titles.content;
+      subtitle.textContent = "إدارة النصوص والأنشطة التفاعلية داخل الأقسام المسجلة فعليًا في الموقع.";
+      breadcrumb.textContent = titles.content;
+      loadContentManager();
     } else if (key === "overview") {
       title.textContent = "مرحبًا بك في ضاد";
       subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
@@ -1285,6 +1301,7 @@
     const p = accessState?.permissions || {};
     const isOwnerOrAdmin = accessState?.owner === true || accessState?.role === "admin";
     if (key === "overview") return true;
+    if (key === "content") return accessState?.owner === true;
     if (key === "homepage") return accessState?.owner === true;
     if (isOwnerOrAdmin) return true;
     if (["materials", "supplies", "file-center"].includes(key)) return p.files === true;
@@ -1448,6 +1465,238 @@
       const q=e.target.value.trim().toLocaleLowerCase("ar");
       document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name,x.description].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="9">لا توجد نتائج.</td></tr>';
     });
+  }
+
+
+  // Section content manager: owner-only; content is attached only to existing home_sections.
+  let contentItemsCache = [];
+  let contentSectionsCache = [];
+  let editingContentItemId = null;
+
+  function contentManagerMarkup() {
+    return `
+      <section class="data-module content-manager">
+        <div class="data-module-head">
+          <div><h2>محتوى الأقسام</h2><p>أضف نصوصًا أو أنشطة HTML إلى قسم موجود بالفعل. لا تُنشأ أقسام تلقائيًا هنا.</p></div>
+          <button type="button" class="secondary" data-content-refresh>تحديث القائمة</button>
+        </div>
+        <div id="contentManagerStatus" class="data-note" role="status" aria-live="polite">جارٍ تحميل الأقسام والمحتوى…</div>
+        <form id="contentItemForm" class="homepage-card">
+          <h3 id="contentFormHeading">إضافة محتوى إلى قسم</h3>
+          <div class="homepage-fields">
+            <label>القسم أو الفرع الموجود<select id="contentSectionId" required><option value="">اختر قسمًا</option></select></label>
+            <label>نوع المحتوى<select id="contentType" required><option value="text">نص مكتوب</option><option value="html">ملف HTML تفاعلي</option></select></label>
+            <label>عنوان المحتوى<input id="contentTitle" maxlength="240" required placeholder="عنوان المحتوى"></label>
+            <label>وصف مختصر<input id="contentDescription" maxlength="500" placeholder="وصف يظهر للزوار"></label>
+            <label>حالة النشر<select id="contentStatus"><option value="draft">مسودة</option><option value="published">منشور</option><option value="archived">مؤرشف</option></select></label>
+            <label>ترتيب العرض<input id="contentSortOrder" type="number" step="1" value="0"></label>
+          </div>
+          <label id="contentTextField" class="homepage-label">النص<textarea id="contentBody" rows="8" placeholder="اكتب المحتوى هنا…" required></textarea></label>
+          <label id="contentHtmlField" class="homepage-label" hidden>ملف HTML أو HTM<input id="contentHtmlFile" type="file" accept=".html,.htm,text/html"><small>يُشغّل لاحقًا داخل إطار معزول، ولا يُحقن داخل صفحة الموقع.</small></label>
+          <div class="homepage-actions">
+            <button type="submit" class="primary" id="contentSaveButton">حفظ المحتوى</button>
+            <button type="button" class="secondary" id="contentCancelEdit" hidden>إلغاء التعديل</button>
+          </div>
+        </form>
+        <div class="data-module-head"><div><h3>المحتويات المسجلة</h3><p>تظهر هنا المسودات والمنشور والمؤرشف ضمن الأقسام الفعلية.</p></div><span class="data-count" id="contentItemsCount">0 عنصر</span></div>
+        <div class="data-table-wrap"><table class="data-table"><thead><tr><th>المحتوى</th><th>القسم</th><th>النوع</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="contentItemsRows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody></table></div>
+      </section>`;
+  }
+
+  function setContentManagerStatus(message, kind = "info") {
+    const el = document.getElementById("contentManagerStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.dataset.kind = kind;
+  }
+
+  function bindContentManager() {
+    const form = document.getElementById("contentItemForm");
+    form?.addEventListener("submit", saveContentItem);
+    document.getElementById("contentType")?.addEventListener("change", updateContentTypeFields);
+    document.getElementById("contentCancelEdit")?.addEventListener("click", resetContentItemForm);
+    updateContentTypeFields();
+  }
+
+  function updateContentTypeFields() {
+    const isHtml = document.getElementById("contentType")?.value === "html";
+    const textField = document.getElementById("contentTextField");
+    const htmlField = document.getElementById("contentHtmlField");
+    const body = document.getElementById("contentBody");
+    const file = document.getElementById("contentHtmlFile");
+    if (textField) textField.hidden = isHtml;
+    if (htmlField) htmlField.hidden = !isHtml;
+    if (body) body.required = !isHtml;
+    if (file) file.required = isHtml && !editingContentItemId;
+  }
+
+  function resetContentItemForm() {
+    editingContentItemId = null;
+    document.getElementById("contentItemForm")?.reset();
+    const heading = document.getElementById("contentFormHeading");
+    const save = document.getElementById("contentSaveButton");
+    const cancel = document.getElementById("contentCancelEdit");
+    if (heading) heading.textContent = "إضافة محتوى إلى قسم";
+    if (save) save.textContent = "حفظ المحتوى";
+    if (cancel) cancel.hidden = true;
+    updateContentTypeFields();
+  }
+
+  async function loadContentManager() {
+    const root = document.getElementById("moduleView");
+    if (!root) return;
+    if (accessState?.owner !== true) {
+      root.innerHTML = '<div class="data-error">إدارة محتوى الأقسام متاحة لمالك المنصة فقط.</div>';
+      return;
+    }
+    root.innerHTML = contentManagerMarkup();
+    bindContentManager();
+    try {
+      const [sectionsResult, itemsResult] = await Promise.all([
+        supabase.from("home_sections").select("id,title,parent_id,is_active,sort_order").order("sort_order", { ascending: true }),
+        supabase.from("content_items").select("id,title,description,content_type,body,storage_path,file_name,mime_type,file_size,section_id,placement_key,status,sort_order,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: false })
+      ]);
+      if (sectionsResult.error) throw sectionsResult.error;
+      if (itemsResult.error) throw itemsResult.error;
+      contentSectionsCache = sectionsResult.data || [];
+      contentItemsCache = itemsResult.data || [];
+      const select = document.getElementById("contentSectionId");
+      const sorted = [...contentSectionsCache].sort((a,b) => Number(a.sort_order||0)-Number(b.sort_order||0));
+      if (select) select.innerHTML = '<option value="">اختر قسمًا</option>' + sorted.map(section => {
+        const parent = sorted.find(x => String(x.id) === String(section.parent_id));
+        return '<option value="' + escapeHtml(String(section.id)) + '">' + (parent ? '↳ ' : '') + escapeHtml(section.title) + (section.is_active ? '' : ' (مخفي)') + '</option>';
+      }).join("");
+      renderContentItems();
+      if (!contentSectionsCache.length) {
+        setContentManagerStatus("لا توجد أقسام ديناميكية مسجلة حاليًا في home_sections. لم ننشئ أقسامًا افتراضية. أنشئ القسم أولًا من وحدة إدارة الصفحة الرئيسية، ثم أضف محتواه هنا.", "warning");
+        if (select) select.disabled = true;
+        const save = document.getElementById("contentSaveButton");
+        if (save) save.disabled = true;
+      } else {
+        setContentManagerStatus("تم تحميل " + contentSectionsCache.length + " قسمًا و" + contentItemsCache.length + " عنصر محتوى.", "success");
+      }
+    } catch (error) {
+      setContentManagerStatus("تعذر تحميل المحتوى: " + (error.message || "خطأ غير معروف"), "error");
+      const rows = document.getElementById("contentItemsRows");
+      if (rows) rows.innerHTML = '<tr><td colspan="5">تعذر تحميل البيانات.</td></tr>';
+    }
+  }
+
+  function renderContentItems() {
+    const rows = document.getElementById("contentItemsRows");
+    const count = document.getElementById("contentItemsCount");
+    if (count) count.textContent = numberFormat(contentItemsCache.length) + " عنصر";
+    if (!rows) return;
+    if (!contentItemsCache.length) {
+      rows.innerHTML = '<tr><td colspan="5">لا توجد نصوص أو ملفات HTML حتى الآن.</td></tr>';
+      return;
+    }
+    rows.innerHTML = contentItemsCache.map(item => {
+      const section = contentSectionsCache.find(x => String(x.id) === String(item.section_id));
+      const type = item.content_type === "html" ? "HTML" : "نص";
+      const status = ({draft:"مسودة",published:"منشور",archived:"مؤرشف"})[item.status] || item.status;
+      return '<tr><td><strong>' + escapeHtml(item.title) + '</strong><small>' + escapeHtml(item.description || item.file_name || "") + '</small></td>' +
+        '<td>' + escapeHtml(section?.title || "وجهة غير مرتبطة") + '</td><td>' + type + '</td><td>' + escapeHtml(status) + '</td>' +
+        '<td><button type="button" class="secondary" data-content-action="edit" data-id="' + escapeHtml(item.id) + '">تعديل</button> ' +
+        '<button type="button" class="danger" data-content-action="delete" data-id="' + escapeHtml(item.id) + '">حذف</button></td></tr>';
+    }).join("");
+  }
+
+  function editContentItem(id) {
+    const item = contentItemsCache.find(x => String(x.id) === String(id));
+    if (!item) return;
+    editingContentItemId = item.id;
+    document.getElementById("contentSectionId").value = item.section_id == null ? "" : String(item.section_id);
+    document.getElementById("contentType").value = item.content_type;
+    document.getElementById("contentTitle").value = item.title || "";
+    document.getElementById("contentDescription").value = item.description || "";
+    document.getElementById("contentStatus").value = item.status || "draft";
+    document.getElementById("contentSortOrder").value = String(item.sort_order || 0);
+    document.getElementById("contentBody").value = item.body || "";
+    const heading = document.getElementById("contentFormHeading");
+    const save = document.getElementById("contentSaveButton");
+    const cancel = document.getElementById("contentCancelEdit");
+    if (heading) heading.textContent = "تعديل المحتوى";
+    if (save) save.textContent = "حفظ التعديلات";
+    if (cancel) cancel.hidden = false;
+    updateContentTypeFields();
+    document.getElementById("contentItemForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function saveContentItem(event) {
+    event.preventDefault();
+    if (accessState?.owner !== true) return setContentManagerStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
+    const sectionId = Number(document.getElementById("contentSectionId").value);
+    const contentType = document.getElementById("contentType").value;
+    const title = document.getElementById("contentTitle").value.trim();
+    const description = document.getElementById("contentDescription").value.trim();
+    const status = document.getElementById("contentStatus").value;
+    const sortOrder = Number(document.getElementById("contentSortOrder").value || 0);
+    const body = document.getElementById("contentBody").value.trim();
+    const file = document.getElementById("contentHtmlFile").files?.[0] || null;
+    if (!Number.isInteger(sectionId) || !contentSectionsCache.some(x => Number(x.id) === sectionId)) return setContentManagerStatus("اختر قسمًا موجودًا بالفعل.", "error");
+    if (!title) return setContentManagerStatus("عنوان المحتوى مطلوب.", "error");
+    if (!Number.isInteger(sortOrder)) return setContentManagerStatus("الترتيب يجب أن يكون عددًا صحيحًا.", "error");
+    if (contentType === "text" && !body) return setContentManagerStatus("اكتب النص قبل الحفظ.", "error");
+    if (contentType === "html" && file && !/\.(html|htm)$/i.test(file.name)) return setContentManagerStatus("يسمح فقط بملفات HTML وHTM.", "error");
+    const existing = editingContentItemId ? contentItemsCache.find(x => String(x.id) === String(editingContentItemId)) : null;
+    if (contentType === "html" && !file && !existing?.storage_path) return setContentManagerStatus("اختر ملف HTML أو HTM.", "error");
+    const saveButton = document.getElementById("contentSaveButton");
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = "جارٍ الحفظ…"; }
+    let uploadedPath = null;
+    try {
+      let storagePath = contentType === "html" ? (existing?.storage_path || null) : null;
+      let fileName = contentType === "html" ? (existing?.file_name || null) : null;
+      let mimeType = contentType === "html" ? (existing?.mime_type || "text/html") : null;
+      let fileSize = contentType === "html" ? (existing?.file_size || null) : null;
+      if (contentType === "html" && file) {
+        const safeName = file.name.replace(/[^\p{L}\p{N}._-]+/gu, "-").slice(-120) || "activity.html";
+        storagePath = "section-content/" + sectionId + "/" + crypto.randomUUID() + "-" + safeName;
+        const { error: uploadError } = await supabase.storage.from(MATERIALS_BUCKET).upload(storagePath, file, { upsert:false, contentType:"text/html", cacheControl:"3600" });
+        if (uploadError) throw uploadError;
+        uploadedPath = storagePath;
+        fileName = file.name;
+        mimeType = "text/html";
+        fileSize = file.size;
+      }
+      const payload = {
+        title, description, content_type:contentType, body:contentType === "text" ? body : "",
+        storage_path:storagePath, file_name:fileName, mime_type:mimeType, file_size:fileSize,
+        section_id:sectionId, placement_key:null, status, sort_order:sortOrder, updated_at:new Date().toISOString()
+      };
+      let error;
+      if (existing) {
+        ({error} = await supabase.from("content_items").update(payload).eq("id", existing.id));
+      } else {
+        ({error} = await supabase.from("content_items").insert(payload));
+      }
+      if (error) throw error;
+      if (existing?.storage_path && existing.storage_path !== storagePath) {
+        await supabase.storage.from(MATERIALS_BUCKET).remove([existing.storage_path]);
+      }
+      setContentManagerStatus(existing ? "تم تحديث المحتوى." : "تمت إضافة المحتوى.", "success");
+      resetContentItemForm();
+      await loadContentManager();
+    } catch (error) {
+      if (uploadedPath) await supabase.storage.from(MATERIALS_BUCKET).remove([uploadedPath]);
+      setContentManagerStatus("تعذر حفظ المحتوى: " + (error.message || "خطأ غير معروف"), "error");
+    } finally {
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = editingContentItemId ? "حفظ التعديلات" : "حفظ المحتوى"; }
+    }
+  }
+
+  async function deleteContentItem(id) {
+    if (accessState?.owner !== true) return;
+    const item = contentItemsCache.find(x => String(x.id) === String(id));
+    if (!item || !confirm("هل تريد حذف هذا المحتوى؟")) return;
+    const { error } = await supabase.from("content_items").delete().eq("id", item.id);
+    if (error) return setContentManagerStatus("تعذر حذف المحتوى: " + error.message, "error");
+    if (item.storage_path) {
+      const { error: storageError } = await supabase.storage.from(MATERIALS_BUCKET).remove([item.storage_path]);
+      if (storageError) console.warn("تم حذف سجل المحتوى وتعذر حذف ملف HTML من التخزين:", storageError);
+    }
+    await loadContentManager();
+    setContentManagerStatus("تم حذف المحتوى.", "success");
   }
 
   async function loadSections() {
