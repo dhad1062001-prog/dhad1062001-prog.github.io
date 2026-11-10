@@ -2488,6 +2488,11 @@ window.addEventListener('supabase-loaded',initUI);
 setTimeout(()=>{
   if(!window.__SUPABASE_LOADED__){
     renderAuthArea();
+    const gate=document.getElementById('legacyAdminGate');
+    if(gate){
+      gate.style.display='block';
+      document.getElementById('legacyAdminGateText').textContent='تعذر تحميل مكتبة الاتصال حاليًا. تحقق من الإنترنت ثم أعد تحديث الصفحة.';
+    }
   }
 },8000);
 </script>
