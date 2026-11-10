@@ -61,3 +61,15 @@ button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none
 @media(max-width:1150px){.modules-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.admin-layout{grid-template-columns:1fr}.sidebar{position:fixed;right:0;top:29px;height:calc(100vh - 29px);width:278px;transform:translateX(110%);transition:transform .22s;box-shadow:-15px 0 40px #0007}.sidebar.open{transform:translateX(0)}.sidebar-scrim.show{display:block;position:fixed;inset:29px 0 0;background:#0009;z-index:15}.mobile-menu{display:grid;place-items:center}.topbar{height:59px;padding:0 13px}.topbar-start,.topbar-actions{gap:8px}.page-content{padding:21px 13px 28px}.welcome-row{align-items:flex-start;flex-direction:column}.welcome-row h1{font-size:21px}.date-chip{display:none}.modules-grid{grid-template-columns:1fr}.stats-grid{gap:8px}.stat-card{padding:12px}.stat-card>strong{font-size:21px}.footer{padding:12px 14px}.safety-notice{padding:11px}.site-link{padding:7px 8px}.breadcrumbs{font-size:10px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+
+.login-screen{min-height:calc(100vh - 29px);display:grid;place-items:center;padding:22px;background:radial-gradient(ellipse at 50% 5%,#465536 0,transparent 55%),var(--bg)}
+.login-card{width:min(440px,100%);padding:30px 28px;text-align:center;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#303d2b,#20291c);box-shadow:var(--shadow)}
+.login-mark{width:62px;height:62px;margin:0 auto 17px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#e1c57d,var(--gold));color:#20291c;font-size:36px;font-weight:900}
+.login-card h1{margin:0;color:var(--gold-light);font-size:22px}
+.login-card p{margin:10px 0 20px;color:var(--muted);font-size:11px;line-height:2}
+.google-login{width:100%;padding:12px 15px;border:1px solid var(--gold);border-radius:11px;background:var(--gold);color:#20291c;font-size:12px;font-weight:900}
+.google-login:disabled{opacity:.6;cursor:wait}
+.login-error{margin:0 0 14px;padding:10px;border:1px solid #a56c5c;border-radius:9px;background:#4a3029;color:#f2c0ad;font-size:10px;line-height:1.8}
+.login-foot{display:block;margin-top:16px;color:#aeb8a2;font-size:9px;line-height:1.8}
+.signout-button{border:1px solid #7b6940;border-radius:9px;background:#3b3928;color:#ead9a8;padding:8px 11px;font-size:10px;font-weight:800}
+@media(max-width:760px){.signout-button{padding:7px 8px;font-size:9px}}
