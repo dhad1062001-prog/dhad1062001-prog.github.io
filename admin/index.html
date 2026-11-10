@@ -10,9 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./js/app.js"></script>
 </head>
 <body>
+  <div id="app">
   <div class="preview-ribbon"><span class="pulse"></span> بيئة تطوير مستقلة — لا تغيّر بيانات الموقع</div>
   <div class="admin-layout">
     <aside class="sidebar" id="sidebar">
@@ -46,8 +48,8 @@
         <button class="nav-item" data-module="trash"><span class="nav-icon">▱</span><span>سلة المحذوفات</span></button>
       </nav>
       <div class="sidebar-footer">
-        <div class="user-avatar">ض</div>
-        <div class="user-meta"><strong>مساحة المعاينة</strong><small>بانتظار ربط الدخول الآمن</small></div>
+        <div class="user-avatar" id="userAvatar">ض</div>
+        <div class="user-meta"><strong id="userName">مستخدم الإدارة</strong><small id="userEmail">تم التحقق من الصلاحية</small></div>
         <span class="status-dot"></span>
       </div>
     </aside>
@@ -61,6 +63,7 @@
         <div class="topbar-actions">
           <span class="environment-chip"><i></i> تطوير</span>
           <a class="site-link" href="https://dhad1062001-prog.github.io/" target="_blank" rel="noopener">عرض الموقع <span>↗</span></a>
+          <button class="signout-button" id="signOutButton" type="button">تسجيل الخروج</button>
         </div>
       </header>
 
@@ -111,5 +114,6 @@
     </main>
   </div>
   <div class="sidebar-scrim" id="sidebarScrim"></div>
+  </div>
 </body>
 </html>
