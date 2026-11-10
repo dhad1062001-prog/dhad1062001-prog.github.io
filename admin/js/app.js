@@ -43,6 +43,7 @@
   };
   const nav = document.getElementById("navigation");
   const view = document.getElementById("moduleView");
+  const overviewMarkup = view.innerHTML;
   const title = document.getElementById("pageTitle");
   const subtitle = document.getElementById("pageSubtitle");
   const breadcrumb = document.getElementById("breadcrumbTitle");
@@ -50,19 +51,19 @@
   const scrim = document.getElementById("sidebarScrim");
 
   function showModule(key) {
-    if (key === "overview") {
-      title.textContent = "مرحبًا بك في ضاد";
-      subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
-      breadcrumb.textContent = titles.overview;
-      view.innerHTML = document.getElementById("overviewTemplate")?.innerHTML || view.innerHTML;
-      // The overview is retained in the original document and restored without data calls.
-      location.hash = "";
-      return;
-    }
     if (!titles[key]) return;
     document.querySelectorAll("[data-module]").forEach(button => {
       button.classList.toggle("active", button.dataset.module === key);
     });
+    if (key === "overview") {
+      title.textContent = "مرحبًا بك في ضاد";
+      subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
+      breadcrumb.textContent = titles.overview;
+      view.innerHTML = overviewMarkup;
+      // The overview is retained in the original document and restored without data calls.
+      location.hash = "";
+      return;
+    }
     title.textContent = titles[key];
     subtitle.textContent = "وحدة ضمن مركز إدارة ضاد المستقل.";
     breadcrumb.textContent = titles[key];
