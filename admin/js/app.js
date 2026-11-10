@@ -1044,17 +1044,35 @@
     root.innerHTML='<div class="data-loading">جارٍ تحميل هوية المنصة…</div>';
     const {data,error}=await supabase.from("site_pages").select("title,content,updated_at").eq("slug","site-branding").maybeSingle();
     if(error)return moduleError(root,error.message);
+    let branding={};
+    try{branding=JSON.parse(data?.content||"{}");}catch(_){return moduleError(root,"بيانات هوية المنصة الحالية ليست JSON صالحًا. لم يتم تعديلها.");}
     const writable=ownerCanWrite();
-    root.innerHTML='<section class="data-module"><h2>هوية منصة ضاد</h2><p>تُحفظ إعدادات الهوية في سجل site_pages ذي المعرّف site-branding.</p><label>بيانات الهوية (JSON)<textarea id="adminBrandingJson" rows="14" '+(!writable?'disabled':'')+'></textarea></label>'+(writable?'<button id="saveBrandingJson" type="button">حفظ الهوية</button>':ownerNotice())+'<p class="data-note">يجب أن تكون البيانات JSON صحيحة. لا تُحذف الصور القديمة عند تغيير مسارات الهوية.</p></section>';
-    document.getElementById("adminBrandingJson").value=data?.content||'{}';
-    document.getElementById("saveBrandingJson")?.addEventListener("click",async()=>{
-      if(!ownerCanWrite())return;
-      let value;try{value=JSON.parse(document.getElementById("adminBrandingJson").value);}catch(_){return moduleError(root,"صيغة JSON غير صحيحة.");}
-      if(!value||typeof value!=="object"||Array.isArray(value))return moduleError(root,"يجب أن تكون بيانات الهوية كائن JSON.");
-      const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(value),updated_at:new Date().toISOString()}).eq("slug","site-branding");
+    root.innerHTML='<section class="data-module"><h2>هوية منصة ضاد</h2><p>تعديل الاسم والشعار النصي والعبارة التعريفية. تبقى الصور الحالية محفوظة ولا تُحذف عند تعديل البيانات.</p><form id="adminBrandingForm"><label>اسم المنصة<input id="brandName" maxlength="100" '+(!writable?'disabled':'')+'></label><label>العبارة التعريفية<input id="brandTagline" maxlength="240" '+(!writable?'disabled':'')+'></label><label>الحرف أو الرمز<input id="brandMark" maxlength="8" '+(!writable?'disabled':'')+'></label><label>نص اعتماد المعلم<input id="brandTeacher" maxlength="180" '+(!writable?'disabled':'')+'></label><label>رابط تحميل التطبيق<input id="brandAppUrl" type="url" '+(!writable?'disabled':'')+'></label><label>مسار ملف الشعار الحالي<input id="brandLogoPath" '+(!writable?'disabled':'')+'></label><label>مسار خلفية الواجهة الحالية<input id="brandHeroPath" '+(!writable?'disabled':'')+'></label>'+(writable?'<button type="submit">حفظ إعدادات الهوية</button>':ownerNotice())+'</form><p class="data-note">لا تضع روابط خاصة أو رموز وصول هنا. مسارات الصور يجب أن تكون مسارات ملفات موجودة داخل حاوية materials.</p></section>';
+    document.getElementById("brandName").value=branding.name||"ضـــاد";
+    document.getElementById("brandTagline").value=branding.tagline||"";
+    document.getElementById("brandMark").value=branding.mark||"ض";
+    document.getElementById("brandTeacher").value=branding.teacherText||"";
+    document.getElementById("brandAppUrl").value=branding.appDownloadUrl||"";
+    document.getElementById("brandLogoPath").value=branding.logoPath||"";
+    document.getElementById("brandHeroPath").value=branding.heroBackgroundPath||"";
+    document.getElementById("adminBrandingForm").addEventListener("submit",async event=>{
+      event.preventDefault();if(!ownerCanWrite())return;
+      const appDownloadUrl=document.getElementById("brandAppUrl").value.trim();
+      if(appDownloadUrl&&!/^https?:\/\//i.test(appDownloadUrl))return moduleError(root,"رابط التطبيق يجب أن يبدأ بـ https:// أو http://.");
+      const next={...branding,
+        name:document.getElementById("brandName").value.trim(),
+        tagline:document.getElementById("brandTagline").value.trim(),
+        mark:document.getElementById("brandMark").value.trim()||"ض",
+        teacherText:document.getElementById("brandTeacher").value.trim(),
+        appDownloadUrl,
+        logoPath:document.getElementById("brandLogoPath").value.trim(),
+        heroBackgroundPath:document.getElementById("brandHeroPath").value.trim()
+      };
+      if(!next.name)return moduleError(root,"اسم المنصة مطلوب.");
+      const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(next),updated_at:new Date().toISOString()}).eq("slug","site-branding");
       if(saveError)return moduleError(root,saveError.message);
-      await logAdminAction("site_branding_updated","site_page","site-branding");
-      moduleError(root,"تم حفظ إعدادات الهوية بنجاح.");
+      await logAdminAction("site_branding_updated","site_page","site-branding",{name:next.name});
+      moduleError(root,"تم حفظ إعدادات الهوية بنجاح. حدّث الموقع العام للتحقق من ظهورها.");
     });
   }
 
