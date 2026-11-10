@@ -155,6 +155,8 @@
           if (action === "toggle") toggleHomepageSection(id);
           if (action === "delete") deleteHomepageSection(id);
         }
+        const linksButton = event.target.closest("[data-homepage-links-save]");
+        if (linksButton) saveHomepageSectionLinks(linksButton.dataset.homepageLinksSave);
         if (event.target.closest("[data-homepage-refresh]")) loadHomepage();
         if (event.target.closest("[data-homepage-reset]")) resetHomepageSectionForm();
       }
@@ -236,6 +238,8 @@
 
   // Homepage management: owner-only, using the existing site_pages and home_sections tables.
   let homepageSections = [];
+  let homepageMaterials = [];
+  let homepageSectionLinks = {};
   let homepageEditingId = null;
   const HOMEPAGE_DESCRIPTION_SLUG = "home-description";
   const MATERIALS_BUCKET = "materials";
@@ -309,18 +313,22 @@
     bindHomepageForms();
     setHomepageStatus("جارٍ تحميل بيانات الصفحة الرئيسية...");
     try {
-      const [pageResult, sectionsResult] = await Promise.all([
+      const [pageResult, sectionsResult, materialsResult] = await Promise.all([
         supabase.from("site_pages").select("slug,title,content,is_visible,home_title,home_subtitle").eq("slug", HOMEPAGE_DESCRIPTION_SLUG).maybeSingle(),
-        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,parent_id,icon,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
+        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,parent_id,icon,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
+        supabase.from("materials").select("id,title,file_name,description,is_public").eq("is_public", true).order("created_at", { ascending: false }).limit(1000)
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
+      if (arguments[0] && false) throw new Error("unreachable");
       const page = pageResult.data || {};
       document.getElementById("homepageTitle").value = page.home_title || "رحلتك إلى التميز تبدأ من هنا";
       document.getElementById("homepageSubtitle").value = page.home_subtitle || "تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية";
       document.getElementById("homepageDescription").value = page.content || "منصة ضاد مساحة تعليمية عربية تجمع الموارد والملفات والأنشطة التي يحتاج إليها معلم اللغة العربية والطالب وولي الأمر، وتسهّل الوصول إليها وتنظيمها في مكان واحد.";
       document.getElementById("homepageVisible").checked = page.is_visible !== false;
       homepageSections = sectionsResult.data || [];
+      homepageMaterials = materialsResult.data || [];
+      await loadHomepageSectionLinks();
       renderHomepageParentOptions();
       renderHomepageSections();
       const order = document.getElementById("homepageSectionOrder");
@@ -476,6 +484,60 @@
     if ([...select.options].some(option => option.value === current)) select.value = current;
   }
 
+  async function loadHomepageSectionLinks() {
+    homepageSectionLinks = {};
+    if (!homepageSections.length) return;
+    const sectionIds = homepageSections.map(row => row.id);
+    const { data, error } = await supabase.from("home_section_materials")
+      .select("section_id,material_id,sort_order")
+      .in("section_id", sectionIds)
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    (data || []).forEach(link => {
+      (homepageSectionLinks[String(link.section_id)] ||= []).push(link);
+    });
+  }
+
+  async function saveHomepageSectionLinks(sectionId) {
+    if (accessState?.owner !== true) return setHomepageStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
+    const select = document.querySelector('[data-homepage-materials="' + CSS.escape(String(sectionId)) + '"]');
+    if (!select) return setHomepageStatus("تعذر العثور على قائمة الملفات لهذا القسم.", "error");
+    const selected = Array.from(select.selectedOptions).map(option => String(option.value));
+    const allowed = new Set(homepageMaterials.map(item => String(item.id)));
+    if (selected.some(id => !allowed.has(id))) return setHomepageStatus("تتضمن القائمة ملفًا غير متاح. حدّث البيانات ثم حاول مجددًا.", "error");
+    try {
+      setHomepageStatus("جارٍ تحديث الملفات المرتبطة بالقسم...");
+      const { data: existingRows, error: readError } = await supabase.from("home_section_materials")
+        .select("material_id")
+        .eq("section_id", sectionId);
+      if (readError) throw readError;
+      const current = (existingRows || []).map(row => String(row.material_id));
+      const added = selected.filter(id => !current.includes(id));
+      const removed = current.filter(id => !selected.includes(id));
+      if (added.length) {
+        const rows = added.map(id => ({ section_id: sectionId, material_id: id, sort_order: selected.indexOf(id) }));
+        const { error } = await supabase.from("home_section_materials").insert(rows);
+        if (error) throw error;
+      }
+      for (const id of selected.filter(value => current.includes(value))) {
+        const { error } = await supabase.from("home_section_materials")
+          .update({ sort_order: selected.indexOf(id) })
+          .eq("section_id", sectionId).eq("material_id", id);
+        if (error) throw error;
+      }
+      if (removed.length) {
+        const { error } = await supabase.from("home_section_materials")
+          .delete().eq("section_id", sectionId).in("material_id", removed);
+        if (error) throw error;
+      }
+      await loadHomepageSectionLinks();
+      renderHomepageSections();
+      setHomepageStatus("تم تحديث الملفات المرتبطة. لم يتم حذف أي ملف من المكتبة أو التخزين.", "success");
+    } catch (error) {
+      setHomepageStatus("تعذر تحديث الملفات المرتبطة: " + (error?.message || "خطأ غير معروف"), "error");
+    }
+  }
+
   function renderHomepageSections() {
     const list = document.getElementById("homepageSectionsList");
     if (!list) return;
@@ -493,6 +555,15 @@
           <button type="button" data-homepage-action="toggle" data-id="${escapeHtml(row.id)}">${row.is_active ? "إخفاء" : "إظهار"}</button>
           <button type="button" class="danger" data-homepage-action="delete" data-id="${escapeHtml(row.id)}">حذف</button>
         </div>
+        <details class="homepage-links-manager">
+          <summary>الملفات المرتبطة (${(homepageSectionLinks[String(row.id)] || []).length})</summary>
+          <p>اختر الملفات المنشورة التي تريد عرضها داخل هذا القسم. يمكنك تحديد أكثر من ملف، وإعادة ترتيبها من خلال ترتيب الاختيار.</p>
+          <select multiple size="6" data-homepage-materials="${escapeHtml(row.id)}" aria-label="الملفات المرتبطة بالقسم">
+            ${homepageMaterials.map(material => '<option value="' + escapeHtml(material.id) + '" ' + ((homepageSectionLinks[String(row.id)] || []).some(link => String(link.material_id) === String(material.id)) ? "selected" : "") + '>' + escapeHtml(material.title || material.file_name || "ملف تعليمي") + '</option>').join("")}
+          </select>
+          ${homepageMaterials.length ? "" : '<small>لا توجد ملفات منشورة متاحة للربط حاليًا.</small>'}
+          <button type="button" class="homepage-secondary" data-homepage-links-save="${escapeHtml(row.id)}">حفظ الملفات المرتبطة</button>
+        </details>
       </article>`;
     }).join("");
   }
