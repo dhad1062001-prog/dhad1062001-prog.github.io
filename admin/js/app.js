@@ -187,7 +187,7 @@
       title.textContent = titles[key];
       subtitle.textContent = "عرض الملفات التعليمية المسجلة — دون تعديل البيانات.";
       breadcrumb.textContent = titles[key];
-      loadMaterials();
+      loadMaterials(key);
     } else if (key === "sections") {
       title.textContent = titles.sections;
       subtitle.textContent = "عرض الأقسام والتصنيفات الحالية.";
@@ -230,20 +230,21 @@
   }
   const fmtDate = value => value ? new Intl.DateTimeFormat("ar-JO",{dateStyle:"medium"}).format(new Date(value)) : "—";
   const lookup = (items,id) => items.find(x => String(x.id)===String(id))?.name || "—";
-  async function loadMaterials() {
+  async function loadMaterials(viewKey = "materials") {
     const root=document.getElementById("moduleView");
     root.innerHTML='<div class="data-loading">جارٍ تحميل الملفات…</div>';
     const [m,g,s,c]=await Promise.all([
-      supabase.from("materials").select("id,title,file_name,grade_id,semester_id,category_id,download_count,is_public,created_at").order("created_at",{ascending:false}).limit(500),
+      supabase.from("materials").select("id,title,file_name,grade_id,semester_id,category_id,download_count,is_public,created_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
       supabase.from("grades").select("id,name").order("sort_order"),
       supabase.from("semesters").select("id,name").order("sort_order"),
       supabase.from("categories").select("id,name").order("sort_order")
     ]);
     const error=m.error||g.error||s.error||c.error;
     if(error){root.innerHTML='<div class="data-error">تعذر تحميل الملفات: '+escapeHtml(error.message)+'</div>';return;}
-    const materials=m.data||[], grades=g.data||[], semesters=s.data||[], categories=c.data||[];
+    const allMaterials=m.data||[], materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
+    const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td></tr>';
-    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات التعليمية</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">لا يوجد رفع أو تعديل أو حذف مفعّل هنا؛ لم تتغير أي بيانات أو مسارات تخزين.</p></section>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">لا يوجد رفع أو تعديل أو حذف مفعّل هنا؛ لم تتغير أي بيانات أو مسارات تخزين.</p></section>';
     document.getElementById("materialsSearch").addEventListener("input",e=>{
       const q=e.target.value.trim().toLocaleLowerCase("ar");
       document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="7">لا توجد نتائج.</td></tr>';
