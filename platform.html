@@ -619,7 +619,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
         <h3>ضـــاد | الإدارة</h3><small>لوحة التحكم وإدارة المحتوى</small>
         <div class="admin-menu">
           <button class="active" type="button">▣ لوحة التحكم</button>
-          <button type="button" onclick="location.href='/admin/'">＋ رفع الملفات من لوحة الإدارة</button>
+          <button type="button" onclick="document.getElementById('uploadForm')?.scrollIntoView({behavior:'smooth',block:'start'})">＋ رفع الملفات</button>
           <button type="button" onclick="showFilesPage()">▤ الملفات المحملة</button>
           <button type="button" onclick="document.getElementById('dhadAdminAnalytics')?.scrollIntoView({behavior:'smooth',block:'start'})">▥ الإحصائيات</button>
           <button type="button" class="owner-only-control" onclick="showSitePagesPage()">▦ صفحات الموقع</button>
@@ -660,16 +660,45 @@ if(window.__DHAD_DIRECT_ENTRY__){
           <div class="admin-card" style="margin-top:14px"><h4>الأداء اليومي</h4><div id="dhadAnalyticsDaily" style="overflow:auto">لا توجد بيانات بعد.</div></div>
         </section>
         <div class="admin-grid">
-          <div class="admin-card">
-            <h3>إدارة رفع الملفات</h3>
-            <p class="callout-help">تم توحيد رفع الملفات من لوحة الإدارة المستقلة، بحيث تختار القسم أولًا ثم ترفع ملفاته من داخله. لم يعد الرفع متاحًا من هذه الشاشة لتجنب توزيع الملفات على أقسام غير مقصودة.</p>
-            <a class="primary" href="/admin/">فتح لوحة إدارة ضاد</a>
-          </div>
-          <div class="admin-card">
+          <section class="admin-card" id="uploadFormCard">
+            <h3>رفع ملف جديد</h3>
+            <p class="callout-help">ارفع الملف مباشرة من لوحة الموقع، وحدد القسم الرئيسي ثم القسم الفرعي إن وجد. تبقى الملفات محفوظة في مساحة Supabase الحالية.</p>
+            <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
+            <form id="uploadForm" onsubmit="uploadMaterial(event)">
+              <div class="field"><label for="matTitle">عنوان الملف</label><input id="matTitle" maxlength="200" required></div>
+              <div class="field"><label for="matDescription">وصف الملف</label><textarea id="matDescription" rows="4" placeholder="اكتب وصفاً واضحاً لمحتوى الملف وفائدته..."></textarea></div>
+              <div class="field"><label for="matSummary">ملخص المحتوى</label><textarea id="matSummary" rows="3"></textarea></div>
+              <div class="field"><label for="matObjectives">الأهداف التعليمية</label><textarea id="matObjectives" rows="3"></textarea></div>
+              <div class="field"><label for="matAudience">الفئة المستهدفة</label><input id="matAudience" placeholder="مثال: معلمو اللغة العربية أو طلبة الصف التاسع"></div>
+              <div class="field"><label for="matPageCount">عدد الصفحات (اختياري)</label><input id="matPageCount" type="number" min="1" step="1"></div>
+              <div class="field"><label for="matPrimarySection">القسم الرئيسي للملف</label><select id="matPrimarySection" required><option value="">اختر القسم الرئيسي</option><option value="school_grades">الصفوف الدراسية</option><option value="curricula">المناهج الدراسية</option><option value="teacher_supplies">لوازم المعلمين</option><option value="interactive_games">الألعاب التفاعلية</option><option value="supplementary_education">التعليم الإضافي</option></select></div>
+              <div class="field"><label for="matAdditionalSections">أقسام إضافية (اختياري)</label><select id="matAdditionalSections" multiple size="4"><option value="school_grades">الصفوف الدراسية</option><option value="curricula">المناهج الدراسية</option><option value="teacher_supplies">لوازم المعلمين</option><option value="interactive_games">الألعاب التفاعلية</option><option value="supplementary_education">التعليم الإضافي</option></select></div>
+              <div class="field"><label for="matGrade" id="matGradeLabel">الصف أو المرحلة</label><select id="matGrade"><option value="">اختر الصف أو المرحلة</option></select></div>
+              <div class="field"><label for="matSemester" id="matSemesterLabel">الفصل الدراسي</label><select id="matSemester"><option value="">اختر الفصل الدراسي</option></select></div>
+              <div class="field"><label for="matCategoryMain">القسم الرئيسي للتصنيف</label><select id="matCategoryMain"><option value="">اختر القسم الرئيسي</option></select></div>
+              <div class="field"><label for="matCategoryChild">القسم الفرعي</label><select id="matCategoryChild" disabled><option value="">اختر القسم الرئيسي أولاً</option></select></div>
+              <select id="matCategory" aria-hidden="true" tabindex="-1" style="display:none"><option value=""></option></select>
+              <div class="field" id="trackWrap" style="display:none"><label for="matTrack">المسار</label><select id="matTrack"></select></div>
+              <div class="field" id="fieldWrap" style="display:none"><label for="matField">المجال</label><select id="matField"></select></div>
+              <div class="field"><label for="matHomeSections">ربط الملف بأقسام الصفحة الرئيسية (اختياري)</label><select id="matHomeSections" multiple size="4"><option disabled>جارٍ تحميل الأقسام...</option></select></div>
+              <div class="field"><label for="matFile">اختر الملف</label><input id="matFile" type="file" required></div>
+              <button class="primary" type="submit">رفع الملف وحفظ بياناته</button>
+              <div id="uploadedMaterialLink" class="callout-help" style="margin-top:12px"></div>
+            </form>
+          </section>
+          <section class="admin-card">
             <h3>آخر الملفات</h3>
             <div id="adminMaterials" class="admin-list"></div>
-          </div>
+          </section>
         </div>
+        <section class="admin-card" style="margin-top:16px">
+          <h3>الرفع الجماعي للملفات</h3>
+          <p class="callout-help">يمكنك اختيار عدة ملفات، ثم تحديد الصف والفصل والتصنيف لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50 ميجابايت.</p>
+          <div class="field"><label for="batchFilesInput">اختيار ملفات متعددة</label><input id="batchFilesInput" type="file" multiple></div>
+          <div id="batchFilesList" class="admin-list"><div class="empty">اختر ملفات لعرضها هنا.</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="batchUploadButton" class="primary" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button id="batchCancelButton" class="secondary" type="button" onclick="cancelMaterialBatch()" disabled>إيقاف الدفعة</button></div>
+          <div id="batchUploadStatus" class="status" role="status" aria-live="polite"></div>
+        </section>
         <div class="admin-nav-grid">
           <button class="admin-nav-btn" onclick="showFilesPage()">الملفات المحملة</button>
           <button class="admin-nav-btn owner-only-control" onclick="showSitePagesPage()">صفحات الموقع</button>
@@ -1115,7 +1144,7 @@ async function renderAuthArea(){
     return;
   }
   let h='<span class="user-name">'+escapeHtml(currentProfile?.full_name||currentUser.email||'المستخدم')+'</span>';
-  if(isFileManager())h+='<button class="admin-btn ui-shape" type="button" data-admin-url="/admin/" onclick="location.href=this.dataset.adminUrl">⚙️ الإدارة</button>';
+  if(isFileManager())h+='<button class="admin-btn ui-shape" type="button" onclick="showAdminPage()">⚙️ الإدارة</button>';
   h+='<button class="logout-btn ui-shape" type="button" onclick="signOut()">خروج</button>';
   el.innerHTML=h;
   applyRoleUI();
@@ -1131,7 +1160,7 @@ async function loadLookups(){
   const [g,s,c]=await Promise.all([
     sb.from('grades').select('id,name,slug,sort_order,emoji').order('sort_order'),
     sb.from('semesters').select('id,name,sort_order').order('sort_order'),
-    sb.from('categories').select('id,name,slug,sort_order').order('sort_order')
+    sb.from('categories').select('id,name,slug,sort_order,parent_id').order('sort_order')
   ]);
 
   if(g.error||s.error||c.error){
@@ -1227,13 +1256,32 @@ function fillAdminSelects(){
   const a=document.getElementById('matGrade');
   const b=document.getElementById('matSemester');
   const c=document.getElementById('matCategory');
-  if(!a||!b||!c)return;
-
-  a.innerHTML='<option value="">اختر الصف أو المرحلة</option>'+grades.map(g=>`<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
-  b.innerHTML='<option value="">اختر الفصل الدراسي</option>'+semesters.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
-  c.innerHTML='<option value="">اختر المادة أو التصنيف</option>'+categories.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  const main=document.getElementById('matCategoryMain');
+  if(a)a.innerHTML='<option value="">اختر الصف أو المرحلة</option>'+grades.map(g=>`<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+  if(b)b.innerHTML='<option value="">اختر الفصل الدراسي</option>'+semesters.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  if(c)c.innerHTML='<option value="">اختر التصنيف</option>'+categories.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  if(main)main.innerHTML='<option value="">اختر القسم الرئيسي</option>'+categories.filter(x=>!x.parent_id).map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  updateUploadCategoryChildren();
   updateTrackFields();
   updateUploadSectionFields();
+}
+function updateUploadCategoryChildren(){
+  const main=document.getElementById('matCategoryMain');
+  const child=document.getElementById('matCategoryChild');
+  const hidden=document.getElementById('matCategory');
+  if(!main||!child||!hidden)return;
+  const parentId=Number(main.value||0);
+  const children=categories.filter(x=>Number(x.parent_id||0)===parentId);
+  child.innerHTML='<option value="">'+(parentId?'اختر القسم الفرعي (اختياري)':'اختر القسم الرئيسي أولاً')+'</option>'+children.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  child.disabled=!parentId||!children.length;
+  hidden.value=child.value||String(parentId||'');
+  if(!children.length&&parentId)child.innerHTML='<option value="">لا توجد أقسام فرعية لهذا القسم</option>';
+}
+function syncUploadCategory(){
+  const main=document.getElementById('matCategoryMain');
+  const child=document.getElementById('matCategoryChild');
+  const hidden=document.getElementById('matCategory');
+  if(hidden)hidden.value=(child?.value||main?.value||'');
 }
 
 function getTracksForGrade(gradeId){return TRACK_CONFIG[Number(gradeId)]||[];}
@@ -1822,6 +1870,7 @@ async function showAdminPage(){
   if(!isFileManager())return showInfo('صلاحية غير كافية','هذه الصفحة متاحة للمالك والمشرف فقط.');
   hideAll();
   document.getElementById('adminPage').style.display='block';
+  setRoute('admin');
   document.getElementById('adminWelcome').textContent=
     'الحساب: '+(currentUser?.email||'')+' — الصلاحية: '+(currentProfile?.role||'');
   fillAdminSelects();
@@ -1832,7 +1881,22 @@ async function showAdminPage(){
 }
 
 let materialBatchQueue=[];let materialBatchCancelRequested=false;let materialBatchRunning=false;
-function renderMaterialBatchQueue(){const h=document.getElementById('batchFilesList');if(!h)return;if(!materialBatchQueue.length){h.innerHTML='<div class="empty">اختر ملفات لعرضها هنا.</div>';return;}const opts=(rows,sel,label)=>'<option value="">'+label+'</option>'+rows.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(sel)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join('');h.innerHTML='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:760px"><thead><tr><th>الملف</th><th>الحجم والنوع</th><th>الصف</th><th>الفصل</th><th>القسم</th><th>الحالة</th></tr></thead><tbody>'+materialBatchQueue.map((x,i)=>'<tr data-batch-index="'+i+'"><td><input data-batch-title value="'+escapeHtml(x.title)+'" aria-label="عنوان الملف"></td><td>'+escapeHtml(x.file.name)+'<br>'+formatBytes(x.file.size)+' · '+escapeHtml(x.file.type||'غير معروف')+'</td><td><select data-batch-grade>'+opts(grades,x.gradeId,'اختر الصف')+'</select></td><td><select data-batch-semester>'+opts(semesters,x.semesterId,'اختر الفصل')+'</select></td><td><select data-batch-category>'+opts(categories,x.categoryId,'اختر القسم')+'</select></td><td data-batch-state>'+escapeHtml(x.state||'بانتظار الرفع')+'</td></tr>').join('')+'</tbody></table></div>';}
+function renderMaterialBatchQueue(){
+ const h=document.getElementById('batchFilesList');if(!h)return;
+ if(!materialBatchQueue.length){h.innerHTML='<div class="empty">اختر ملفات لعرضها هنا.</div>';return;}
+ const roots=categories.filter(x=>!x.parent_id);
+ const options=(rows,selected,label)=>'<option value="">'+label+'</option>'+rows.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join('');
+ h.innerHTML='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;min-width:900px"><thead><tr><th>الملف</th><th>الحجم والنوع</th><th>الصف</th><th>الفصل</th><th>القسم الرئيسي</th><th>القسم الفرعي</th><th>الحالة</th></tr></thead><tbody>'+
+ materialBatchQueue.map((x,i)=>'<tr data-batch-index="'+i+'"><td><input data-batch-title value="'+escapeHtml(x.title)+'" aria-label="عنوان الملف"></td><td>'+escapeHtml(x.file.name)+'<br>'+formatBytes(x.file.size)+' · '+escapeHtml(x.file.type||'غير معروف')+'</td><td><select data-batch-grade>'+options(grades,x.gradeId,'اختر الصف')+'</select></td><td><select data-batch-semester>'+options(semesters,x.semesterId,'اختر الفصل')+'</select></td><td><select data-batch-main onchange="updateBatchCategoryRow('+i+')">'+options(roots,x.mainCategoryId,'اختر القسم الرئيسي')+'</select></td><td><select data-batch-sub onchange="updateBatchCategoryRow('+i+')"><option value="">اختر الفرعي</option>'+categories.filter(c=>Number(c.parent_id||0)===Number(x.mainCategoryId||0)).map(c=>'<option value="'+escapeHtml(String(c.id))+'" '+(String(c.id)===String(x.categoryId)?'selected':'')+'>'+escapeHtml(c.name)+'</option>').join('')+'</select><input type="hidden" data-batch-category value="'+escapeHtml(String(x.categoryId||x.mainCategoryId||''))+'"></td><td data-batch-state>'+escapeHtml(x.state||'بانتظار الرفع')+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function updateBatchCategoryRow(i){
+ const row=document.querySelector('[data-batch-index="'+i+'"]');if(!row)return;
+ const main=row.querySelector('[data-batch-main]');const sub=row.querySelector('[data-batch-sub]');const hidden=row.querySelector('[data-batch-category]');
+ const selectedMain=Number(main?.value||0);const children=categories.filter(c=>Number(c.parent_id||0)===selectedMain);
+ if(sub){const current=sub.value;sub.innerHTML='<option value="">اختر الفرعي</option>'+children.map(c=>'<option value="'+escapeHtml(String(c.id))+'">'+escapeHtml(c.name)+'</option>').join('');if(children.some(c=>String(c.id)===current))sub.value=current;}
+ if(hidden)hidden.value=sub?.value||main?.value||'';
+ const item=materialBatchQueue[i];if(item){item.mainCategoryId=main?.value||'';item.categoryId=hidden?.value||'';}
+}
 function cancelMaterialBatch(){materialBatchCancelRequested=true;}
 function updateBatchRow(i,state){materialBatchQueue[i].state=state;const e=document.querySelector('[data-batch-index="'+i+'"] [data-batch-state]');if(e)e.textContent=state;}
 function initMaterialBatchUpload(){const input=document.getElementById('batchFilesInput');if(!input)return;input.addEventListener('change',()=>{for(const file of Array.from(input.files||[])){const duplicate=materialBatchQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||(window.__adminMaterials||[]).some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);if(duplicate&&!confirm('يوجد ملف بالاسم والحجم نفسيهما: «'+file.name+'». هل تضيفه رغم احتمال التكرار؟'))continue;materialBatchQueue.push({file,title:file.name.replace(/\.[^.]+$/,''),gradeId:'',semesterId:'',categoryId:'',state:'بانتظار الرفع'});}input.value='';renderMaterialBatchQueue();});}
@@ -3187,6 +3251,9 @@ async function initSupabase(){
         hideAll();
         document.getElementById('home').style.display='block';
         await loadHomeSectionsPublic();
+      }else if(requestedHash==='admin'){
+        if(isFileManager())await showAdminPage();
+        else{hideAll();document.getElementById('home').style.display='block';await loadHomeSectionsPublic();showInfo('لوحة الإدارة','سجّل الدخول بحساب الإدارة المصرّح له من زر دخول Google أعلى الموقع.');}
       }else if(requestedUrl.searchParams.has('homeSection')){
         const directSectionId=requestedUrl.searchParams.get('homeSection');
         await loadHomeSectionsPublic(directSectionId);
@@ -3215,9 +3282,13 @@ function initAdminSelectors(){
   const g=document.getElementById('matGrade');
   const t=document.getElementById('matTrack');
   const primary=document.getElementById('matPrimarySection');
+  const categoryMain=document.getElementById('matCategoryMain');
+  const categoryChild=document.getElementById('matCategoryChild');
   if(g)g.addEventListener('change',updateTrackFields);
   if(t)t.addEventListener('change',updateFieldSelect);
   if(primary)primary.addEventListener('change',updateUploadSectionFields);
+  if(categoryMain)categoryMain.addEventListener('change',updateUploadCategoryChildren);
+  if(categoryChild)categoryChild.addEventListener('change',syncUploadCategory);
 }
 
 function restoreTheme(){
