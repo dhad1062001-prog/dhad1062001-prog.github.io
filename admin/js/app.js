@@ -263,6 +263,7 @@
             <h3 id="homepageSectionFormTitle">إضافة قسم جديد</h3>
             <input id="homepageSectionId" type="hidden">
             <label class="homepage-label">عنوان القسم<input id="homepageSectionTitle" maxlength="160" required placeholder="مثال: موارد تعليمية للمعلم"></label>
+            <label class="homepage-label">وصف مختصر يظهر أسفل عنوان القسم<textarea id="homepageSectionDescription" rows="3" placeholder="اكتب وصفًا مختصرًا يعرّف الزائر بهذا القسم..."></textarea></label>
             <label class="homepage-label">نوع المحتوى<select id="homepageSectionType"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف</option><option value="link">رابط</option></select></label>
             <label class="homepage-label"><span id="homepageSectionContentLabel">المحتوى النصي أو وصفه</span><textarea id="homepageSectionContent" rows="5" placeholder="اكتب المحتوى أو الوصف..."></textarea></label>
             <label class="homepage-label" id="homepageSectionFileWrap" hidden>اختيار صورة أو ملف<input id="homepageSectionFile" type="file"></label>
@@ -272,7 +273,8 @@
               <label>عدد الملفات المرتبطة<input id="homepageSectionLimit" type="number" min="1" max="50" value="6" required></label>
             </div>
             <label class="homepage-label">طريقة عرض الملفات<select id="homepageSectionStyle"><option value="grid">بطاقات</option><option value="list">قائمة</option></select></label>
-            <label class="homepage-check"><input id="homepageSectionActive" type="checkbox" checked> إظهار القسم للزوار</label>
+            <label class="homepage-check"><input id="homepageSectionActive" type="checkbox" checked> تفعيل القسم</label>
+            <label class="homepage-check"><input id="homepageSectionShowOnHome" type="checkbox" checked> إظهار القسم في الصفحة الرئيسية</label>
             <div class="homepage-preview" id="homepageSectionPreview">ستظهر هنا معاينة مبسطة لمحتوى القسم.</div>
             <div class="homepage-actions"><button class="homepage-primary" type="submit">حفظ القسم</button><button class="homepage-secondary" type="button" data-homepage-reset>إلغاء / قسم جديد</button></div>
           </form>
@@ -305,14 +307,14 @@
     try {
       const [pageResult, sectionsResult] = await Promise.all([
         supabase.from("site_pages").select("slug,title,content,is_visible,home_title,home_subtitle").eq("slug", HOMEPAGE_DESCRIPTION_SLUG).maybeSingle(),
-        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
+        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
       const page = pageResult.data || {};
       document.getElementById("homepageTitle").value = page.home_title || "رحلتك إلى التميز تبدأ من هنا";
       document.getElementById("homepageSubtitle").value = page.home_subtitle || "تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية";
-      document.getElementById("homepageDescription").value = page.content || "";
+      document.getElementById("homepageDescription").value = page.content || "منصة ضاد مساحة تعليمية عربية تجمع الموارد والملفات والأنشطة التي يحتاج إليها معلم اللغة العربية والطالب وولي الأمر، وتسهّل الوصول إليها وتنظيمها في مكان واحد.";
       document.getElementById("homepageVisible").checked = page.is_visible !== false;
       homepageSections = sectionsResult.data || [];
       renderHomepageSections();
@@ -330,7 +332,7 @@
     document.getElementById("homepageHeroForm")?.addEventListener("submit", saveHomepageHero);
     document.getElementById("homepageSectionForm")?.addEventListener("submit", saveHomepageSection);
     document.getElementById("homepageSectionType")?.addEventListener("change", updateHomepageSectionEditor);
-    ["homepageSectionTitle", "homepageSectionContent"].forEach(id => document.getElementById(id)?.addEventListener("input", previewHomepageSection));
+    ["homepageSectionTitle", "homepageSectionDescription", "homepageSectionContent"].forEach(id => document.getElementById(id)?.addEventListener("input", previewHomepageSection));
     document.getElementById("homepageSectionFile")?.addEventListener("change", previewHomepageSection);
     updateHomepageSectionEditor();
   }
@@ -385,6 +387,7 @@
     }
 
     const title = document.getElementById("homepageSectionTitle")?.value.trim() || "عنوان القسم";
+    const description = document.getElementById("homepageSectionDescription")?.value.trim() || "";
     const type = document.getElementById("homepageSectionType")?.value || "text";
     const content = document.getElementById("homepageSectionContent")?.value.trim() || "";
     const file = document.getElementById("homepageSectionFile")?.files?.[0] || null;
@@ -420,7 +423,7 @@
       media = '<div>' + escapeHtml(content || "اكتب محتوى القسم لمعاينته هنا.") + '</div>';
     }
 
-    box.innerHTML = '<strong>' + escapeHtml(title) + '</strong><div class="homepage-preview-content">' + media + '</div>';
+    box.innerHTML = '<strong>' + escapeHtml(title) + '</strong>' + (description ? '<div class="homepage-preview-content">' + escapeHtml(description) + '</div>' : '') + '<div class="homepage-preview-content">' + media + '</div>';
   }
 
   function resetHomepageSectionForm() {
@@ -434,6 +437,8 @@
     document.getElementById("homepageSectionLimit").value = "6";
     document.getElementById("homepageSectionStyle").value = "grid";
     document.getElementById("homepageSectionActive").checked = true;
+    document.getElementById("homepageSectionShowOnHome").checked = true;
+    document.getElementById("homepageSectionDescription").value = "";
     document.getElementById("homepageSectionCurrentFile").textContent = "";
     updateHomepageSectionEditor();
   }
@@ -447,7 +452,7 @@
     }
     list.innerHTML = homepageSections.map(row => `
       <article class="homepage-section-item">
-        <div class="homepage-section-info"><strong>${escapeHtml(row.title || "قسم دون عنوان")}</strong><small>النوع: ${escapeHtml(row.content_type)} · الترتيب: ${numberFormat(row.sort_order)} · ${row.is_active ? "ظاهر للزوار" : "مخفي"}</small></div>
+        <div class="homepage-section-info"><strong>${escapeHtml(row.title || "قسم دون عنوان")}</strong><small>النوع: ${escapeHtml(row.content_type)} · الترتيب: ${numberFormat(row.sort_order)} · ${row.is_active ? "مفعّل" : "معطّل"} · ${row.show_on_home === false ? "غير معروض في الرئيسية" : "معروض في الرئيسية"}</small></div>
         <div class="homepage-section-actions">
           <button type="button" data-homepage-action="edit" data-id="${escapeHtml(row.id)}">تعديل</button>
           <button type="button" data-homepage-action="toggle" data-id="${escapeHtml(row.id)}">${row.is_active ? "إخفاء" : "إظهار"}</button>
@@ -463,12 +468,14 @@
     homepageEditingId = row.id;
     document.getElementById("homepageSectionId").value = String(row.id);
     document.getElementById("homepageSectionTitle").value = row.title || "";
+    document.getElementById("homepageSectionDescription").value = row.section_description || "";
     document.getElementById("homepageSectionType").value = row.content_type || "text";
     document.getElementById("homepageSectionContent").value = row.content || "";
     document.getElementById("homepageSectionOrder").value = String(row.sort_order || 0);
     document.getElementById("homepageSectionLimit").value = String(row.display_limit || 6);
     document.getElementById("homepageSectionStyle").value = row.display_style === "list" ? "list" : "grid";
     document.getElementById("homepageSectionActive").checked = !!row.is_active;
+    document.getElementById("homepageSectionShowOnHome").checked = row.show_on_home !== false;
     document.getElementById("homepageSectionCurrentFile").textContent = row.file_path ? "الملف الحالي: " + row.file_path : "لا يوجد ملف مرتبط حاليًا.";
     document.getElementById("homepageSectionFormTitle").textContent = "تعديل القسم";
     updateHomepageSectionEditor();
@@ -485,6 +492,8 @@
     const displayLimit = Number(document.getElementById("homepageSectionLimit").value);
     const displayStyle = document.getElementById("homepageSectionStyle").value === "list" ? "list" : "grid";
     const active = document.getElementById("homepageSectionActive").checked;
+    const showOnHome = document.getElementById("homepageSectionShowOnHome").checked;
+    const sectionDescription = document.getElementById("homepageSectionDescription").value.trim();
     const file = document.getElementById("homepageSectionFile").files?.[0] || null;
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
     if (!title) return setHomepageStatus("أدخل عنوان القسم.", "error");
@@ -511,6 +520,8 @@
     }
     const payload = {
       title, content_type: type, content,
+      section_description: sectionDescription,
+      show_on_home: showOnHome,
       file_path: filePath || "",
       sort_order: sortOrder, display_limit: displayLimit,
       display_style: displayStyle, is_active: active,
@@ -529,7 +540,7 @@
   }
 
   async function loadHomepageSectionsOnly() {
-    const { data, error } = await supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+    const { data, error } = await supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
     if (error) return setHomepageStatus("تم الحفظ لكن تعذر تحديث القائمة: " + error.message, "error");
     homepageSections = data || [];
     renderHomepageSections();
