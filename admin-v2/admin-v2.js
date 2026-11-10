@@ -42,7 +42,7 @@ const legacySections=[
 ];
 function canManageFiles(){return access?.owner===true||access?.permissions?.files===true}
 function filesPlaceholder(v){
- v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><button class="btn light" id="refreshMaterials">تحديث القائمة</button></div>'+
+ v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><div class="toolbar"><button class="btn light" id="showTrash">سلة المحذوفات</button><button class="btn light" id="refreshMaterials">تحديث القائمة</button></div></div>'+
  '<div class="panel"><h3>رفع ملفات جديدة</h3><div class="notice">يُحفظ الملف في مخزن materials ثم يُنشأ سجل له في قاعدة البيانات ويُربط بالقسم الذي تختاره. لا يتم استبدال الملفات الموجودة أو تغيير مساراتها.</div>'+
  '<div class="field"><label>اختيار الملفات (يمكن تحديد عدة ملفات)</label><input id="uploadPicker" type="file" multiple></div>'+
  '<div class="form-grid"><div class="field"><label>الصف الدراسي (اختياري ويطبق على المجموعة)</label><select id="uploadGrade"><option value="">بدون تحديد صف</option></select></div>'+
@@ -53,6 +53,7 @@ function filesPlaceholder(v){
  '<div class="toolbar"><button class="btn gold" id="startUpload" disabled>رفع الملفات وحفظها</button><button class="btn light" id="clearUpload" type="button">إفراغ الاختيار</button><span id="uploadStatus" class="muted"></span></div></div>'+
  '<div class="panel"><div class="section-head" style="margin-top:0"><div><h3>الملفات المسجلة</h3><p>أحدث 100 ملف، مع عدد التنزيلات المسجل.</p></div><button class="btn light tiny" id="loadMaterials">عرض الملفات</button></div><div id="materialsPreview" class="empty">اضغط «عرض الملفات» لتحميل القائمة.</div></div>';
  document.getElementById("refreshMaterials").onclick=()=>loadMaterialsList();
+ document.getElementById("showTrash").onclick=()=>loadTrashList();
  document.getElementById("loadMaterials").onclick=()=>loadMaterialsList();
  document.getElementById("uploadPicker").onchange=e=>{uploadFiles=Array.from(e.target.files||[]).map(file=>({file,title:file.name.replace(/\.[^.]+$/,""),description:"",sectionId:"",legacy:""}));drawUploadRows();};
  document.getElementById("clearUpload").onclick=()=>{uploadFiles=[];document.getElementById("uploadPicker").value="";drawUploadRows();document.getElementById("uploadStatus").textContent="";};
@@ -154,6 +155,21 @@ async function uploadSelectedFiles(){
  if(successes){const failedIndexes=new Set(failures.map(x=>x.index));uploadFiles=uploadFiles.filter((x,i)=>failedIndexes.has(i));document.getElementById("uploadPicker").value="";drawUploadRows();await loadMaterialsList()}
  if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(x.fileName+": "+x.message)).join("<br>")+'</div>')}
  btn.disabled=!uploadFiles.length||!sections.some(s=>s.is_active!==false);
+}
+async function loadTrashList(){
+ const el=document.getElementById("materialsPreview");if(!el)return;
+ el.textContent="جارٍ تحميل سلة المحذوفات…";
+ try{
+  const result=await adminAction("trash_list");
+  const entries=result.entries||[];
+  if(!entries.length){el.innerHTML='<div class="empty">سلة المحذوفات فارغة حالياً.</div>';return}
+  el.innerHTML='<div class="toolbar"><b>سلة المحذوفات</b><button class="btn light tiny" id="backToMaterials">العودة إلى الملفات</button></div><div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>تاريخ الأرشفة</th><th>بواسطة</th><th>الإجراء</th></tr></thead><tbody>'+entries.filter(x=>x.entity_type==="material").map(x=>'<tr><td><b>'+esc(x.title||"ملف")+'</b><div class="muted">'+esc(x.storage_path||"")+'</div></td><td>'+new Date(x.deleted_at).toLocaleDateString("ar")+'</td><td>'+esc(x.deleted_by_email||"—")+'</td><td>'+(access?.owner?'<button class="btn gold tiny" data-trash-restore="'+esc(x.id)+'">استعادة السجل</button>':'<span class="muted">الاستعادة للمالك فقط</span>')+'</td></tr>').join("")+'</tbody></table></div>';
+  document.getElementById("backToMaterials").onclick=()=>loadMaterialsList();
+  el.querySelectorAll("[data-trash-restore]").forEach(btn=>btn.onclick=async()=>{
+   if(!confirm("سيعاد سجل الملف إلى قاعدة البيانات مع مساره الأصلي. هل تريد الاستعادة؟"))return;
+   try{const restored=await adminAction("trash_restore",{id:btn.dataset.trashRestore});toast(restored.message||"تمت الاستعادة.");await loadTrashList()}catch(e){fail(e)}
+  });
+ }catch(e){el.textContent="تعذر تحميل سلة المحذوفات: "+e.message}
 }
 async function loadMaterialsList(){
  const el=document.getElementById("materialsPreview");if(!el)return;
