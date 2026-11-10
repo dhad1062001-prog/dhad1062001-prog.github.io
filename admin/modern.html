@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#20291C">
+  <title>مركز إدارة ضاد</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/admin.css?v=20261110f">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
+  <script defer src="./js/app.js?v=20261110g"></script>
+</head>
+<body>
+  <div id="app">
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="./" aria-label="مركز إدارة ضاد">
+        <span class="brand-mark">ض</span>
+        <span class="brand-copy"><strong>ضــاد</strong><small>مركز إدارة المنصة</small></span>
+      </a>
+      <div class="sidebar-caption">مساحة الإدارة</div>
+      <nav class="navigation" id="navigation" aria-label="أقسام الإدارة">
+        <button class="nav-item active" data-module="overview"><span class="nav-icon">⌂</span><span>لوحة المعلومات</span></button>
+        <div class="nav-group-label">إدارة المحتوى</div>
+        <button class="nav-item" data-module="homepage"><span class="nav-icon">⌂</span><span>الصفحة الرئيسية</span></button>
+        <button class="nav-item" data-module="content"><span class="nav-icon">✎</span><span>محتوى الأقسام</span></button>
+        <button class="nav-item" data-module="sections"><span class="nav-icon">▦</span><span>الأقسام والتصنيفات</span></button>
+        <button class="nav-item" data-module="section-workspace"><span class="nav-icon">⇧</span><span>إدارة الملفات داخل الأقسام</span></button>
+        <button class="nav-item" data-module="file-center"><span class="nav-icon">▤</span><span>مكتبة الملفات</span></button>
+        <button class="nav-item" data-module="materials"><span class="nav-icon">▤</span><span>الملفات التعليمية</span></button>
+        <button class="nav-item" data-module="supplies"><span class="nav-icon">▧</span><span>لوازم المعلمين</span></button>
+        <button class="nav-item" data-module="academic"><span class="nav-icon">🎓</span><span>الصفوف والمناهج</span></button>
+        <div class="nav-group-label">إدارة المنصة</div>
+        <button class="nav-item" data-module="staff"><span class="nav-icon">♙</span><span>المستخدمون والصلاحيات</span></button>
+        <button class="nav-item" data-module="storage"><span class="nav-icon">☁</span><span>مساحات التخزين</span></button>
+        <button class="nav-item" data-module="drive"><span class="nav-icon">◫</span><span>حسابات Google Drive</span></button>
+        <button class="nav-item" data-module="analytics"><span class="nav-icon">▥</span><span>الإحصائيات والتقارير</span></button>
+        <button class="nav-item" data-module="pages"><span class="nav-icon">▧</span><span>صفحات الموقع</span></button>
+        <button class="nav-item" data-module="seo"><span class="nav-icon">⌕</span><span>تحسين الظهور SEO</span></button>
+        <button class="nav-item" data-module="games"><span class="nav-icon">◇</span><span>الألعاب والأنشطة</span></button>
+        <button class="nav-item" data-module="ads"><span class="nav-icon">▣</span><span>الإعلانات</span></button>
+        <div class="nav-group-label">الحماية والإعدادات</div>
+        <button class="nav-item" data-module="settings"><span class="nav-icon">⚙</span><span>إعدادات المنصة</span></button>
+        <button class="nav-item" data-module="security"><span class="nav-icon">⬡</span><span>الأمان والحماية</span></button>
+        <button class="nav-item" data-module="audit"><span class="nav-icon">≡</span><span>سجل العمليات</span></button>
+        <button class="nav-item" data-module="backups"><span class="nav-icon">⟲</span><span>النسخ الاحتياطي</span></button>
+        <button class="nav-item" data-module="trash"><span class="nav-icon">▱</span><span>سلة المحذوفات</span></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-avatar" id="userAvatar">ض</div>
+        <div class="user-meta"><strong id="userName">مستخدم الإدارة</strong><small id="userEmail">تم التحقق من الصلاحية</small></div>
+        <span class="status-dot"></span>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-start">
+          <button class="icon-button mobile-menu" id="menuToggle" aria-label="فتح القائمة">☰</button>
+          <div class="breadcrumbs"><span>ضاد</span><b>/</b><strong id="breadcrumbTitle">لوحة المعلومات</strong></div>
+        </div>
+        <div class="topbar-actions">
+          <span class="environment-chip"><i></i> الإدارة</span>
+          <a class="site-link" href="https://dhad1062001-prog.github.io/" target="_blank" rel="noopener">عرض الموقع <span>↗</span></a>
+          <button class="signout-button" id="signOutButton" type="button">تسجيل الخروج</button>
+        </div>
+      </header>
+
+      <section class="page-content">
+        <div class="welcome-row">
+          <div><div class="eyebrow">مركز التحكم والإدارة</div><h1 id="pageTitle">مرحبًا بك في ضاد</h1><p id="pageSubtitle">نظرة عامة على وحدات إدارة المنصة التعليمية.</p></div>
+          <div class="date-chip"><span class="date-icon">◷</span><span>مساحة الإدارة</span></div>
+        </div>
+
+        <div class="safety-notice">
+          <span class="notice-icon">ⓘ</span>
+          <div><strong>هذه واجهة تأسيسية للمعاينة فقط</strong><p>لم يتم ربطها ببيانات Supabase أو تفعيل أي عملية تعديل أو حذف. لن تظهر بيانات حقيقية قبل إكمال تسجيل الدخول والتحقق من الصلاحيات.</p></div>
+        </div>
+
+        <div id="moduleView">
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-top"><span>الملفات التعليمية</span><span class="stat-icon">▤</span></div><strong>—</strong><small>سيتم جلب الرقم بعد الربط الآمن</small></article>
+            <article class="stat-card"><div class="stat-top"><span>الأقسام المنشورة</span><span class="stat-icon">▦</span></div><strong>—</strong><small>سيتم جلب الرقم بعد الربط الآمن</small></article>
+            <article class="stat-card"><div class="stat-top"><span>زيارات الموقع</span><span class="stat-icon">◉</span></div><strong>—</strong><small>إحصائيات الإدارة فقط</small></article>
+            <article class="stat-card"><div class="stat-top"><span>عمليات التنزيل</span><span class="stat-icon">↓</span></div><strong>—</strong><small>وفق تعريف القياس المعتمد</small></article>
+          </div>
+
+          <section class="data-module" aria-label="إرشادات التنقل">
+            <div class="data-module-head"><div><h2>اختر وحدة الإدارة</h2><p>تجد جميع وحدات ضاد مرتبة في القائمة الجانبية. لكل وظيفة مكان واحد لتجنب تكرار أدوات الإدارة.</p></div></div>
+          </section>
+          <div class="bottom-note"><span>✦</span><p>سيُضاف مساعد الذكاء الاصطناعي لاحقًا كمرحلة مستقلة، بناءً على توجيهك.</p></div>
+        </div>
+      </section>
+      <footer class="footer"><span>ضــاد — منصة اللغة العربية</span><span>مركز الإدارة</span></footer>
+    </main>
+  </div>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+  </div>
+</body>
+</html>
