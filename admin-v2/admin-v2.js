@@ -131,7 +131,7 @@ async function uploadSelectedFiles(){
    const payload={
     title:item.title.trim(),description:item.description.trim()||null,
     grade_id:grade?Number(grade):null,semester_id:semester?Number(semester):null,category_id:category?Number(category):null,
-    file_path:storagePath,file_name:file.name,file_type:file.type||file.name.split(".").pop()?.toLowerCase()||null,
+    file_path:storagePath,file_name:file.name,file_type:file.type||(file.name.includes(".")?file.name.split(".").pop().toLowerCase():null),
     file_size:file.size,is_public:isPublic,created_by:session.user.id,
     primary_section:item.legacy,additional_sections:[]
    };
