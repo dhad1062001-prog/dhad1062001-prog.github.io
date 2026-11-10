@@ -1009,8 +1009,6 @@ function fillAdminSelects(){
     main.insertAdjacentHTML('afterbegin','<option value="">اختر القسم الرئيسي</option>');
     child.innerHTML='<option value="">بدون قسم فرعي</option>';
     child.disabled=true;
-    main.addEventListener('change',updateCategoryChildSelect,{once:false});
-    child.addEventListener('change',syncSelectedCategory,{once:false});
     updateCategoryChildSelect();
   }else{
     c.innerHTML=categories.map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
