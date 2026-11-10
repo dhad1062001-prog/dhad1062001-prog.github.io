@@ -748,6 +748,7 @@ const DHAD_APK_URL = '';
 let sb=null;
 let homeSectionsPublic=[];
 let homeSectionContentItemsMap={};
+let homePageContentItemsMap={};
 let homeSectionsAdmin=[];
 let homeSectionMaterialMap={};
 let homeSectionMaterialAdminMap={};
@@ -2510,6 +2511,41 @@ function homeSectionTypeLabel(type){
   return ({text:'نص',image:'صورة',file:'ملف',link:'رابط',materials:'ملفات'})[type]||'محتوى';
 }
 
+function renderPublishedPlacementContent(){
+  const destinations={
+    'page:grades':'#gradesHubPage',
+    'page:games':'#gamesPage',
+    'page:additional':'#additionalPage',
+    'page:calendar':'#calendarPage',
+    'page:certificate':'#certificatePage'
+  };
+  Object.entries(destinations).forEach(([key,selector])=>{
+    const page=document.querySelector(selector+' .panel');
+    if(!page)return;
+    let holder=page.querySelector('[data-placement-content="'+key+'"]');
+    const items=homePageContentItemsMap[key]||[];
+    if(!items.length){holder?.remove();return;}
+    if(!holder){
+      holder=document.createElement('section');
+      holder.className='home-section-content-placement';
+      holder.setAttribute('data-placement-content',key);
+      const heading=page.querySelector('.page-title');
+      if(heading)heading.insertAdjacentElement('afterend',holder);else page.appendChild(holder);
+    }
+    holder.innerHTML=items.map(item=>{
+      const itemTitle=escapeHtml(item.title||'');
+      const description=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
+      if(item.content_type==='text')return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\\r?\\n/g,'<br>')+'</div></article>';
+      if(item.content_type==='html'&&item.storage_path){
+        const url=getMaterialUrl(item.storage_path);
+        if(!url)return '';
+        return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<iframe class="home-section-html-frame" title="'+itemTitle+'" src="'+escapeHtml(url)+'" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe></article>';
+      }
+      return '';
+    }).join('');
+  });
+}
+
 function renderPublicHomeSections(rows,directSectionId=null){
   const container=document.getElementById('homeSectionsContainer');
   if(!container)return;
@@ -2608,14 +2644,24 @@ async function loadHomeSectionsPublic(directSectionId=null){
     if(error)throw error;
     homeSectionsPublic=data||[];
     homeSectionContentItemsMap={};
+    homePageContentItemsMap={};
     const sectionIds=homeSectionsPublic.map(x=>x.id);
-    if(sectionIds.length){
-      const contentResult=await sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,sort_order').eq('status','published').in('section_id',sectionIds).order('sort_order',{ascending:true});
-      if(contentResult.error)throw contentResult.error;
-      (contentResult.data||[]).forEach(item=>{(homeSectionContentItemsMap[String(item.section_id)] ||= []).push(item);});
-    }
+    const placementKeys=['page:grades','page:games','page:additional','page:calendar','page:certificate'];
+    const contentQueries=[];
+    if(sectionIds.length)contentQueries.push(sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,placement_key,sort_order').eq('status','published').in('section_id',sectionIds).order('sort_order',{ascending:true}));
+    contentQueries.push(sb.from('content_items').select('id,title,description,content_type,body,storage_path,section_id,placement_key,sort_order').eq('status','published').in('placement_key',placementKeys).order('sort_order',{ascending:true}));
+    const contentResults=await Promise.all(contentQueries);
+    contentResults.forEach(result=>{
+      if(result.error)throw result.error;
+      (result.data||[]).forEach(item=>{
+        const targetMap=item.section_id!=null?homeSectionContentItemsMap:homePageContentItemsMap;
+        const key=item.section_id!=null?String(item.section_id):String(item.placement_key);
+        (targetMap[key] ||= []).push(item);
+      });
+    });
     await loadHomeSectionRelations(false,homeSectionsPublic.map(x=>x.id));
     renderPublicHomeSections(homeSectionsPublic,directSectionId);
+    renderPublishedPlacementContent();
   }catch(error){
     homeSectionsPublic=[];
     container.innerHTML='';
