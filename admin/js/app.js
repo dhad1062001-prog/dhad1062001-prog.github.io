@@ -1292,13 +1292,14 @@
   let adminUploadBusy = false;
   let adminUploadMessage = "";
 
-  function renderAdminMaterialQueue(grades,semesters,categories) {
+  function renderAdminMaterialQueue(grades,semesters,categories,homeSections=[]) {
     const root=document.getElementById("adminMaterialQueue");
     if(!root)return;
     if(!adminMaterialQueue.length){root.innerHTML='<div class="data-note">اختر ملفات لإضافتها إلى قائمة الرفع.</div>';return;}
     const options=(items,selected)=>items.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join("");
     const sections=[["school_grades","الصفوف الدراسية"],["curricula","المناهج"],["teacher_supplies","لوازم المعلمين"],["interactive_games","الألعاب التفاعلية"],["supplementary_education","التعليم الإضافي"]];
-    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
+    const homeOptions=homeSections.map(section=>{const parent=homeSections.find(x=>String(x.id)===String(section.parent_id));return '<option value="'+escapeHtml(section.id)+'">'+(parent?'↳ ':'')+escapeHtml(section.title)+'</option>';}).join("");
+    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>أقسام الموقع الرئيسية والفرعية</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td>'+(accessState?.owner===true?'<select data-upload-home-sections multiple size="4" title="يمكن اختيار أكثر من قسم">'+homeOptions+'</select>':'<small>ربط الأقسام الرئيسية والفرعية متاح للمالك</small>')+'</td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
     root.querySelectorAll("[data-admin-upload-row]").forEach(row=>{
       const index=Number(row.dataset.adminUploadRow),item=adminMaterialQueue[index];if(!item)return;
       row.querySelector("[data-upload-title]")?.addEventListener("input",event=>item.title=event.target.value);
@@ -1307,6 +1308,8 @@
       row.querySelector("[data-upload-semester]")?.addEventListener("change",event=>item.semesterId=event.target.value);
       row.querySelector("[data-upload-category]")?.addEventListener("change",event=>item.categoryId=event.target.value);
       row.querySelector("[data-upload-section]")?.addEventListener("change",event=>item.primarySection=event.target.value);
+      const homeSelect=row.querySelector("[data-upload-home-sections]");
+      if(homeSelect){Array.from(homeSelect.options).forEach(option=>option.selected=(item.homeSectionIds||[]).includes(String(option.value)));homeSelect.addEventListener("change",()=>item.homeSectionIds=Array.from(homeSelect.selectedOptions).map(option=>String(option.value)));}
     });
   }
   function formatAdminFileSize(bytes) {
@@ -1353,6 +1356,11 @@
             additional_sections:[],track_name:null,field_name:null
           }).select("id").single();
           if(dbError||!saved?.id)throw dbError||new Error("لم تُرجع قاعدة البيانات معرّف الملف بعد الحفظ.");
+          if(accessState?.owner===true && (item.homeSectionIds||[]).length){
+            const links=item.homeSectionIds.map((sectionId,index)=>({section_id:Number(sectionId),material_id:saved.id,sort_order:index}));
+            const {error:linkError}=await supabase.from("home_section_materials").insert(links);
+            if(linkError){await supabase.from("materials").delete().eq("id",saved.id);throw new Error("تعذر ربط الملف بالأقسام المختارة: "+linkError.message);}
+          }
           item.status="تم الرفع";success++;
           await logAdminAction("material_uploaded","material",saved.id,{title,file_name:item.file.name,primary_section:primarySection});
           setStatus("تم الرفع");
@@ -1388,6 +1396,9 @@
     } catch(error) { console.warn("تعذر استبعاد الملفات المؤرشفة من قائمة الإدارة:",error); }
     const materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
     const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
+    const homeSectionsResult=await supabase.from("home_sections").select("id,title,parent_id,is_active").order("sort_order");
+    if(homeSectionsResult.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام لربط الملفات: '+escapeHtml(homeSectionsResult.error.message)+'</div>';return;}
+    const homeSections=homeSectionsResult.data||[];
     window.__adminModuleMaterials=allMaterials;
     window.__adminLookups={grades,semesters,categories};
     const writable=["owner","admin"].includes(accessState?.role);
@@ -1395,7 +1406,7 @@
     const uploadMarkup=viewKey==="file-center"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع ملفات جديدة</h2><p>هذه هي نقطة الرفع الوحيدة في لوحة الإدارة. اختر ملفًا أو عدة ملفات وحدد بيانات كل ملف وقسمه.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
     root.innerHTML=uploadMarkup+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — تعديل النشر والوصف ورفع الملفات متاح للحسابات الإدارية المعتمدة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="8">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
     if(writable && viewKey==="file-center"){
-      renderAdminMaterialQueue(grades,semesters,categories);
+      renderAdminMaterialQueue(grades,semesters,categories,homeSections);
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
