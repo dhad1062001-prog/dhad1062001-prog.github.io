@@ -426,7 +426,8 @@
       is_visible: document.getElementById("homepageVisible").checked,
       home_title: title,
       home_subtitle: subtitle,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      updated_by: accessState?.user?.id || null
     };
     try {
       const { error } = await supabase.from("site_pages").upsert(payload, { onConflict: "slug" });
@@ -1048,7 +1049,8 @@
         title:document.getElementById("adminPageTitle").value.trim(),
         content:document.getElementById("adminPageContent").value,
         is_visible:document.getElementById("adminPageVisible").checked,
-        updated_at:new Date().toISOString()
+        updated_at:new Date().toISOString(),
+        updated_by:accessState?.user?.id||null
       }).eq("slug",slug);
       if(error)return moduleError(root,error.message);
       await logAdminAction("site_page_updated","site_page",slug,{title:document.getElementById("adminPageTitle").value.trim()});
@@ -1060,7 +1062,7 @@
       const updates=[...root.querySelectorAll("[data-contact-url]")].map(input=>({key:input.dataset.contactUrl,url:input.value.trim()}));
       for(const item of updates){
         if(item.url && !/^(https?:\/\/|mailto:|tel:)/i.test(item.url)) return moduleError(root,"يجب أن يبدأ الرابط بـ https:// أو http:// أو mailto: أو tel:.");
-        const {error}=await supabase.from("site_contact_links").update({url:item.url,updated_at:new Date().toISOString()}).eq("key",item.key);
+        const {error}=await supabase.from("site_contact_links").update({url:item.url,updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null}).eq("key",item.key);
         if(error)return moduleError(root,error.message);
       }
       await logAdminAction("contact_links_updated","site_contact_links","all",{count:updates.length});
@@ -1098,7 +1100,7 @@
         heroBackgroundPath:document.getElementById("brandHeroPath").value.trim()
       };
       if(!next.name)return moduleError(root,"اسم المنصة مطلوب.");
-      const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(next),updated_at:new Date().toISOString()}).eq("slug","site-branding");
+      const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(next),updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null}).eq("slug","site-branding");
       if(saveError)return moduleError(root,saveError.message);
       await logAdminAction("site_branding_updated","site_page","site-branding",{name:next.name});
       moduleError(root,"تم حفظ إعدادات الهوية بنجاح. حدّث الموقع العام للتحقق من ظهورها.");
@@ -1131,7 +1133,7 @@
       if(feature?.[2]==="array"&&!Array.isArray(value))return moduleError(root,"هذا النوع يتطلب قائمة JSON تبدأ بـ [].");
       if(feature?.[2]==="object"&&(!value||typeof value!=="object"||Array.isArray(value)))return moduleError(root,"هذا النوع يتطلب كائن JSON يبدأ بـ {}.");
       const title=feature?.[1]||slug;
-      const {error:saveError}=await supabase.from("site_pages").upsert({slug,title,content:JSON.stringify(value),is_visible:true,updated_at:new Date().toISOString()},{onConflict:"slug"});
+      const {error:saveError}=await supabase.from("site_pages").upsert({slug,title,content:JSON.stringify(value),is_visible:true,updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null},{onConflict:"slug"});
       if(saveError)return moduleError(root,saveError.message);
       await logAdminAction("feature_content_updated","site_page",slug,{title});
       moduleError(root,"تم حفظ المحتوى. حدّث الموقع العام للتحقق من ظهوره.");
