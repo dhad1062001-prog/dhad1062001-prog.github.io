@@ -272,7 +272,7 @@
               <label>رمز القسم أو الأيقونة<input id="homepageSectionIcon" maxlength="12" placeholder="📚 أو ✦"></label>
             </div>
             <label class="homepage-label">وصف مختصر يظهر أسفل عنوان القسم<textarea id="homepageSectionDescription" rows="3" placeholder="اكتب وصفًا مختصرًا يعرّف الزائر بهذا القسم..."></textarea></label>
-            <label class="homepage-label">نوع المحتوى<select id="homepageSectionType"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف</option><option value="link">رابط</option></select></label>
+            <label class="homepage-label">نوع المحتوى<select id="homepageSectionType"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف</option><option value="link">رابط</option><option value="materials">ملفات مرتبطة فقط</option></select></label>
             <label class="homepage-label"><span id="homepageSectionContentLabel">المحتوى النصي أو وصفه</span><textarea id="homepageSectionContent" rows="5" placeholder="اكتب المحتوى أو الوصف..."></textarea></label>
             <label class="homepage-label" id="homepageSectionFileWrap" hidden>اختيار صورة أو ملف<input id="homepageSectionFile" type="file"></label>
             <p id="homepageSectionCurrentFile" class="homepage-help"></p>
@@ -413,7 +413,9 @@
     const fileSize = file ? numberFormat(Math.ceil(file.size / 1024)) + " كيلوبايت" : "";
     let media = "";
 
-    if (type === "image") {
+    if (type === "materials") {
+      media = '<div class="homepage-preview-meta">سيظهر هنا عدد الملفات التي تختار ربطها بهذا القسم.</div>';
+    } else if (type === "image") {
       let imageUrl = "";
       if (file && file.type.startsWith("image/")) {
         homepagePreviewObjectUrl = URL.createObjectURL(file);
@@ -621,7 +623,7 @@
       }
       return false;
     })())) return setHomepageStatus("لا يمكن وضع القسم داخل نفسه أو داخل أحد أقسامه الفرعية.", "error");
-    if (!["text", "image", "file", "link"].includes(type)) return setHomepageStatus("نوع المحتوى غير صالح.", "error");
+    if (!["text", "image", "file", "link", "materials"].includes(type)) return setHomepageStatus("نوع المحتوى غير صالح.", "error");
     if (!Number.isInteger(sortOrder) || sortOrder < 0) return setHomepageStatus("أدخل ترتيبًا صحيحًا يبدأ من صفر.", "error");
     if (!Number.isInteger(displayLimit) || displayLimit < 1 || displayLimit > 50) return setHomepageStatus("عدد الملفات المرتبطة يجب أن يكون بين 1 و50.", "error");
     if ((type === "text" || type === "link") && !content) return setHomepageStatus("أدخل محتوى القسم أو رابطه.", "error");
