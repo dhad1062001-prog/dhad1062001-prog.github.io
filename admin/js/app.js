@@ -1562,19 +1562,21 @@
       contentItemsCache = itemsResult.data || [];
       const select = document.getElementById("contentSectionId");
       const sorted = [...contentSectionsCache].sort((a,b) => Number(a.sort_order||0)-Number(b.sort_order||0));
-      if (select) select.innerHTML = '<option value="">اختر قسمًا</option>' + sorted.map(section => {
-        const parent = sorted.find(x => String(x.id) === String(section.parent_id));
-        return '<option value="' + escapeHtml(String(section.id)) + '">' + (parent ? '↳ ' : '') + escapeHtml(section.title) + (section.is_active ? '' : ' (مخفي)') + '</option>';
-      }).join("");
+      const fixedPlacements = [
+        ["page:grades","الصفوف الدراسية"],
+        ["page:games","استديو الألعاب التفاعلية"],
+        ["page:additional","التعليم الإضافي"],
+        ["page:calendar","التقويم الدراسي"],
+        ["page:certificate","شهادات التقدير"]
+      ];
+      if (select) select.innerHTML = '<option value="">اختر وجهة موجودة</option><optgroup label="بطاقات الصفحة الرئيسية الفعلية">' +
+        fixedPlacements.map(([value,label]) => '<option value="' + value + '">' + label + '</option>').join("") +
+        '</optgroup>' + (sorted.length ? '<optgroup label="الأقسام الإضافية المسجلة">' + sorted.map(section => {
+          const parent = sorted.find(x => String(x.id) === String(section.parent_id));
+          return '<option value="section:' + escapeHtml(String(section.id)) + '">' + (parent ? '↳ ' : '') + escapeHtml(section.title) + (section.is_active ? '' : ' (مخفي)') + '</option>';
+        }).join("") + '</optgroup>' : '');
       renderContentItems();
-      if (!contentSectionsCache.length) {
-        setContentManagerStatus("لا توجد أقسام ديناميكية مسجلة حاليًا في home_sections. لم ننشئ أقسامًا افتراضية. أنشئ القسم أولًا من وحدة إدارة الصفحة الرئيسية، ثم أضف محتواه هنا.", "warning");
-        if (select) select.disabled = true;
-        const save = document.getElementById("contentSaveButton");
-        if (save) save.disabled = true;
-      } else {
-        setContentManagerStatus("تم تحميل " + contentSectionsCache.length + " قسمًا و" + contentItemsCache.length + " عنصر محتوى.", "success");
-      }
+      setContentManagerStatus("تم تحميل الوجهات الفعلية للصفحة الرئيسية (" + fixedPlacements.length + ") و" + contentSectionsCache.length + " قسمًا إضافيًا مسجلًا و" + contentItemsCache.length + " عنصر محتوى.", "success");
     } catch (error) {
       setContentManagerStatus("تعذر تحميل المحتوى: " + (error.message || "خطأ غير معروف"), "error");
       const rows = document.getElementById("contentItemsRows");
@@ -1593,10 +1595,12 @@
     }
     rows.innerHTML = contentItemsCache.map(item => {
       const section = contentSectionsCache.find(x => String(x.id) === String(item.section_id));
+      const placementLabels = {"page:grades":"الصفوف الدراسية","page:games":"استديو الألعاب التفاعلية","page:additional":"التعليم الإضافي","page:calendar":"التقويم الدراسي","page:certificate":"شهادات التقدير"};
+      const destinationLabel = section?.title || placementLabels[item.placement_key] || "وجهة غير مرتبطة";
       const type = item.content_type === "html" ? "HTML" : "نص";
       const status = ({draft:"مسودة",published:"منشور",archived:"مؤرشف"})[item.status] || item.status;
       return '<tr><td><strong>' + escapeHtml(item.title) + '</strong><small>' + escapeHtml(item.description || item.file_name || "") + '</small></td>' +
-        '<td>' + escapeHtml(section?.title || "وجهة غير مرتبطة") + '</td><td>' + type + '</td><td>' + escapeHtml(status) + '</td>' +
+        '<td>' + escapeHtml(destinationLabel) + '</td><td>' + type + '</td><td>' + escapeHtml(status) + '</td>' +
         '<td><button type="button" class="secondary" data-content-action="edit" data-id="' + escapeHtml(item.id) + '">تعديل</button> ' +
         '<button type="button" class="danger" data-content-action="delete" data-id="' + escapeHtml(item.id) + '">حذف</button></td></tr>';
     }).join("");
@@ -1606,7 +1610,7 @@
     const item = contentItemsCache.find(x => String(x.id) === String(id));
     if (!item) return;
     editingContentItemId = item.id;
-    document.getElementById("contentSectionId").value = item.section_id == null ? "" : String(item.section_id);
+    document.getElementById("contentSectionId").value = item.section_id != null ? "section:" + String(item.section_id) : (item.placement_key || "");
     document.getElementById("contentType").value = item.content_type;
     document.getElementById("contentTitle").value = item.title || "";
     document.getElementById("contentDescription").value = item.description || "";
@@ -1626,7 +1630,10 @@
   async function saveContentItem(event) {
     event.preventDefault();
     if (accessState?.owner !== true) return setContentManagerStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
-    const sectionId = Number(document.getElementById("contentSectionId").value);
+    const selectedTarget = document.getElementById("contentSectionId").value;
+    const isSectionTarget = selectedTarget.startsWith("section:");
+    const sectionId = isSectionTarget ? Number(selectedTarget.slice(8)) : null;
+    const placementKey = !isSectionTarget && selectedTarget.startsWith("page:") ? selectedTarget : null;
     const contentType = document.getElementById("contentType").value;
     const title = document.getElementById("contentTitle").value.trim();
     const description = document.getElementById("contentDescription").value.trim();
@@ -1634,7 +1641,7 @@
     const sortOrder = Number(document.getElementById("contentSortOrder").value || 0);
     const body = document.getElementById("contentBody").value.trim();
     const file = document.getElementById("contentHtmlFile").files?.[0] || null;
-    if (!Number.isInteger(sectionId) || !contentSectionsCache.some(x => Number(x.id) === sectionId)) return setContentManagerStatus("اختر قسمًا موجودًا بالفعل.", "error");
+    if (isSectionTarget ? (!Number.isInteger(sectionId) || !contentSectionsCache.some(x => Number(x.id) === sectionId)) : !["page:grades","page:games","page:additional","page:calendar","page:certificate"].includes(placementKey)) return setContentManagerStatus("اختر وجهة موجودة في بنية الموقع.", "error");
     if (!title) return setContentManagerStatus("عنوان المحتوى مطلوب.", "error");
     if (!Number.isInteger(sortOrder)) return setContentManagerStatus("الترتيب يجب أن يكون عددًا صحيحًا.", "error");
     if (contentType === "text" && !body) return setContentManagerStatus("اكتب النص قبل الحفظ.", "error");
@@ -1662,7 +1669,7 @@
       const payload = {
         title, description, content_type:contentType, body:contentType === "text" ? body : "",
         storage_path:storagePath, file_name:fileName, mime_type:mimeType, file_size:fileSize,
-        section_id:sectionId, placement_key:null, status, sort_order:sortOrder, updated_at:new Date().toISOString()
+        section_id:sectionId, placement_key:placementKey, status, sort_order:sortOrder, updated_at:new Date().toISOString()
       };
       let error;
       if (existing) {
