@@ -127,3 +127,17 @@ button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none
 .homepage-links-manager button{justify-self:start}
 .homepage-card input:focus,.homepage-card textarea:focus,.homepage-card select:focus,.homepage-links-manager select:focus{outline:2px solid var(--gold);outline-offset:2px;border-color:var(--gold-light)}
 .homepage-section-actions button:focus-visible,.homepage-primary:focus-visible,.homepage-secondary:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px}
+
+/* Connected data-module forms */
+.data-module form{display:grid;gap:12px;margin:14px 0 22px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface,rgba(255,255,255,.55))}
+.data-module form label{display:grid;gap:6px;font-weight:700;color:var(--muted)}
+.data-module form input:not([type="checkbox"]),.data-module form textarea,.data-module form select,.data-module>label input,.data-module>label textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#20291c;color:var(--white);font:inherit}
+.data-module form textarea,.data-module>label textarea{resize:vertical;line-height:1.7}
+.data-module form input[type="checkbox"]{width:auto;accent-color:var(--gold)}
+.data-module button{margin:5px 4px 5px 0;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--gold-light);font:inherit;font-weight:700;cursor:pointer}
+.data-module button:hover{filter:brightness(1.06)}
+.data-module button:disabled{opacity:.55;cursor:not-allowed}
+.data-module .data-note{margin-top:14px}
+.data-module-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 10px}
+.data-module-head h2,.data-module-head h3{margin:0}
+.data-module .data-table td button{font-size:12px}
