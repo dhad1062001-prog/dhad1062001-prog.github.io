@@ -190,7 +190,12 @@
     const breadcrumb = document.getElementById("breadcrumbTitle");
     const view = document.getElementById("moduleView");
     if (!title || !view) return;
-    if (key === "homepage") {\n      title.textContent = titles.homepage;\n      subtitle.textContent = "إدارة العنوان الترحيبي والوصف والأقسام المنشورة على الصفحة الرئيسية.";\n      breadcrumb.textContent = titles.homepage;\n      loadHomepage();\n    } else if (key === "overview") {
+    if (key === "homepage") {
+      title.textContent = titles.homepage;
+      subtitle.textContent = "إدارة العنوان الترحيبي والوصف والأقسام المنشورة على الصفحة الرئيسية.";
+      breadcrumb.textContent = titles.homepage;
+      loadHomepage();
+    } else if (key === "overview") {
       title.textContent = "مرحبًا بك في ضاد";
       subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
       breadcrumb.textContent = titles.overview;
