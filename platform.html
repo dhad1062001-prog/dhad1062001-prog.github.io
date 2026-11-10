@@ -1144,7 +1144,7 @@ async function renderAuthArea(){
     return;
   }
   let h='<span class="user-name">'+escapeHtml(currentProfile?.full_name||currentUser.email||'المستخدم')+'</span>';
-  if(isFileManager())h+='<button class="admin-btn ui-shape" type="button" onclick="showAdminPage()">⚙️ الإدارة</button>';
+  if(isFileManager())h+='<button class="admin-btn ui-shape" type="button" data-admin-url="/admin/" onclick="location.href=this.dataset.adminUrl">⚙️ الإدارة</button>';
   h+='<button class="logout-btn ui-shape" type="button" onclick="signOut()">خروج</button>';
   el.innerHTML=h;
   applyRoleUI();
@@ -3224,5 +3224,5 @@ setTimeout(()=>{
 <script src="features.js"></script>
 <script src="deep-links.js?v=20261109f"></script>
 <script src="analytics.js"></script>
-<script src="floating-back.js?v=20261109c"></script>
+<script src="floating-back.js?v=20261110a"></script>
 </body></html>
