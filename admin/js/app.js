@@ -16,7 +16,8 @@
     homepage: "إدارة الصفحة الرئيسية",
     sections: "إدارة الأقسام والتصنيفات",
     materials: "إدارة الملفات التعليمية",
-    "file-center": "مركز رفع وإدارة الملفات",
+    "section-workspace": "إدارة الملفات داخل الأقسام",
+    "file-center": "مكتبة الملفات",
     supplies: "لوازم المعلمين",
     academic: "الصفوف والمناهج",
     staff: "المستخدمون والصلاحيات",
@@ -37,7 +38,8 @@
     homepage: "التحكم بمحتوى واجهة الاستقبال والعناوين والوصف والصور والأزرار والروابط، مع معاينة التغييرات قبل نشرها.",
     sections: "إنشاء الأقسام الرئيسية والفرعية، وضبط ترتيبها وظهورها، وربط الملفات بها دون إنشاء نسخ مكررة من الملفات.",
     materials: "استعراض الملفات التعليمية وإدارة بياناتها ونشرها وأرشفتها. رفع الملفات متاح حصريًا من مركز الملفات.",
-    "file-center": "المكان الوحيد لرفع الملفات إلى ضاد وإدارة المكتبة الموحدة وربط الملفات بالأقسام دون تكرار.",
+    "section-workspace": "اختر القسم الفعلي ثم ارفع ملفاته، مع تنظيمها وربطها بالأقسام الفرعية الموجودة.",
+    "file-center": "مكتبة موحدة للبحث في الملفات الموجودة ومراجعة بياناتها وروابطها؛ لا يوجد رفع جديد من هذه الوحدة.",
     supplies: "تنظيم الموارد المهنية الخاصة بالمعلمين، وإدارتها ضمن قسم مستقل مع إمكانية تصنيفها وربطها بالملفات.",
     academic: "إدارة الصفوف والفصول والمناهج والوحدات والدروس والمواد التعليمية مع المحافظة على العلاقات الحالية.",
     staff: "إدارة حسابات فريق العمل، وتحديد الأدوار والصلاحيات على مستوى الوحدات والإجراءات، والتحقق من الصلاحيات في الخادم.",
@@ -225,9 +227,14 @@
       breadcrumb.textContent = titles.overview;
       view.innerHTML = overviewMarkup + '<section class="data-module" id="overviewLiveStats"><div class="data-loading">جارٍ تحميل ملخص قاعدة البيانات…</div></section>';
       loadOverviewSummary();
+    } else if (key === "section-workspace") {
+      title.textContent = titles[key];
+      subtitle.textContent = "اختر القسم الذي تعمل عليه، ثم ارفع الملفات التابعة له من هذه الوحدة فقط.";
+      breadcrumb.textContent = titles[key];
+      loadMaterials(key);
     } else if (key === "file-center") {
       title.textContent = titles[key];
-      subtitle.textContent = "مركز موحد لجميع الملفات؛ الرفع من هنا فقط، والإدارة والربط من مكان واحد.";
+      subtitle.textContent = "مكتبة الملفات الموجودة للبحث وإدارة البيانات والارتباطات دون رفع جديد.";
       breadcrumb.textContent = titles[key];
       loadMaterials(key);
     } else if (key === "materials" || key === "supplies") {
@@ -1302,9 +1309,10 @@
     const isOwnerOrAdmin = accessState?.owner === true || accessState?.role === "admin";
     if (key === "overview") return true;
     if (key === "content") return accessState?.owner === true;
+    if (key === "section-workspace") return isOwnerOrAdmin || p.files === true;
     if (key === "homepage") return accessState?.owner === true;
     if (isOwnerOrAdmin) return true;
-    if (["materials", "supplies", "file-center"].includes(key)) return p.files === true;
+    if (["materials", "supplies", "file-center", "section-workspace"].includes(key)) return p.files === true;
     if (key === "analytics") return p.analytics === true;
     if (["homepage", "sections", "academic", "pages", "seo", "games"].includes(key)) return p.content === true;
     if (["staff", "storage", "drive", "ads", "settings", "security", "audit", "backups", "trash"].includes(key)) {
@@ -1323,6 +1331,7 @@
   let adminMaterialQueue = [];
   let adminUploadBusy = false;
   let adminUploadMessage = "";
+  let activeUploadPrimarySection = "school_grades";
 
   function renderAdminMaterialQueue(grades,semesters,categories,homeSections=[]) {
     const root=document.getElementById("adminMaterialQueue");
@@ -1444,16 +1453,18 @@
     window.__adminLookups={grades,semesters,categories};
     const writable=["owner","admin"].includes(accessState?.role);
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+(accessState?.owner===true?'<details><summary>إدارة الربط</summary><select multiple size="5" data-material-home-sections="'+item.id+'">'+homeOptionsFor(item)+'</select><button type="button" data-admin-action="material-sections-save" data-id="'+item.id+'">حفظ الأقسام</button></details>':(homeSections.length?'تدار من مركز الملفات بواسطة المالك':'—'))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button> <button type="button" data-admin-action="material-trash" data-id="'+item.id+'">إلى السلة</button>':'—')+'</td></tr>';
-    const uploadMarkup=viewKey==="file-center"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع ملفات جديدة</h2><p>هذه هي نقطة الرفع الوحيدة في لوحة الإدارة. اختر ملفًا أو عدة ملفات وحدد بيانات كل ملف وقسمه.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
-    const uploadNotice=viewKey==="file-center"?"":'<p class="data-note">رفع الملفات الجديدة متاح حصريًا من <strong>مركز رفع وإدارة الملفات</strong>.</p>';
-    root.innerHTML=uploadMarkup+uploadNotice+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — إدارة الملفات من هذه الوحدة، أما الرفع الجديد فمن مركز الملفات فقط.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>الأقسام الرئيسية والفرعية</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
-    if(writable && viewKey==="file-center"){
+    const uploadMarkup=viewKey==="section-workspace"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع الملفات من داخل القسم</h2><p>اختر وجهة من بنية ضاد الحالية أولًا، ثم أضف الملفات التابعة لها. لا يتم إنشاء أقسام جديدة هنا.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>القسم المستهدف<select id="adminUploadTarget"><option value="school_grades">الصفوف الدراسية</option><option value="curricula">المناهج</option><option value="teacher_supplies">لوازم المعلمين</option><option value="interactive_games">الألعاب التفاعلية</option><option value="supplementary_education">التعليم الإضافي</option></select></label><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
+    const uploadNotice=viewKey==="section-workspace"?"":'<p class="data-note">رفع الملفات الجديدة متاح من وحدة <strong>إدارة الملفات داخل الأقسام</strong> فقط.</p>';
+    root.innerHTML=uploadMarkup+uploadNotice+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — الرفع الجديد حصريًا من وحدة إدارة الملفات داخل الأقسام.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>الأقسام الرئيسية والفرعية</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
+    if(writable && viewKey==="section-workspace"){
       renderAdminMaterialQueue(grades,semesters,categories,homeSections);
+      const uploadTarget=document.getElementById("adminUploadTarget");
+      if(uploadTarget){uploadTarget.value=activeUploadPrimarySection;uploadTarget.addEventListener("change",event=>{activeUploadPrimarySection=event.target.value;});}
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
           if(duplicate&&!window.confirm("يوجد ملف بالاسم والحجم نفسيهما: «"+file.name+"». هل تريد إضافته رغم احتمال التكرار؟"))continue;
-          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:viewKey==="supplies"?"teacher_supplies":"school_grades",status:"بانتظار الرفع"});
+          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
         }
         event.target.value="";
         renderAdminMaterialQueue(grades,semesters,categories);
