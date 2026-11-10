@@ -145,15 +145,15 @@ async function uploadSelectedFiles(){
    let keepObject=false;
    if(materialId){const {error:rollbackError}=await sb.from("materials").delete().eq("id",materialId);if(rollbackError){keepObject=true;console.error("material rollback failed",rollbackError)}}
    if(storagePath&&!keepObject){const {error:removeError}=await sb.storage.from("materials").remove([storagePath]);if(removeError)console.error("storage rollback failed",removeError)}
-   failures.push({index:i,message:(e.message||"تعذر الحفظ")+(keepObject?" — تعذر التراجع عن سجل قاعدة البيانات، ولم يُحذف ملف التخزين حفاظاً على سلامة البيانات.":"")});
+   failures.push({index:i,fileName:file.name,message:(e.message||"تعذر الحفظ")+(keepObject?" — تعذر التراجع عن سجل قاعدة البيانات، ولم يُحذف ملف التخزين حفاظاً على سلامة البيانات.":"")});
   }
  }
  status.textContent="اكتمل الرفع: "+successes+" ناجح، "+failures.length+" لم يكتمل.";
  if(failures.length)toast("بعض الملفات لم تكتمل. راجع تفاصيل الأخطاء أسفل نموذج الرفع.",true);
  else toast("تم رفع جميع الملفات وربطها بالأقسام بنجاح.");
- if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(uploadFiles[x.index].file.name+": "+x.message)).join("<br>")+'</div>')}
  if(successes){const failedIndexes=new Set(failures.map(x=>x.index));uploadFiles=uploadFiles.filter((x,i)=>failedIndexes.has(i));document.getElementById("uploadPicker").value="";drawUploadRows();await loadMaterialsList()}
- btn.disabled=false;
+ if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(x.fileName+": "+x.message)).join("<br>")+'</div>')}
+ btn.disabled=!uploadFiles.length||!sections.some(s=>s.is_active!==false);
 }
 async function loadMaterialsList(){
  const el=document.getElementById("materialsPreview");if(!el)return;
