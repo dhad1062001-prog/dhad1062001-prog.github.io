@@ -320,6 +320,7 @@
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
+      if (materialsResult.error) throw materialsResult.error;
       const page = pageResult.data || {};
       document.getElementById("homepageTitle").value = page.home_title || "رحلتك إلى التميز تبدأ من هنا";
       document.getElementById("homepageSubtitle").value = page.home_subtitle || "تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية";
@@ -548,6 +549,15 @@
     }
     list.innerHTML = homepageSections.map(row => {
       const parent = homepageSections.find(item => String(item.id) === String(row.parent_id));
+      const linkedRows = homepageSectionLinks[String(row.id)] || [];
+      const linkedOrder = new Map(linkedRows.map(link => [String(link.material_id), Number(link.sort_order || 0)]));
+      const sortedMaterials = [...homepageMaterials].sort((a, b) => {
+        const aLinked = linkedOrder.has(String(a.id)), bLinked = linkedOrder.has(String(b.id));
+        if (aLinked && bLinked) return linkedOrder.get(String(a.id)) - linkedOrder.get(String(b.id));
+        if (aLinked) return -1;
+        if (bLinked) return 1;
+        return String(a.title || a.file_name || "").localeCompare(String(b.title || b.file_name || ""), "ar");
+      });
       return `
       <article class="homepage-section-item">
         <div class="homepage-section-info"><strong>${escapeHtml(row.icon || "▣")} ${escapeHtml(row.title || "قسم دون عنوان")}</strong><small>${parent ? "يتبع: " + escapeHtml(parent.title) + " · " : "قسم رئيسي · "}النوع: ${escapeHtml(row.content_type)} · الترتيب: ${numberFormat(row.sort_order)} · ${row.is_active ? "مفعّل" : "معطّل"} · ${row.show_on_home === false ? "غير معروض في الرئيسية" : "معروض في الرئيسية"}</small></div>
@@ -557,10 +567,10 @@
           <button type="button" class="danger" data-homepage-action="delete" data-id="${escapeHtml(row.id)}">حذف</button>
         </div>
         <details class="homepage-links-manager">
-          <summary>الملفات المرتبطة (${(homepageSectionLinks[String(row.id)] || []).length})</summary>
+          <summary>الملفات المرتبطة (${linkedRows.length})</summary>
           <p>اختر الملفات المنشورة التي تريد عرضها داخل هذا القسم. يمكنك تحديد أكثر من ملف، وإعادة ترتيبها من خلال ترتيب الاختيار.</p>
           <select multiple size="6" data-homepage-materials="${escapeHtml(row.id)}" aria-label="الملفات المرتبطة بالقسم">
-            ${homepageMaterials.map(material => '<option value="' + escapeHtml(material.id) + '" ' + ((homepageSectionLinks[String(row.id)] || []).some(link => String(link.material_id) === String(material.id)) ? "selected" : "") + '>' + escapeHtml(material.title || material.file_name || "ملف تعليمي") + '</option>').join("")}
+            ${sortedMaterials.map(material => '<option value="' + escapeHtml(material.id) + '" ' + (linkedOrder.has(String(material.id)) ? "selected" : "") + '>' + escapeHtml(material.title || material.file_name || "ملف تعليمي") + '</option>').join("")}
           </select>
           ${homepageMaterials.length ? "" : '<small>لا توجد ملفات منشورة متاحة للربط حاليًا.</small>'}
           <button type="button" class="homepage-secondary" data-homepage-links-save="${escapeHtml(row.id)}">حفظ الملفات المرتبطة</button>
