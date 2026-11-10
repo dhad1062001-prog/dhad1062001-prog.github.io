@@ -1158,7 +1158,7 @@ async function handleAuthChange(session){
 
 async function loadLookups(){
   const [g,s,c]=await Promise.all([
-    sb.from('grades').select('id,name,slug,sort_order').order('sort_order'),
+    sb.from('grades').select('id,name,slug,sort_order,emoji').order('sort_order'),
     sb.from('semesters').select('id,name,sort_order').order('sort_order'),
     sb.from('categories').select('id,name,slug,sort_order').order('sort_order')
   ]);
@@ -1245,7 +1245,7 @@ function renderGrades(){
     const isKindergarten=gradeRank(g.name)===5.5;
     return `
     <button class="grade ui-shape${isKindergarten?' kindergarten-grade':''}" onclick="showGrade(${g.id})">
-      <span class="circle ${colors[i%colors.length]}">${icons[i%icons.length]}</span>
+      <span class="circle ${colors[i%colors.length]}">${escapeHtml(g.emoji||icons[i%icons.length])}</span>
       <span class="name">${escapeHtml(g.name)}</span>
       ${g.id===13?'<span class="sub">(التوجيهي)</span>':''}
     </button>`;
