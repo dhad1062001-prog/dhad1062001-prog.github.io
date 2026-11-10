@@ -431,6 +431,7 @@
     try {
       const { error } = await supabase.from("site_pages").upsert(payload, { onConflict: "slug" });
       if (error) throw error;
+      await logAdminAction("homepage_hero_updated","site_page",HOMEPAGE_DESCRIPTION_SLUG,{title,subtitle});
       setHomepageStatus("تم حفظ العنوان والوصف بنجاح. ستظهر التغييرات للزوار عند تحديث الصفحة.", "success");
     } catch (error) {
       setHomepageStatus("تعذر حفظ بيانات الواجهة: " + (error?.message || "خطأ غير معروف"), "error");
@@ -594,6 +595,7 @@
       }
       await loadHomepageSectionLinks();
       renderHomepageSections();
+      await logAdminAction("homepage_section_materials_updated","home_section",sectionId,{linked_count:selected.length,added_count:added.length,removed_count:removed.length});
       setHomepageStatus("تم تحديث الملفات المرتبطة. لم يتم حذف أي ملف من المكتبة أو التخزين.", "success");
     } catch (error) {
       setHomepageStatus("تعذر تحديث الملفات المرتبطة: " + (error?.message || "خطأ غير معروف"), "error");
@@ -740,6 +742,7 @@
         : await supabase.from("home_sections").insert(payload).select("id").single();
       if (result.error || !result.data) throw new Error(result.error?.message || "لم تؤكد قاعدة البيانات حفظ القسم.");
       recordSaved = true;
+      await logAdminAction(homepageEditingId?"homepage_section_updated":"homepage_section_created","home_section",result.data.id,{title,content_type:type});
 
       resetHomepageSectionForm();
       await loadHomepageSectionsOnly();
@@ -783,6 +786,7 @@
         .eq("id", row.id).select("id").maybeSingle();
       if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات التغيير.");
       changed = true;
+      await logAdminAction("homepage_section_visibility_changed","home_section",id,{is_active:!row.is_active});
       await loadHomepageSectionsOnly();
       setHomepageStatus(row.is_active ? "تم إخفاء القسم عن الزوار." : "تم إظهار القسم للزوار.", "success");
     } catch (error) {
@@ -803,6 +807,7 @@
       const { data, error } = await supabase.from("home_sections").delete().eq("id", row.id).select("id").maybeSingle();
       if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات الحذف.");
       deleted = true;
+      await logAdminAction("homepage_section_deleted","home_section",id,{title:row.title});
       await loadHomepageSectionsOnly();
       setHomepageStatus("تم حذف القسم. بقي الملف في مساحة التخزين دون حذف.", "success");
     } catch (error) {
