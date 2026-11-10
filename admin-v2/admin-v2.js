@@ -40,6 +40,7 @@ const legacySections=[
  ["interactive_games","الألعاب التفاعلية"],
  ["supplementary_education","التعليم الإضافي"]
 ];
+function canManageFiles(){return access?.owner===true||access?.permissions?.files===true}
 function filesPlaceholder(v){
  v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><button class="btn light" id="refreshMaterials">تحديث القائمة</button></div>'+
  '<div class="panel"><h3>رفع ملفات جديدة</h3><div class="notice">يُحفظ الملف في مخزن materials ثم يُنشأ سجل له في قاعدة البيانات ويُربط بالقسم الذي تختاره. لا يتم استبدال الملفات الموجودة أو تغيير مساراتها.</div>'+
@@ -106,7 +107,7 @@ function safeStorageName(name){
  return base+"."+ext.toLowerCase();
 }
 async function uploadSelectedFiles(){
- if(!canOwner())return toast("رفع الملفات متاح لمالك المنصة فقط.",true);
+ if(!canManageFiles())return toast("ليس لديك صلاحية إدارة الملفات.",true);
  if(!uploadFiles.length)return;
  const grade=document.getElementById("uploadGrade").value||null;
  const semester=document.getElementById("uploadSemester").value||null;
@@ -141,16 +142,17 @@ async function uploadSelectedFiles(){
    if(linkError)throw linkError;
    successes++;
   }catch(e){
-   if(materialId){const {error:rollbackError}=await sb.from("materials").delete().eq("id",materialId);if(rollbackError)console.error("material rollback failed",rollbackError)}
-   if(storagePath){const {error:removeError}=await sb.storage.from("materials").remove([storagePath]);if(removeError)console.error("storage rollback failed",removeError)}
-   failures.push(file.name+": "+(e.message||"تعذر الحفظ"));
+   let keepObject=false;
+   if(materialId){const {error:rollbackError}=await sb.from("materials").delete().eq("id",materialId);if(rollbackError){keepObject=true;console.error("material rollback failed",rollbackError)}}
+   if(storagePath&&!keepObject){const {error:removeError}=await sb.storage.from("materials").remove([storagePath]);if(removeError)console.error("storage rollback failed",removeError)}
+   failures.push({index:i,message:(e.message||"تعذر الحفظ")+(keepObject?" — تعذر التراجع عن سجل قاعدة البيانات، ولم يُحذف ملف التخزين حفاظاً على سلامة البيانات.":"")});
   }
  }
  status.textContent="اكتمل الرفع: "+successes+" ناجح، "+failures.length+" لم يكتمل.";
  if(failures.length)toast("بعض الملفات لم تكتمل. راجع تفاصيل الأخطاء أسفل نموذج الرفع.",true);
  else toast("تم رفع جميع الملفات وربطها بالأقسام بنجاح.");
- if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(x)).join("<br>")+'</div>')}
- if(successes){uploadFiles=uploadFiles.filter((x,i)=>failures.some(f=>f.startsWith(x.file.name+":")));document.getElementById("uploadPicker").value="";drawUploadRows();await loadMaterialsList()}
+ if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(uploadFiles[x.index].file.name+": "+x.message)).join("<br>")+'</div>')}
+ if(successes){const failedIndexes=new Set(failures.map(x=>x.index));uploadFiles=uploadFiles.filter((x,i)=>failedIndexes.has(i));document.getElementById("uploadPicker").value="";drawUploadRows();await loadMaterialsList()}
  btn.disabled=false;
 }
 async function loadMaterialsList(){
