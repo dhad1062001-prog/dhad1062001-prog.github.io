@@ -119,7 +119,7 @@
     const sidebar = document.getElementById("sidebar");
     const scrim = document.getElementById("sidebarScrim");
     const user = accessState?.staff;
-    if (accessState?.permissions?.analytics !== true) document.querySelectorAll('[data-module="analytics"]').forEach(el => el.remove());
+    hideUnauthorizedModules();
     const userName = document.getElementById("userName");
     const userEmail = document.getElementById("userEmail");
     const avatar = document.getElementById("userAvatar");
@@ -168,6 +168,7 @@
 
   function showModule(key, updateHash = true) {
     if (!titles[key]) return;
+    if (accessState && !canAccessModule(key)) { key = "overview"; updateHash = true; }
     activeModule = key;
     document.querySelectorAll("[data-module]").forEach(button => {
       button.classList.toggle("active", button.dataset.module === key);
@@ -182,6 +183,16 @@
       subtitle.textContent = "نظرة عامة على وحدات إدارة المنصة التعليمية.";
       breadcrumb.textContent = titles.overview;
       view.innerHTML = overviewMarkup;
+    } else if (key === "materials" || key === "supplies") {
+      title.textContent = titles[key];
+      subtitle.textContent = "عرض الملفات التعليمية المسجلة — دون تعديل البيانات.";
+      breadcrumb.textContent = titles[key];
+      loadMaterials();
+    } else if (key === "sections") {
+      title.textContent = titles.sections;
+      subtitle.textContent = "عرض الأقسام والتصنيفات الحالية.";
+      breadcrumb.textContent = titles.sections;
+      loadSections();
     } else if (key === "analytics") {
       title.textContent = titles.analytics;
       subtitle.textContent = "إحصائيات الاستخدام المسجلة خلال الفترة المحددة.";
@@ -202,6 +213,54 @@
     }
     document.getElementById("sidebar")?.classList.remove("open");
     document.getElementById("sidebarScrim")?.classList.remove("show");
+  }
+
+
+  function canAccessModule(key) {
+    const p = accessState?.permissions || {};
+    if (["materials","supplies"].includes(key)) return p.files === true || accessState?.owner === true;
+    if (["sections","academic"].includes(key)) return p.content === true || accessState?.owner === true;
+    if (key === "analytics") return p.analytics === true || accessState?.owner === true;
+    return true;
+  }
+  function hideUnauthorizedModules() {
+    document.querySelectorAll("[data-module]").forEach(el => {
+      if (!canAccessModule(el.dataset.module)) el.remove();
+    });
+  }
+  const fmtDate = value => value ? new Intl.DateTimeFormat("ar-JO",{dateStyle:"medium"}).format(new Date(value)) : "—";
+  const lookup = (items,id) => items.find(x => String(x.id)===String(id))?.name || "—";
+  async function loadMaterials() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل الملفات…</div>';
+    const [m,g,s,c]=await Promise.all([
+      supabase.from("materials").select("id,title,file_name,grade_id,semester_id,category_id,download_count,is_public,created_at").order("created_at",{ascending:false}).limit(500),
+      supabase.from("grades").select("id,name").order("sort_order"),
+      supabase.from("semesters").select("id,name").order("sort_order"),
+      supabase.from("categories").select("id,name").order("sort_order")
+    ]);
+    const error=m.error||g.error||s.error||c.error;
+    if(error){root.innerHTML='<div class="data-error">تعذر تحميل الملفات: '+escapeHtml(error.message)+'</div>';return;}
+    const materials=m.data||[], grades=g.data||[], semesters=s.data||[], categories=c.data||[];
+    const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td></tr>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات التعليمية</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">لا يوجد رفع أو تعديل أو حذف مفعّل هنا؛ لم تتغير أي بيانات أو مسارات تخزين.</p></section>';
+    document.getElementById("materialsSearch").addEventListener("input",e=>{
+      const q=e.target.value.trim().toLocaleLowerCase("ar");
+      document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="7">لا توجد نتائج.</td></tr>';
+    });
+  }
+  async function loadSections() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل الأقسام والتصنيفات…</div>';
+    const [s,c]=await Promise.all([
+      supabase.from("home_sections").select("id,title,content_type,sort_order,is_active,parent_id,show_on_home,slug").order("sort_order"),
+      supabase.from("categories").select("id,name,slug,sort_order").order("sort_order")
+    ]);
+    if(s.error||c.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام: '+escapeHtml((s.error||c.error).message)+'</div>';return;}
+    const sections=s.data||[], categories=c.data||[];
+    const sectionRows=sections.map(x=>{const parent=sections.find(y=>y.id===x.parent_id);return '<tr><td><strong>'+escapeHtml(x.title)+'</strong><small>'+escapeHtml(x.slug||"—")+'</small></td><td>'+escapeHtml(parent?.title||"قسم رئيسي")+'</td><td>'+escapeHtml(x.content_type)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(x.is_active?"نشط":"متوقف")+'</td><td>'+(x.show_on_home?"نعم":"لا")+'</td></tr>';}).join("");
+    const categoryRows=categories.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.slug)+'</td><td>'+numberFormat(x.sort_order)+'</td></tr>').join("");
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الأقسام الحالية</h2><p>الأقسام الرئيسية والفرعية المسجلة في النظام.</p></div><span class="data-count">'+numberFormat(sections.length)+' قسم</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>القسم</th><th>يتبع</th><th>نوع المحتوى</th><th>الترتيب</th><th>الحالة</th><th>الرئيسية</th></tr></thead><tbody>'+(sectionRows||'<tr><td colspan="6">لا توجد أقسام حاليًا.</td></tr>')+'</tbody></table></div><div class="data-module-head"><div><h3>التصنيفات</h3></div><span class="data-count">'+numberFormat(categories.length)+' تصنيف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>التصنيف</th><th>الرابط المختصر</th><th>الترتيب</th></tr></thead><tbody>'+(categoryRows||'<tr><td colspan="3">لا توجد تصنيفات.</td></tr>')+'</tbody></table></div><p class="data-note">هذه شاشة قراءة فقط. ستضاف أدوات الإنشاء والتعديل بعد ضبط الصلاحيات وسجل العمليات.</p></section>';
   }
 
   let currentAnalyticsDays = 30;
