@@ -89,9 +89,20 @@ async function fetchAnalytics(days){const el=document.getElementById("analyticsB
 let staffRows=[],auditRows=[];
 async function loadStaff(v){
  if(!canOwner()){v.innerHTML='<div class="notice">إدارة الموظفين متاحة لمالك المنصة فقط.</div>';return}
- v.innerHTML='<div class="section-head"><div><h2>إدارة الموظفين والصلاحيات</h2><p>عرض حسابات الفريق وتحديث صلاحية إدارة الملفات أو إيقاف الوصول.</p></div><button class="btn light" id="refreshStaff">تحديث القائمة</button></div><div class="notice">الحسابات ذات دور المدير محمية. أرشفة الملفات واستعادتها تبقى لحسابات الإدارة المعتمدة. إضافة موظفين جدد ستُفعّل بعد ضبط رابط قبول الدعوة على صفحة الإدارة الجديدة.</div><div id="staffList" class="empty">جارٍ تحميل حسابات الفريق…</div><div id="staffEditor"></div>';
+ v.innerHTML='<div class="section-head"><div><h2>إدارة الموظفين والصلاحيات</h2><p>دعوة أعضاء الفريق، وتحديث صلاحياتهم، وإيقاف وصولهم.</p></div><div class="toolbar"><button class="btn gold" id="inviteStaff">＋ دعوة موظف</button><button class="btn light" id="refreshStaff">تحديث القائمة</button></div></div><div class="notice">الموظف يحصل على صلاحية إدارة الملفات فقط بحسب الإذن المحدد. لا يمكنه إدارة الأقسام أو الموظفين أو الإعدادات أو أرشفة الملفات.</div><div id="staffInvite"></div><div id="staffList" class="empty">جارٍ تحميل حسابات الفريق…</div><div id="staffEditor"></div>';
  document.getElementById("refreshStaff").onclick=()=>loadStaff(v);
+ document.getElementById("inviteStaff").onclick=()=>staffInviteForm();
  try{const data=await adminAction("staff_list");staffRows=data.staff||[];drawStaff()}catch(e){document.getElementById("staffList").textContent="تعذر تحميل الموظفين: "+e.message}
+}
+function staffInviteForm(){
+ const el=document.getElementById("staffInvite");if(!el)return;
+ el.innerHTML='<div class="panel"><h3>دعوة موظف جديد</h3><form id="staffInviteForm"><div class="form-grid"><div class="field"><label>اسم الموظف</label><input name="display_name" required maxlength="120" placeholder="الاسم الكامل"></div><div class="field"><label>البريد الإلكتروني</label><input name="email" type="email" required maxlength="254" placeholder="name@example.com"></div></div><label><input type="checkbox" name="files" checked> منحه صلاحية رفع الملفات وتعديل بياناتها</label><div class="notice">سيتم إرسال دعوة إلى البريد إذا لم يكن الحساب مسجلاً مسبقاً. صلاحية حذف الملفات والأقسام غير مشمولة.</div><div class="toolbar"><button class="btn gold">إرسال الدعوة</button><button class="btn light" type="button" id="cancelStaffInvite">إلغاء</button></div></form></div>';
+ document.getElementById("cancelStaffInvite").onclick=()=>el.innerHTML="";
+ document.getElementById("staffInviteForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),email=String(f.get("email")||"").trim().toLowerCase(),display_name=String(f.get("display_name")||"").trim(),files=f.get("files")==="on",btn=e.submitter;if(btn)btn.disabled=true;
+  try{const result=await adminAction("staff_invite",{email,display_name,permissions:{files}});let auditOk=true;try{await adminAction("audit_record",{audit_action:"staff_invited",target_type:"staff",target_id:result.staff?.id||"",details:{email,display_name,files,invitation_sent:result.invitation_sent===true}})}catch(_){auditOk=false}
+   toast(result.invitation_sent?"أُرسلت دعوة الموظف إلى بريده الإلكتروني.": "تم تفعيل حساب الموظف الموجود وإضافته للفريق.",!auditOk);el.innerHTML="";await loadStaff(document.getElementById("view"));
+  }catch(err){if(btn)btn.disabled=false;toast("تعذر إرسال الدعوة: "+err.message,true)}
+ };
 }
 function drawStaff(){
  const el=document.getElementById("staffList");if(!el)return;
@@ -155,7 +166,7 @@ function filesPlaceholder(v){
  '<div class="toolbar"><button class="btn gold" id="startUpload" disabled>رفع الملفات وحفظها</button><button class="btn light" id="clearUpload" type="button">إفراغ الاختيار</button><span id="uploadStatus" class="muted"></span></div></div>'+
  '<div class="panel"><div class="section-head" style="margin-top:0"><div><h3>الملفات المسجلة</h3><p>أحدث 100 ملف، مع عدد التنزيلات المسجل.</p></div><button class="btn light tiny" id="loadMaterials">عرض الملفات</button></div><div id="materialsPreview" class="empty">اضغط «عرض الملفات» لتحميل القائمة.</div></div>';
  document.getElementById("refreshMaterials").onclick=()=>loadMaterialsList();
- document.getElementById("showTrash").onclick=()=>loadTrashList();
+ document.getElementById("showTrash")?.addEventListener("click",()=>loadTrashList());
  document.getElementById("loadMaterials").onclick=()=>loadMaterialsList();
  document.getElementById("uploadPicker").onchange=e=>{uploadFiles=Array.from(e.target.files||[]).map(file=>({file,title:file.name.replace(/\.[^.]+$/,""),description:"",sectionId:"",legacy:""}));drawUploadRows();};
  document.getElementById("clearUpload").onclick=()=>{uploadFiles=[];document.getElementById("uploadPicker").value="";drawUploadRows();document.getElementById("uploadStatus").textContent="";};
