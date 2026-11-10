@@ -880,6 +880,7 @@
       if (!table) throw new Error("نوع السجل غير معروف.");
       const { error } = await supabase.from(table).delete().eq("id", id);
       if (error) throw error;
+      await logAdminAction("lookup_deleted",kind,id);
       if (activeModule === "academic") await loadAcademic(); else await loadSections();
       return;
     }
@@ -925,6 +926,7 @@
       if(!window.confirm("هل تريد حذف بيانات SEO لهذه الصفحة؟"))return;
       const {error}=await supabase.from("site_seo").delete().eq("page_path",id);
       if(error)throw error;
+      await logAdminAction("seo_metadata_deleted","site_seo",id);
       await loadSeo();
       return;
     }
