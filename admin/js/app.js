@@ -523,6 +523,7 @@
     const p = accessState?.permissions || {};
     const isOwnerOrAdmin = accessState?.owner === true || accessState?.role === "admin";
     if (key === "overview") return true;
+    if (key === "homepage") return accessState?.owner === true;
     if (isOwnerOrAdmin) return true;
     if (["materials", "supplies"].includes(key)) return p.files === true;
     if (key === "analytics") return p.analytics === true;
