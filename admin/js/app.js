@@ -360,9 +360,13 @@
       home_subtitle: subtitle,
       updated_at: new Date().toISOString()
     };
-    const { error } = await supabase.from("site_pages").upsert(payload, { onConflict: "slug" });
-    if (error) return setHomepageStatus("تعذر حفظ بيانات الواجهة: " + error.message, "error");
-    setHomepageStatus("تم حفظ العنوان والوصف بنجاح.", "success");
+    try {
+      const { error } = await supabase.from("site_pages").upsert(payload, { onConflict: "slug" });
+      if (error) throw error;
+      setHomepageStatus("تم حفظ العنوان والوصف بنجاح. ستظهر التغييرات للزوار عند تحديث الصفحة.", "success");
+    } catch (error) {
+      setHomepageStatus("تعذر حفظ بيانات الواجهة: " + (error?.message || "خطأ غير معروف"), "error");
+    }
   }
 
   function updateHomepageSectionEditor() {
@@ -530,15 +534,18 @@
     const showOnHome = document.getElementById("homepageSectionShowOnHome").checked;
     const sectionDescription = document.getElementById("homepageSectionDescription").value.trim();
     const parentValue = document.getElementById("homepageSectionParent").value;
-    const parentId = parentValue ? Number(parentValue) : null;
+    const parentId = parentValue || null;
     const icon = document.getElementById("homepageSectionIcon").value.trim();
     const file = document.getElementById("homepageSectionFile").files?.[0] || null;
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
+
     if (!title) return setHomepageStatus("أدخل عنوان القسم.", "error");
-    if (parentId !== null && (!Number.isSafeInteger(parentId) || !homepageSections.some(row => Number(row.id) === parentId))) return setHomepageStatus("القسم الأب المحدد غير صالح. حدّث القائمة وحاول مجددًا.", "error");
+    if (parentId !== null && !homepageSections.some(row => String(row.id) === parentId)) return setHomepageStatus("القسم الأب المحدد غير صالح. حدّث القائمة وحاول مجددًا.", "error");
     if (parentId !== null && (String(parentId) === String(homepageEditingId) || (() => {
-      let current = homepageSections.find(row => Number(row.id) === parentId);
-      while (current) {
+      let current = homepageSections.find(row => String(row.id) === parentId);
+      const visited = new Set();
+      while (current && !visited.has(String(current.id))) {
+        visited.add(String(current.id));
         if (String(current.id) === String(homepageEditingId)) return true;
         current = homepageSections.find(row => String(row.id) === String(current.parent_id));
       }
@@ -548,7 +555,14 @@
     if (!Number.isInteger(sortOrder) || sortOrder < 0) return setHomepageStatus("أدخل ترتيبًا صحيحًا يبدأ من صفر.", "error");
     if (!Number.isInteger(displayLimit) || displayLimit < 1 || displayLimit > 50) return setHomepageStatus("عدد الملفات المرتبطة يجب أن يكون بين 1 و50.", "error");
     if ((type === "text" || type === "link") && !content) return setHomepageStatus("أدخل محتوى القسم أو رابطه.", "error");
-    if (type === "link" && !/^https?:\/\//i.test(content)) return setHomepageStatus("الرابط يجب أن يبدأ بـ http:// أو https://.", "error");
+    if (type === "link") {
+      try {
+        const url = new URL(content);
+        if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+      } catch {
+        return setHomepageStatus("الرابط غير صالح. استخدم رابطًا يبدأ بـ http:// أو https://.", "error");
+      }
+    }
     if (type === "image" && file && !file.type.startsWith("image/")) return setHomepageStatus("اختر ملف صورة صالحًا.", "error");
     if ((type === "image" || type === "file") && file && file.size > 50 * 1024 * 1024) return setHomepageStatus("الحد الأعلى لحجم الملف 50 ميجابايت.", "error");
     const needsFile = type === "image" || type === "file";
@@ -557,35 +571,42 @@
     setHomepageStatus("جارٍ حفظ القسم...");
     let filePath = needsFile ? (old?.content_type === type ? (old?.file_path || null) : null) : null;
     let uploadedNewFile = false;
-    if (needsFile && file) {
-      const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").slice(0, 120) || "file";
-      const path = "home-sections/" + crypto.randomUUID() + "-" + safeName;
-      const { data, error } = await supabase.storage.from(MATERIALS_BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
-      if (error) return setHomepageStatus("تعذر رفع الملف: " + error.message, "error");
-      filePath = data?.path || path;
-      uploadedNewFile = true;
+    try {
+      if (needsFile && file) {
+        const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 120) || "file";
+        const path = "home-sections/" + crypto.randomUUID() + "-" + safeName;
+        const { data, error } = await supabase.storage.from(MATERIALS_BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+        if (error) throw new Error("تعذر رفع الملف: " + error.message);
+        filePath = data?.path || path;
+        uploadedNewFile = true;
+      }
+
+      const payload = {
+        title, content_type: type, content,
+        section_description: sectionDescription,
+        show_on_home: showOnHome,
+        parent_id: parentId,
+        icon: icon || "folder",
+        file_path: filePath || "",
+        sort_order: sortOrder, display_limit: displayLimit,
+        display_style: displayStyle, is_active: active,
+        updated_at: new Date().toISOString()
+      };
+      const result = homepageEditingId
+        ? await supabase.from("home_sections").update(payload).eq("id", homepageEditingId).select("id").maybeSingle()
+        : await supabase.from("home_sections").insert(payload).select("id").single();
+      if (result.error || !result.data) throw new Error(result.error?.message || "لم تؤكد قاعدة البيانات حفظ القسم.");
+
+      resetHomepageSectionForm();
+      await loadHomepageSectionsOnly();
+      setHomepageStatus("تم حفظ القسم بنجاح.", "success");
+    } catch (error) {
+      if (uploadedNewFile && filePath) {
+        const { error: cleanupError } = await supabase.storage.from(MATERIALS_BUCKET).remove([filePath]);
+        if (cleanupError) console.warn("تعذر تنظيف الملف المرفوع بعد فشل الحفظ:", cleanupError);
+      }
+      setHomepageStatus("تعذر حفظ القسم: " + (error?.message || "خطأ غير معروف"), "error");
     }
-    const payload = {
-      title, content_type: type, content,
-      section_description: sectionDescription,
-      show_on_home: showOnHome,
-      parent_id: parentId,
-      icon: icon || "folder",
-      file_path: filePath || "",
-      sort_order: sortOrder, display_limit: displayLimit,
-      display_style: displayStyle, is_active: active,
-      updated_at: new Date().toISOString()
-    };
-    const result = homepageEditingId
-      ? await supabase.from("home_sections").update(payload).eq("id", homepageEditingId).select("id").maybeSingle()
-      : await supabase.from("home_sections").insert(payload).select("id").single();
-    if (result.error || !result.data) {
-      if (uploadedNewFile) await supabase.storage.from(MATERIALS_BUCKET).remove([filePath]);
-      return setHomepageStatus("تعذر تأكيد حفظ القسم: " + (result.error?.message || "لم تُرجع قاعدة البيانات سجلًا محفوظًا."), "error");
-    }
-    resetHomepageSectionForm();
-    await loadHomepageSectionsOnly();
-    setHomepageStatus("تم حفظ القسم بنجاح.", "success");
   }
 
   async function loadHomepageSectionsOnly() {
