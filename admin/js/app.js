@@ -168,6 +168,10 @@
       if (event.target.closest("[data-analytics-refresh]") && activeModule === "analytics") {
         loadAnalytics(currentAnalyticsDays);
       }
+      const adminAction = event.target.closest("[data-admin-action]");
+      if (adminAction) {
+        handleAdminAction(adminAction).catch(error => showModuleError(error));
+      }
     });
     window.addEventListener("hashchange", () => {
       const key = location.hash.replace(/^#/, "");
@@ -209,22 +213,62 @@
       loadMaterials(key);
     } else if (key === "sections") {
       title.textContent = titles.sections;
-      subtitle.textContent = "عرض الأقسام والتصنيفات الحالية.";
+      subtitle.textContent = "إدارة التصنيفات والأقسام المرتبطة بالموقع.";
       breadcrumb.textContent = titles.sections;
       loadSections();
+    } else if (key === "academic") {
+      title.textContent = titles.academic;
+      subtitle.textContent = "إدارة الصفوف والفصول الدراسية من قاعدة البيانات.";
+      breadcrumb.textContent = titles.academic;
+      loadAcademic();
+    } else if (key === "pages") {
+      title.textContent = titles.pages;
+      subtitle.textContent = "تحرير صفحات الموقع وروابط التواصل المحفوظة.";
+      breadcrumb.textContent = titles.pages;
+      loadPages();
+    } else if (key === "settings") {
+      title.textContent = titles.settings;
+      subtitle.textContent = "إدارة هوية المنصة المحفوظة في إعدادات الموقع.";
+      breadcrumb.textContent = titles.settings;
+      loadSettings();
+    } else if (key === "games") {
+      title.textContent = titles.games;
+      subtitle.textContent = "إدارة بيانات الألعاب والأنشطة المحفوظة في الموقع.";
+      breadcrumb.textContent = titles.games;
+      loadFeatureEditor();
+    } else if (key === "storage") {
+      title.textContent = titles.storage;
+      subtitle.textContent = "عرض مساحات التخزين المسجلة في النظام.";
+      breadcrumb.textContent = titles.storage;
+      loadStorage();
+    } else if (key === "drive") {
+      title.textContent = titles.drive;
+      subtitle.textContent = "تسجيل مساحات Google Drive تمهيدًا لربط OAuth.";
+      breadcrumb.textContent = titles.drive;
+      loadDrive();
+    } else if (key === "staff") {
+      title.textContent = titles.staff;
+      subtitle.textContent = "عرض الحسابات الإدارية المعتمدة دون إضافة حسابات جديدة.";
+      breadcrumb.textContent = titles.staff;
+      loadStaff();
     } else if (key === "analytics") {
       title.textContent = titles.analytics;
       subtitle.textContent = "إحصائيات الاستخدام المسجلة خلال الفترة المحددة.";
       breadcrumb.textContent = titles.analytics;
       view.innerHTML = analyticsMarkup();
       loadAnalytics(30);
+    } else if (["seo","ads","security","audit","backups","trash"].includes(key)) {
+      title.textContent = titles[key];
+      subtitle.textContent = "معلومات موثوقة عن حالة الوحدة ومتطلبات تفعيلها.";
+      breadcrumb.textContent = titles[key];
+      loadIntegrationStatus(key);
     } else {
       title.textContent = titles[key];
       subtitle.textContent = "وحدة ضمن مركز إدارة ضاد المستقل.";
       breadcrumb.textContent = titles[key];
       view.innerHTML = '<section class="module-placeholder"><h2>' + escapeHtml(titles[key]) +
         '</h2><p>' + escapeHtml(descriptions[key] || "سيتم إعداد هذه الوحدة ضمن مراحل التطوير المعتمدة.") +
-        '</p><div class="lock-note"><span>◈</span><span>لم يتم ربط هذه الوحدة بقاعدة البيانات بعد — لا توجد عمليات فعلية مفعّلة.</span></div></section>';
+        '</p><div class="lock-note"><span>◈</span><span>هذه الوحدة لم تُفعّل بعد؛ لن تظهر أدوات شكلية توحي بأن عملياتها تعمل.</span></div></section>';
     }
     if (updateHash) {
       if (key === "overview") history.replaceState(null, "", location.pathname);
@@ -750,6 +794,278 @@
     }
   }
 
+
+  function moduleError(root, message) {
+    if (root) root.innerHTML = '<div class="data-error">' + escapeHtml(message) + '</div>';
+  }
+  function showModuleError(error) {
+    const root = document.getElementById("moduleView");
+    moduleError(root, error?.message || "حدث خطأ غير متوقع.");
+  }
+  function ownerCanWrite() { return accessState?.owner === true; }
+  function ownerNotice() {
+    return '<p class="data-note">العرض متاح، أما التعديل والحفظ فيتطلبان حساب مالك المنصة وفق صلاحيات قاعدة البيانات الحالية.</p>';
+  }
+  async function handleAdminAction(button) {
+    const action = button.dataset.adminAction;
+    const id = button.dataset.id;
+    const kind = button.dataset.kind;
+    if (action === "material-edit") {
+      if (!["owner","admin"].includes(accessState?.role) && !ownerCanWrite()) throw new Error("صلاحية غير كافية.");
+      const row = window.__adminModuleMaterials?.find(item => String(item.id) === String(id));
+      if (!row) throw new Error("لم يتم العثور على الملف.");
+      const title = window.prompt("عنوان الملف:", row.title || "");
+      if (title === null) return;
+      const description = window.prompt("وصف الملف:", row.description || "");
+      if (description === null) return;
+      if (!title.trim()) throw new Error("عنوان الملف مطلوب.");
+      const { error } = await supabase.from("materials").update({
+        title: title.trim(), description: description.trim(), updated_at: new Date().toISOString()
+      }).eq("id", id);
+      if (error) throw error;
+      await loadMaterials(activeModule);
+      return;
+    }
+    if (action === "material-toggle") {
+      const row = window.__adminModuleMaterials?.find(item => String(item.id) === String(id));
+      if (!row) throw new Error("لم يتم العثور على الملف.");
+      const { data, error } = await supabase.from("materials")
+        .update({ is_public: !row.is_public, updated_at: new Date().toISOString() })
+        .eq("id", id).select("id").maybeSingle();
+      if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات تغيير حالة النشر.");
+      await loadMaterials(activeModule);
+      return;
+    }
+    if (action === "lookup-add" || action === "lookup-edit") {
+      if (!ownerCanWrite()) throw new Error("إضافة وتعديل التصنيفات والصفوف والفصول متاحة للمالك فقط.");
+      await editLookupRecord(kind, action === "lookup-edit" ? id : null);
+      return;
+    }
+    if (action === "lookup-delete") {
+      if (!ownerCanWrite()) throw new Error("حذف السجلات الأكاديمية متاح للمالك فقط.");
+      if (!window.confirm("هل تريد حذف هذا السجل؟ إذا كان مرتبطًا بملفات فلن تسمح قاعدة البيانات بحذفه.")) return;
+      const table = ({category:"categories",grade:"grades",semester:"semesters"})[kind];
+      if (!table) throw new Error("نوع السجل غير معروف.");
+      const { error } = await supabase.from(table).delete().eq("id", id);
+      if (error) throw error;
+      if (activeModule === "academic") await loadAcademic(); else await loadSections();
+      return;
+    }
+    if (action === "feature-load") {
+      await loadFeatureEditor(button.dataset.slug);
+      return;
+    }
+  }
+
+  async function editLookupRecord(kind, id) {
+    const table = ({category:"categories",grade:"grades",semester:"semesters"})[kind];
+    if (!table) throw new Error("نوع السجل غير معروف.");
+    const isNew = !id;
+    const { data: current, error: readError } = isNew ? {data:null,error:null} :
+      await supabase.from(table).select("*").eq("id", id).single();
+    if (readError) throw readError;
+    const name = window.prompt("الاسم:", current?.name || "");
+    if (name === null) return;
+    if (!name.trim()) throw new Error("الاسم مطلوب.");
+    const sort = window.prompt("رقم الترتيب:", String(current?.sort_order ?? 0));
+    if (sort === null) return;
+    const sortOrder = Number(sort);
+    if (!Number.isInteger(sortOrder) || sortOrder < 0) throw new Error("رقم الترتيب يجب أن يكون صفرًا أو أكبر.");
+    const payload = { name: name.trim(), sort_order: sortOrder };
+    if (kind === "category" || kind === "grade") {
+      const slug = window.prompt("الرابط المختصر (slug):", current?.slug || "");
+      if (slug === null) return;
+      if (!/^[a-z0-9-]+$/.test(slug.trim())) throw new Error("الرابط المختصر يجب أن يتكون من حروف إنجليزية صغيرة وأرقام وشرطة فقط.");
+      payload.slug = slug.trim();
+    }
+    if (kind === "grade") {
+      payload.emoji = (window.prompt("رمز الصف (اختياري):", current?.emoji || "📘") ?? current?.emoji ?? "📘").trim().slice(0,8);
+    }
+    const result = isNew
+      ? await supabase.from(table).insert(payload)
+      : await supabase.from(table).update(payload).eq("id", id);
+    if (result.error) throw result.error;
+    if (activeModule === "academic") await loadAcademic(); else await loadSections();
+  }
+
+  async function loadAcademic() {
+    const root = document.getElementById("moduleView");
+    root.innerHTML = '<div class="data-loading">جارٍ تحميل الصفوف والفصول…</div>';
+    const [grades, semesters] = await Promise.all([
+      supabase.from("grades").select("id,name,slug,sort_order,emoji").order("sort_order"),
+      supabase.from("semesters").select("id,name,sort_order").order("sort_order")
+    ]);
+    if (grades.error || semesters.error) return moduleError(root, (grades.error || semesters.error).message);
+    const writable = ownerCanWrite();
+    const actions = (kind,row) => writable ?
+      '<button type="button" data-admin-action="lookup-edit" data-kind="'+kind+'" data-id="'+row.id+'">تعديل</button> <button type="button" data-admin-action="lookup-delete" data-kind="'+kind+'" data-id="'+row.id+'">حذف</button>' : "—";
+    const gradeRows = (grades.data || []).map(row => '<tr><td>'+escapeHtml(row.name)+'</td><td>'+escapeHtml(row.slug)+'</td><td>'+escapeHtml(row.emoji || "📘")+'</td><td>'+Number(row.sort_order||0)+'</td><td>'+actions("grade",row)+'</td></tr>').join("");
+    const semesterRows = (semesters.data || []).map(row => '<tr><td>'+escapeHtml(row.name)+'</td><td>'+Number(row.sort_order||0)+'</td><td>'+actions("semester",row)+'</td></tr>').join("");
+    root.innerHTML = '<section class="data-module"><div class="data-module-head"><div><h2>الصفوف الدراسية</h2><p>إدارة جدول grades مع المحافظة على ارتباط الملفات.</p></div><span class="data-count">'+numberFormat((grades.data||[]).length)+' صف</span></div>' +
+      (writable ? '<button type="button" data-admin-action="lookup-add" data-kind="grade">إضافة صف</button>' : '') +
+      '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الصف</th><th>الرابط</th><th>الرمز</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+ (gradeRows || '<tr><td colspan="5">لا توجد صفوف.</td></tr>') + '</tbody></table></div>' +
+      '<div class="data-module-head"><div><h2>الفصول الدراسية</h2><p>إدارة جدول semesters.</p></div><span class="data-count">'+numberFormat((semesters.data||[]).length)+' فصل</span></div>' +
+      (writable ? '<button type="button" data-admin-action="lookup-add" data-kind="semester">إضافة فصل</button>' : '') +
+      '<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الفصل</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+ (semesterRows || '<tr><td colspan="3">لا توجد فصول.</td></tr>') + '</tbody></table></div>' +
+      (writable ? '<p class="data-note">تُرفض عمليات الحذف تلقائيًا إذا كان السجل مرتبطًا بملفات تعليمية.</p>' : ownerNotice()) + '</section>';
+  }
+
+  async function loadPages() {
+    const root = document.getElementById("moduleView");
+    root.innerHTML = '<div class="data-loading">جارٍ تحميل صفحات الموقع وروابط التواصل…</div>';
+    const [pages, links] = await Promise.all([
+      supabase.from("site_pages").select("id,slug,title,content,is_visible,updated_at").order("slug"),
+      supabase.from("site_contact_links").select("key,title,url,sort_order").order("sort_order")
+    ]);
+    if (pages.error || links.error) return moduleError(root, (pages.error || links.error).message);
+    const writable = ownerCanWrite();
+    const pageOptions = (pages.data||[]).map(row=>'<option value="'+escapeHtml(row.slug)+'">'+escapeHtml(row.title)+' ('+escapeHtml(row.slug)+')</option>').join("");
+    const contactRows = (links.data||[]).map(row=>'<tr><td>'+escapeHtml(row.title)+'</td><td><input data-contact-url="'+escapeHtml(row.key)+'" value="'+escapeHtml(row.url||'')+'" '+(!writable?'disabled':'')+'></td></tr>').join("");
+    root.innerHTML = '<section class="data-module"><div class="data-module-head"><div><h2>محتوى الصفحات</h2><p>تعديل النصوص المحفوظة في site_pages.</p></div><span class="data-count">'+numberFormat((pages.data||[]).length)+' صفحات</span></div>' +
+      '<form id="adminPageForm"><label>الصفحة<select id="adminPageSlug">'+pageOptions+'</select></label><label>العنوان<input id="adminPageTitle" maxlength="180" '+(!writable?'disabled':'')+'></label><label>المحتوى<textarea id="adminPageContent" rows="12" '+(!writable?'disabled':'')+'></textarea></label><label><input id="adminPageVisible" type="checkbox" '+(!writable?'disabled':'')+'> إظهار الصفحة للزوار</label>' +
+      (writable ? '<button type="submit">حفظ الصفحة</button>' : ownerNotice()) + '</form>' +
+      '<div class="data-module-head"><div><h2>روابط التواصل</h2><p>تحديث روابط صفحات التواصل المحفوظة.</p></div></div>' +
+      '<form id="adminContactForm"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>المنصة</th><th>الرابط</th></tr></thead><tbody>'+contactRows+'</tbody></table></div>'+(writable?'<button type="submit">حفظ روابط التواصل</button>':'')+'</form></section>';
+    const select = document.getElementById("adminPageSlug");
+    const populate = () => {
+      const row = (pages.data||[]).find(item=>item.slug===select.value);
+      document.getElementById("adminPageTitle").value = row?.title || "";
+      document.getElementById("adminPageContent").value = row?.content || "";
+      document.getElementById("adminPageVisible").checked = row?.is_visible !== false;
+    };
+    select.addEventListener("change", populate); populate();
+    document.getElementById("adminPageForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!ownerCanWrite()) return moduleError(root,"حفظ صفحات الموقع متاح للمالك فقط.");
+      const slug=select.value, row=(pages.data||[]).find(item=>item.slug===slug);
+      if(!row)return;
+      const {error}=await supabase.from("site_pages").update({
+        title:document.getElementById("adminPageTitle").value.trim(),
+        content:document.getElementById("adminPageContent").value,
+        is_visible:document.getElementById("adminPageVisible").checked,
+        updated_at:new Date().toISOString()
+      }).eq("slug",slug);
+      if(error)return moduleError(root,error.message);
+      await loadPages();
+    });
+    document.getElementById("adminContactForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!ownerCanWrite()) return moduleError(root,"تعديل روابط التواصل متاح للمالك فقط.");
+      const updates=[...root.querySelectorAll("[data-contact-url]")].map(input=>({key:input.dataset.contactUrl,url:input.value.trim()}));
+      for(const item of updates){
+        if(item.url && !/^(https?:\/\/|mailto:|tel:)/i.test(item.url)) return moduleError(root,"يجب أن يبدأ الرابط بـ https:// أو http:// أو mailto: أو tel:.");
+        const {error}=await supabase.from("site_contact_links").update({url:item.url,updated_at:new Date().toISOString()}).eq("key",item.key);
+        if(error)return moduleError(root,error.message);
+      }
+      await loadPages();
+    });
+  }
+
+  async function loadSettings() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل هوية المنصة…</div>';
+    const {data,error}=await supabase.from("site_pages").select("title,content,updated_at").eq("slug","site-branding").maybeSingle();
+    if(error)return moduleError(root,error.message);
+    const writable=ownerCanWrite();
+    root.innerHTML='<section class="data-module"><h2>هوية منصة ضاد</h2><p>تُحفظ إعدادات الهوية في سجل site_pages ذي المعرّف site-branding.</p><label>بيانات الهوية (JSON)<textarea id="adminBrandingJson" rows="14" '+(!writable?'disabled':'')+'></textarea></label>'+(writable?'<button id="saveBrandingJson" type="button">حفظ الهوية</button>':ownerNotice())+'<p class="data-note">يجب أن تكون البيانات JSON صحيحة. لا تُحذف الصور القديمة عند تغيير مسارات الهوية.</p></section>';
+    document.getElementById("adminBrandingJson").value=data?.content||'{}';
+    document.getElementById("saveBrandingJson")?.addEventListener("click",async()=>{
+      if(!ownerCanWrite())return;
+      let value;try{value=JSON.parse(document.getElementById("adminBrandingJson").value);}catch(_){return moduleError(root,"صيغة JSON غير صحيحة.");}
+      if(!value||typeof value!=="object"||Array.isArray(value))return moduleError(root,"يجب أن تكون بيانات الهوية كائن JSON.");
+      const {error:saveError}=await supabase.from("site_pages").update({content:JSON.stringify(value),updated_at:new Date().toISOString()}).eq("slug","site-branding");
+      if(saveError)return moduleError(root,saveError.message);
+      moduleError(root,"تم حفظ إعدادات الهوية بنجاح.");
+    });
+  }
+
+  const ADMIN_FEATURES = [
+    ["dhad-games-v1","الألعاب التعليمية","array"],
+    ["dhad-additional-items-v1","التعليم الإضافي","array"],
+    ["dhad-calendar-items-v1","التقويم الدراسي","array"],
+    ["dhad-certificate-v1","قالب الشهادة","object"],
+    ["dhad-home-cards-v1","بطاقات الصفحة الرئيسية","array"]
+  ];
+  async function loadFeatureEditor(selectedSlug) {
+    const root=document.getElementById("moduleView");
+    const slug=selectedSlug||"dhad-games-v1";
+    root.innerHTML='<div class="data-loading">جارٍ تحميل بيانات الأنشطة…</div>';
+    const [rowsResult]=await Promise.all([supabase.from("site_pages").select("slug,title,content,updated_at").in("slug",ADMIN_FEATURES.map(x=>x[0]))]);
+    if(rowsResult.error)return moduleError(root,rowsResult.error.message);
+    const row=(rowsResult.data||[]).find(x=>x.slug===slug);
+    const feature=ADMIN_FEATURES.find(x=>x[0]===slug);
+    const options=ADMIN_FEATURES.map(x=>'<option value="'+x[0]+'" '+(x[0]===slug?'selected':'')+'>'+x[1]+'</option>').join("");
+    const writable=ownerCanWrite();
+    root.innerHTML='<section class="data-module"><h2>محتوى الأنشطة والبطاقات</h2><p>هذه البيانات هي المصدر الذي تقرؤه features.js في الموقع العام. احتفظ بالبنية المطلوبة لكل نوع.</p><label>نوع المحتوى<select id="adminFeatureSlug">'+options+'</select></label><label>المحتوى بصيغة JSON<textarea id="adminFeatureJson" rows="18" '+(!writable?'disabled':'')+'></textarea></label>'+(writable?'<button id="saveFeatureJson" type="button">حفظ المحتوى</button>':ownerNotice())+'<p class="data-note">لن تُرفع الملفات من هذه الشاشة؛ مسارات الملفات الحالية محفوظة كما هي. اترك المعرّفات ومسارات الصور وملفات الألعاب دون تغيير ما لم تكن متأكدًا منها.</p></section>';
+    document.getElementById("adminFeatureJson").value=row?.content || (feature?.[2]==="array"?"[]":"{}");
+    document.getElementById("adminFeatureSlug").addEventListener("change",event=>loadFeatureEditor(event.target.value));
+    document.getElementById("saveFeatureJson")?.addEventListener("click",async()=>{
+      if(!ownerCanWrite())return;
+      let value;try{value=JSON.parse(document.getElementById("adminFeatureJson").value);}catch(_){return moduleError(root,"صيغة JSON غير صحيحة.");}
+      if(feature?.[2]==="array"&&!Array.isArray(value))return moduleError(root,"هذا النوع يتطلب قائمة JSON تبدأ بـ [].");
+      if(feature?.[2]==="object"&&(!value||typeof value!=="object"||Array.isArray(value)))return moduleError(root,"هذا النوع يتطلب كائن JSON يبدأ بـ {}.");
+      const title=feature?.[1]||slug;
+      const {error:saveError}=await supabase.from("site_pages").upsert({slug,title,content:JSON.stringify(value),is_visible:true,updated_at:new Date().toISOString()},{onConflict:"slug"});
+      if(saveError)return moduleError(root,saveError.message);
+      moduleError(root,"تم حفظ المحتوى. حدّث الموقع العام للتحقق من ظهوره.");
+    });
+  }
+
+  async function loadStorage() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل مساحات التخزين…</div>';
+    if(!ownerCanWrite())return moduleError(root,"إدارة مساحات التخزين متاحة لمالك المنصة فقط.");
+    try{
+      const result=await invokeAdmin("storage_list");
+      const accounts=result.accounts||[];
+      root.innerHTML='<section class="data-module"><h2>مساحة Supabase الحالية</h2><p>الحاوية المستخدمة لملفات الموقع: <strong>materials</strong>. الملفات الحالية لا تُنقل ولا تُحذف من هذه الشاشة.</p><div class="data-module-head"><h3>مساحات خارجية مسجلة</h3><span class="data-count">'+numberFormat(accounts.length)+' مساحة</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الاسم</th><th>الحساب</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody>'+(accounts.map(x=>'<tr><td>'+escapeHtml(x.label)+'</td><td>'+escapeHtml(x.account_email||"—")+'</td><td>'+escapeHtml(x.status)+'</td><td>'+fmtDate(x.created_at)+'</td></tr>').join("")||'<tr><td colspan="4">لا توجد مساحات خارجية مسجلة.</td></tr>')+'</tbody></table></div><p class="data-note">لا تعرض هذه الشاشة حجم التخزين الفعلي أو جميع ملفات الحاوية؛ هذه البيانات تحتاج قياسًا منفصلًا من Storage API.</p></section>';
+    }catch(error){moduleError(root,error.message);}
+  }
+  async function loadDrive() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ تحميل حسابات Google Drive…</div>';
+    if(!ownerCanWrite())return moduleError(root,"إدارة حسابات التخزين متاحة لمالك المنصة فقط.");
+    try{
+      const result=await invokeAdmin("storage_list");
+      const accounts=result.accounts||[];
+      root.innerHTML='<section class="data-module"><h2>حسابات Google Drive</h2><p>يمكن تسجيل بيانات الحساب الآن، لكن الاتصال الفعلي ومزامنة الملفات يتطلبان إعداد Google OAuth على الخادم. لا تُدخل كلمات مرور أو رموز وصول هنا.</p><form id="adminDriveForm"><label>اسم تعريفي للحساب<input id="driveLabel" maxlength="80" required></label><label>البريد الإلكتروني للحساب (اختياري)<input id="driveEmail" type="email"></label><button type="submit">تسجيل مساحة Drive</button></form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الاسم</th><th>البريد</th><th>الحالة</th></tr></thead><tbody>'+(accounts.map(x=>'<tr><td>'+escapeHtml(x.label)+'</td><td>'+escapeHtml(x.account_email||"—")+'</td><td>'+escapeHtml(x.status)+'</td></tr>').join("")||'<tr><td colspan="3">لا توجد حسابات مسجلة.</td></tr>')+'</tbody></table></div></section>';
+      document.getElementById("adminDriveForm").addEventListener("submit",async event=>{
+        event.preventDefault();
+        const label=document.getElementById("driveLabel").value.trim(),account_email=document.getElementById("driveEmail").value.trim();
+        try{
+          const saved=await invokeAdmin("storage_add");
+          // invokeAdmin accepts action only; send the validated form payload via the dedicated helper below.
+        }catch(_){}
+        const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:"storage_add",label,account_email}});
+        if(error||data?.error)return moduleError(root,data?.detail||data?.error||error.message);
+        await loadDrive();
+      });
+    }catch(error){moduleError(root,error.message);}
+  }
+  async function loadStaff() {
+    const root=document.getElementById("moduleView");
+    root.innerHTML='<div class="data-loading">جارٍ التحقق من الحسابات الإدارية…</div>';
+    if(!ownerCanWrite())return moduleError(root,"عرض تفاصيل الحسابات الإدارية متاح للمالك فقط.");
+    try{
+      const result=await invokeAdmin("staff_list");
+      const staff=result.staff||[];
+      root.innerHTML='<section class="data-module"><h2>الحسابات الإدارية المعتمدة</h2><p>الحسابان المضمنان يعملان من إعدادات الخادم ولا يحتاجان إلى سجل في admin_staff. لم تتم إضافة أي حساب جديد.</p><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الحساب</th><th>الصفة</th><th>المصدر</th></tr></thead><tbody><tr><td>dhad1062001@gmail.com</td><td>مالك المنصة</td><td>حساب مضمّن في الخادم</td></tr><tr><td>abeer112026@gmail.com</td><td>مشرف</td><td>حساب مضمّن في الخادم</td></tr>'+(staff.map(x=>'<tr><td>'+escapeHtml(x.email)+'</td><td>'+escapeHtml(x.role)+'</td><td>'+escapeHtml(x.status)+'</td></tr>').join(""))+'</tbody></table></div><p class="data-note">وفق القرار الحالي، لا توجد أزرار دعوة أو إضافة مشرفين. يمكن إضافة مشرف جديد يدويًا لاحقًا عند الحاجة.</p></section>';
+    }catch(error){moduleError(root,error.message);}
+  }
+  function loadIntegrationStatus(key) {
+    const root=document.getElementById("moduleView");
+    const messages={
+      seo:["تحسين الظهور SEO","بيانات SEO الحالية مضمنة في ملفات HTML الثابتة. ربط محرر SEO بقاعدة البيانات يحتاج جدول إعدادات SEO وآلية نشر/تحديث للوسوم؛ مجرد حفظها في قاعدة البيانات لن يغيّر الوسوم الثابتة التي يقرأها محرك البحث أولًا."],
+      ads:["إدارة الإعلانات","تكامل AdSense يعمل من خلال كود الموقع ومعرّف الناشر الحالي. لا توجد واجهة API أو بيانات اعتماد AdSense مرتبطة بلوحة ضاد لإدارة الوحدات أو الأرباح؛ لذلك لن نعرض أزرارًا وهمية للتحكم بحساب Google."],
+      security:["الأمان والحماية","فحص Supabase أظهر أن الجداول الحساسة admin_staff وstorage_accounts وprivate.analytics_events محمية بـ RLS ولا تملك سياسات مباشرة، ويجري الوصول إليها عبر Edge Functions الموثوقة. لا تغيّر هذه الحماية من الواجهة."],
+      audit:["سجل العمليات","لا يوجد جدول سجل إداري مستقل حاليًا. يلزم إنشاء سجل آمن وربط عمليات الحفظ والحذف به من الخادم قبل عرض سجل موثوق."],
+      backups:["النسخ الاحتياطي","النسخ الاحتياطي الفعلي يُدار من Supabase Dashboard وخطة المشروع، ولا يمكن إنشاؤه من قاعدة البيانات نفسها دون تكامل Management API آمن."],
+      trash:["سلة المحذوفات","لا يوجد نظام سلة أو أرشفة في المخطط الحالي. سنحتاج إلى آلية نقل واستعادة تحفظ سجل الملف ومساره قبل تفعيل الحذف من لوحة الإدارة."]
+    };
+    const item=messages[key]||["الوحدة","لا تتوفر بيانات كافية لتفعيل هذه الوحدة."];
+    root.innerHTML='<section class="data-module"><h2>'+escapeHtml(item[0])+'</h2><p>'+escapeHtml(item[1])+'</p><p class="data-note">لن تُعرض أدوات شكلية أو عمليات غير موصولة فعليًا. ستُفعّل هذه الوحدة بعد إكمال متطلباتها الفنية واختبارها.</p></section>';
+  }
+
   function canAccessModule(key) {
     const p = accessState?.permissions || {};
     const isOwnerOrAdmin = accessState?.owner === true || accessState?.role === "admin";
@@ -775,7 +1091,7 @@
     const root=document.getElementById("moduleView");
     root.innerHTML='<div class="data-loading">جارٍ تحميل الملفات…</div>';
     const [m,g,s,c]=await Promise.all([
-      supabase.from("materials").select("id,title,file_name,grade_id,semester_id,category_id,download_count,is_public,created_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
+      supabase.from("materials").select("id,title,description,file_name,file_path,file_type,file_size,grade_id,semester_id,category_id,download_count,is_public,created_at,updated_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
       supabase.from("grades").select("id,name").order("sort_order"),
       supabase.from("semesters").select("id,name").order("sort_order"),
       supabase.from("categories").select("id,name").order("sort_order")
@@ -784,8 +1100,9 @@
     if(error){root.innerHTML='<div class="data-error">تعذر تحميل الملفات: '+escapeHtml(error.message)+'</div>';return;}
     const allMaterials=m.data||[], materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
     const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
-    const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td></tr>';
-    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">لا يوجد رفع أو تعديل أو حذف مفعّل هنا؛ لم تتغير أي بيانات أو مسارات تخزين.</p></section>';
+    window.__adminModuleMaterials=allMaterials;
+    const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td><button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button></td></tr>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — عرض فقط في هذه المرحلة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="7">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">يمكن تعديل عنوان الملف ووصفه وتغيير حالة نشره. لم يتم تفعيل الحذف النهائي أو استبدال ملفات التخزين في هذه المرحلة حفاظًا على الملفات الحالية.</p></section>';
     document.getElementById("materialsSearch").addEventListener("input",e=>{
       const q=e.target.value.trim().toLocaleLowerCase("ar");
       document.getElementById("materialsRows").innerHTML=materials.filter(x=>[x.title,x.file_name].some(v=>String(v||"").toLocaleLowerCase("ar").includes(q))).map(row).join("")||'<tr><td colspan="7">لا توجد نتائج.</td></tr>';
@@ -799,10 +1116,10 @@
       supabase.from("categories").select("id,name,slug,sort_order").order("sort_order")
     ]);
     if(s.error||c.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام: '+escapeHtml((s.error||c.error).message)+'</div>';return;}
-    const sections=s.data||[], categories=c.data||[];
+    const sections=s.data||[],categories=c.data||[],writable=ownerCanWrite();
+    const categoryRows=categories.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.slug)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(writable?'<button type="button" data-admin-action="lookup-edit" data-kind="category" data-id="'+x.id+'">تعديل</button> <button type="button" data-admin-action="lookup-delete" data-kind="category" data-id="'+x.id+'">حذف</button>':'—')+'</td></tr>').join("");
     const sectionRows=sections.map(x=>{const parent=sections.find(y=>y.id===x.parent_id);return '<tr><td><strong>'+escapeHtml(x.title)+'</strong><small>'+escapeHtml(x.slug||"—")+'</small></td><td>'+escapeHtml(parent?.title||"قسم رئيسي")+'</td><td>'+escapeHtml(x.content_type)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(x.is_active?"نشط":"متوقف")+'</td><td>'+(x.show_on_home?"نعم":"لا")+'</td></tr>';}).join("");
-    const categoryRows=categories.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.slug)+'</td><td>'+numberFormat(x.sort_order)+'</td></tr>').join("");
-    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الأقسام الحالية</h2><p>الأقسام الرئيسية والفرعية المسجلة في النظام.</p></div><span class="data-count">'+numberFormat(sections.length)+' قسم</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>القسم</th><th>يتبع</th><th>نوع المحتوى</th><th>الترتيب</th><th>الحالة</th><th>الرئيسية</th></tr></thead><tbody>'+(sectionRows||'<tr><td colspan="6">لا توجد أقسام حاليًا.</td></tr>')+'</tbody></table></div><div class="data-module-head"><div><h3>التصنيفات</h3></div><span class="data-count">'+numberFormat(categories.length)+' تصنيف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>التصنيف</th><th>الرابط المختصر</th><th>الترتيب</th></tr></thead><tbody>'+(categoryRows||'<tr><td colspan="3">لا توجد تصنيفات.</td></tr>')+'</tbody></table></div><p class="data-note">هذه شاشة قراءة فقط. ستضاف أدوات الإنشاء والتعديل بعد ضبط الصلاحيات وسجل العمليات.</p></section>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>التصنيفات التعليمية</h2><p>إدارة جدول categories الذي ترتبط به المواد.</p></div><span class="data-count">'+numberFormat(categories.length)+' تصنيف</span></div>'+(writable?'<button type="button" data-admin-action="lookup-add" data-kind="category">إضافة تصنيف</button>':'')+'<div class="data-table-wrap"><table class="data-table"><thead><tr><th>التصنيف</th><th>الرابط المختصر</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+(categoryRows||'<tr><td colspan="4">لا توجد تصنيفات.</td></tr>')+'</tbody></table></div><div class="data-module-head"><div><h2>أقسام الصفحة الرئيسية</h2><p>تُدار تفاصيل الأقسام ومحتواها من وحدة الصفحة الرئيسية.</p></div><span class="data-count">'+numberFormat(sections.length)+' قسم</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>القسم</th><th>يتبع</th><th>نوع المحتوى</th><th>الترتيب</th><th>الحالة</th><th>على الرئيسية</th></tr></thead><tbody>'+(sectionRows||'<tr><td colspan="6">لا توجد أقسام بعد.</td></tr>')+'</tbody></table></div>'+(writable?'<p class="data-note">يمكنك إدارة تفاصيل الأقسام من وحدة «الصفحة الرئيسية». لا يؤدي حذف تصنيف مرتبط بملفات إلى حذف الملفات.</p>':ownerNotice())+'</section>';
   }
 
   let currentAnalyticsDays = 30;
