@@ -846,14 +846,26 @@
       if (!row) throw new Error("لم يتم العثور على الملف.");
       const title = window.prompt("عنوان الملف:", row.title || "");
       if (title === null) return;
-      const description = window.prompt("وصف الملف:", row.description || "");
+      const description = window.prompt("الوصف التفصيلي للملف:", row.description || "");
       if (description === null) return;
+      const contentSummary = window.prompt("ملخص محتوى الملف:", row.content_summary || "");
+      if (contentSummary === null) return;
+      const learningObjectives = window.prompt("الأهداف التعليمية:", row.learning_objectives || "");
+      if (learningObjectives === null) return;
+      const targetAudience = window.prompt("الفئة المستهدفة:", row.target_audience || "");
+      if (targetAudience === null) return;
+      const pageCountText = window.prompt("عدد الصفحات (اتركه فارغًا إن لم يكن معروفًا):", row.page_count == null ? "" : String(row.page_count));
+      if (pageCountText === null) return;
+      const pageCount = pageCountText.trim() ? Number(pageCountText) : null;
       if (!title.trim()) throw new Error("عنوان الملف مطلوب.");
+      if (pageCount !== null && (!Number.isInteger(pageCount) || pageCount < 1)) throw new Error("عدد الصفحات يجب أن يكون عددًا صحيحًا أكبر من صفر.");
       const { error } = await supabase.from("materials").update({
-        title: title.trim(), description: description.trim(), updated_at: new Date().toISOString()
+        title: title.trim(), description: description.trim(), content_summary: contentSummary.trim(),
+        learning_objectives: learningObjectives.trim(), target_audience: targetAudience.trim(),
+        page_count: pageCount, updated_at: new Date().toISOString()
       }).eq("id", id);
       if (error) throw error;
-      await logAdminAction("material_updated","material",id,{title:title.trim()});
+      await logAdminAction("material_updated","material",id,{title:title.trim(),description_length:description.trim().length});
       await loadMaterials(activeModule);
       return;
     }
@@ -1258,10 +1270,11 @@
     if(!adminMaterialQueue.length){root.innerHTML='<div class="data-note">اختر ملفات لإضافتها إلى قائمة الرفع.</div>';return;}
     const options=(items,selected)=>items.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join("");
     const sections=[["school_grades","الصفوف الدراسية"],["curricula","المناهج"],["teacher_supplies","لوازم المعلمين"],["interactive_games","الألعاب التفاعلية"],["supplementary_education","التعليم الإضافي"]];
-    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
+    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
     root.querySelectorAll("[data-admin-upload-row]").forEach(row=>{
       const index=Number(row.dataset.adminUploadRow),item=adminMaterialQueue[index];if(!item)return;
       row.querySelector("[data-upload-title]")?.addEventListener("input",event=>item.title=event.target.value);
+      row.querySelector("[data-upload-description]")?.addEventListener("input",event=>item.description=event.target.value);
       row.querySelector("[data-upload-grade]")?.addEventListener("change",event=>item.gradeId=event.target.value);
       row.querySelector("[data-upload-semester]")?.addEventListener("change",event=>item.semesterId=event.target.value);
       row.querySelector("[data-upload-category]")?.addEventListener("change",event=>item.categoryId=event.target.value);
@@ -1306,7 +1319,7 @@
           if(uploadError)throw uploadError;
           uploadedPath=uploaded?.path||path;
           const {data:saved,error:dbError}=await supabase.from("materials").insert({
-            title,description:"",grade_id:gradeId,semester_id:semesterId,category_id:categoryId,
+            title,description:item.description||"",grade_id:gradeId,semester_id:semesterId,category_id:categoryId,
             file_path:uploadedPath,file_name:item.file.name,file_type:item.file.type||null,file_size:item.file.size,
             is_public:true,created_by:accessState?.user?.id||null,primary_section:primarySection,
             additional_sections:[],track_name:null,field_name:null
@@ -1332,7 +1345,7 @@
     const root=document.getElementById("moduleView");
     root.innerHTML='<div class="data-loading">جارٍ تحميل الملفات…</div>';
     const [m,g,s,c]=await Promise.all([
-      supabase.from("materials").select("id,title,description,file_name,file_path,file_type,file_size,grade_id,semester_id,category_id,download_count,is_public,created_at,updated_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
+      supabase.from("materials").select("id,title,description,content_summary,learning_objectives,target_audience,page_count,file_name,file_path,file_type,file_size,grade_id,semester_id,category_id,download_count,is_public,created_at,updated_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
       supabase.from("grades").select("id,name").order("sort_order"),
       supabase.from("semesters").select("id,name").order("sort_order"),
       supabase.from("categories").select("id,name").order("sort_order")
@@ -1359,7 +1372,7 @@
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
           if(duplicate&&!window.confirm("يوجد ملف بالاسم والحجم نفسيهما: «"+file.name+"». هل تريد إضافته رغم احتمال التكرار؟"))continue;
-          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:viewKey==="supplies"?"teacher_supplies":"school_grades",status:"بانتظار الرفع"});
+          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:viewKey==="supplies"?"teacher_supplies":"school_grades",status:"بانتظار الرفع"});
         }
         event.target.value="";
         renderAdminMaterialQueue(grades,semesters,categories);
