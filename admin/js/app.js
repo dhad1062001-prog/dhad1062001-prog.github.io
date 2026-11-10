@@ -1017,6 +1017,17 @@
     const sortOrder = Number(sort);
     if (!Number.isInteger(sortOrder) || sortOrder < 0) throw new Error("رقم الترتيب يجب أن يكون صفرًا أو أكبر.");
     const payload = { name: name.trim(), sort_order: sortOrder };
+    if (kind === "category") {
+      const {data: allCategories, error: categoriesError} = await supabase.from("categories").select("id,name,parent_id").order("sort_order");
+      if (categoriesError) throw categoriesError;
+      const possibleParents = (allCategories || []).filter(row => row.parent_id == null && String(row.id) !== String(id || ""));
+      const choices = ["0 = قسم رئيسي", ...possibleParents.map(row => row.id + " = " + row.name)].join("\n");
+      const parentInput = window.prompt("القسم الرئيسي الذي يتبعه هذا التصنيف. اكتب رقمه، أو 0 ليكون قسمًا رئيسيًا:\n" + choices, current?.parent_id ? String(current.parent_id) : "0");
+      if (parentInput === null) return;
+      const parentId = Number(parentInput);
+      if (!Number.isInteger(parentId) || parentId < 0 || (parentId !== 0 && !possibleParents.some(row => row.id === parentId))) throw new Error("اختر رقم قسم رئيسي صحيحًا من القائمة.");
+      payload.parent_id = parentId || null;
+    }
     if (kind === "category" || kind === "grade") {
       const slug = window.prompt("الرابط المختصر (slug):", current?.slug || "");
       if (slug === null) return;
@@ -1338,17 +1349,26 @@
     const root=document.getElementById("adminMaterialQueue");
     if(!root)return;
     if(!adminMaterialQueue.length){root.innerHTML='<div class="data-note">اختر ملفات لإضافتها إلى قائمة الرفع.</div>';return;}
+    const roots=(categories||[]).filter(x=>x.parent_id==null);
     const options=(items,selected)=>items.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join("");
     const sections=[["school_grades","الصفوف الدراسية"],["curricula","المناهج"],["teacher_supplies","لوازم المعلمين"],["interactive_games","الألعاب التفاعلية"],["supplementary_education","التعليم الإضافي"]];
     const homeOptions=homeSections.map(section=>{const parent=homeSections.find(x=>String(x.id)===String(section.parent_id));return '<option value="'+escapeHtml(section.id)+'">'+(parent?'↳ ':'')+escapeHtml(section.title)+'</option>';}).join("");
-    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>أقسام الموقع الرئيسية والفرعية</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td>'+(accessState?.owner===true?'<select data-upload-home-sections multiple size="4" title="يمكن اختيار أكثر من قسم">'+homeOptions+'</select>':'<small>ربط الأقسام الرئيسية والفرعية متاح للمالك</small>')+'</td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
+    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>القسم الرئيسي</th><th>القسم الفرعي</th><th>القسم الأساسي</th><th>أقسام الموقع الرئيسية والفرعية</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-parent-category>'+options(roots,((categories.find(x=>String(x.id)===String(item.categoryId))?.parent_id)||item.categoryId||roots[0]?.id))+'</select></td><td><select data-upload-sub-category><option value="">بدون قسم فرعي</option>'+options(categories.filter(x=>String(x.parent_id)===String((categories.find(y=>String(y.id)===String(item.categoryId))?.parent_id)||item.categoryId||roots[0]?.id)),(categories.find(x=>String(x.id)===String(item.categoryId))?.parent_id?item.categoryId:""))+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td>'+(accessState?.owner===true?'<select data-upload-home-sections multiple size="4" title="يمكن اختيار أكثر من قسم">'+homeOptions+'</select>':'<small>ربط الأقسام الرئيسية والفرعية متاح للمالك</small>')+'</td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
     root.querySelectorAll("[data-admin-upload-row]").forEach(row=>{
       const index=Number(row.dataset.adminUploadRow),item=adminMaterialQueue[index];if(!item)return;
       row.querySelector("[data-upload-title]")?.addEventListener("input",event=>item.title=event.target.value);
       row.querySelector("[data-upload-description]")?.addEventListener("input",event=>item.description=event.target.value);
       row.querySelector("[data-upload-grade]")?.addEventListener("change",event=>item.gradeId=event.target.value);
       row.querySelector("[data-upload-semester]")?.addEventListener("change",event=>item.semesterId=event.target.value);
-      row.querySelector("[data-upload-category]")?.addEventListener("change",event=>item.categoryId=event.target.value);
+      const parentSelect=row.querySelector("[data-upload-parent-category]");
+      const childSelect=row.querySelector("[data-upload-sub-category]");
+      if(parentSelect&&childSelect){
+        parentSelect.addEventListener("change",event=>{
+          item.parentCategoryId=event.target.value;item.subCategoryId="";item.categoryId=event.target.value;
+          childSelect.innerHTML='<option value="">بدون قسم فرعي</option>'+options(categories.filter(x=>String(x.parent_id)===String(event.target.value)),"");
+        });
+        childSelect.addEventListener("change",event=>{item.subCategoryId=event.target.value;item.categoryId=event.target.value||item.parentCategoryId||parentSelect.value;});
+      }
       row.querySelector("[data-upload-section]")?.addEventListener("change",event=>item.primarySection=event.target.value);
       const homeSelect=row.querySelector("[data-upload-home-sections]");
       if(homeSelect){Array.from(homeSelect.options).forEach(option=>option.selected=(item.homeSectionIds||[]).includes(String(option.value)));homeSelect.addEventListener("change",()=>item.homeSectionIds=Array.from(homeSelect.selectedOptions).map(option=>String(option.value)));}
@@ -1379,7 +1399,9 @@
         const title=row?.querySelector("[data-upload-title]")?.value.trim()||item.title;
         const gradeId=Number(row?.querySelector("[data-upload-grade]")?.value);
         const semesterId=Number(row?.querySelector("[data-upload-semester]")?.value);
-        const categoryId=Number(row?.querySelector("[data-upload-category]")?.value);
+        const parentCategoryId=Number(row?.querySelector("[data-upload-parent-category]")?.value);
+        const subCategoryId=Number(row?.querySelector("[data-upload-sub-category]")?.value||0);
+        const categoryId=subCategoryId||parentCategoryId;
         const primarySection=row?.querySelector("[data-upload-section]")?.value||"school_grades";
         const setStatus=value=>{item.status=value;const cell=row?.querySelector("[data-upload-status]");if(cell)cell.textContent=value;};
         if(!title||!gradeId||!semesterId||!categoryId){setStatus("فشل: أكمل البيانات");failed++;continue;}
@@ -1429,7 +1451,7 @@
       supabase.from("materials").select("id,title,description,content_summary,learning_objectives,target_audience,page_count,file_name,file_path,file_type,file_size,grade_id,semester_id,category_id,download_count,is_public,created_at,updated_at,primary_section,additional_sections").order("created_at",{ascending:false}).limit(500),
       supabase.from("grades").select("id,name").order("sort_order"),
       supabase.from("semesters").select("id,name").order("sort_order"),
-      supabase.from("categories").select("id,name").order("sort_order")
+      supabase.from("categories").select("id,name,parent_id").order("sort_order")
     ]);
     const error=m.error||g.error||s.error||c.error;
     if(error){root.innerHTML='<div class="data-error">تعذر تحميل الملفات: '+escapeHtml(error.message)+'</div>';return;}
@@ -1486,7 +1508,8 @@
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
           if(duplicate&&!window.confirm("يوجد ملف بالاسم والحجم نفسيهما: «"+file.name+"». هل تريد إضافته رغم احتمال التكرار؟"))continue;
-          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
+          const firstRootCategory=(categories||[]).find(category=>category.parent_id==null);
+          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:firstRootCategory?.id||"",parentCategoryId:firstRootCategory?.id||"",subCategoryId:"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
         }
         event.target.value="";
         renderAdminMaterialQueue(grades,semesters,categories,activeUploadHomeSections);
@@ -1748,9 +1771,9 @@
     ]);
     if(s.error||c.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام: '+escapeHtml((s.error||c.error).message)+'</div>';return;}
     const sections=s.data||[],categories=c.data||[],writable=ownerCanWrite();
-    const categoryRows=categories.map(x=>'<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(x.slug)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(writable?'<button type="button" data-admin-action="lookup-edit" data-kind="category" data-id="'+x.id+'">تعديل</button> <button type="button" data-admin-action="lookup-delete" data-kind="category" data-id="'+x.id+'">حذف</button>':'—')+'</td></tr>').join("");
+    const categoryRows=categories.map(x=>{const parent=categories.find(y=>String(y.id)===String(x.parent_id));return '<tr><td>'+escapeHtml(x.name)+'</td><td>'+escapeHtml(parent?.name||"قسم رئيسي")+'</td><td>'+escapeHtml(x.slug)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(writable?'<button type="button" data-admin-action="lookup-edit" data-kind="category" data-id="'+x.id+'">تعديل</button> <button type="button" data-admin-action="lookup-delete" data-kind="category" data-id="'+x.id+'">حذف</button>':'—')+'</td></tr>';}).join("");
     const sectionRows=sections.map(x=>{const parent=sections.find(y=>y.id===x.parent_id);return '<tr><td><strong>'+escapeHtml(x.title)+'</strong><small>'+escapeHtml(x.slug||"—")+'</small></td><td>'+escapeHtml(parent?.title||"قسم رئيسي")+'</td><td>'+escapeHtml(x.content_type)+'</td><td>'+numberFormat(x.sort_order)+'</td><td>'+(x.is_active?"نشط":"متوقف")+'</td><td>'+(x.show_on_home?"نعم":"لا")+'</td></tr>';}).join("");
-    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>التصنيفات التعليمية</h2><p>إدارة جدول categories الذي ترتبط به المواد.</p></div><span class="data-count">'+numberFormat(categories.length)+' تصنيف</span></div>'+(writable?'<button type="button" data-admin-action="lookup-add" data-kind="category">إضافة تصنيف</button>':'')+'<div class="data-table-wrap"><table class="data-table"><thead><tr><th>التصنيف</th><th>الرابط المختصر</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+(categoryRows||'<tr><td colspan="4">لا توجد تصنيفات.</td></tr>')+'</tbody></table></div><div class="data-module-head"><div><h2>أقسام الصفحة الرئيسية</h2><p>تُدار تفاصيل الأقسام ومحتواها من وحدة الصفحة الرئيسية.</p></div><span class="data-count">'+numberFormat(sections.length)+' قسم</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>القسم</th><th>يتبع</th><th>نوع المحتوى</th><th>الترتيب</th><th>الحالة</th><th>على الرئيسية</th></tr></thead><tbody>'+(sectionRows||'<tr><td colspan="6">لا توجد أقسام بعد.</td></tr>')+'</tbody></table></div>'+(writable?'<p class="data-note">يمكنك إدارة تفاصيل الأقسام من وحدة «الصفحة الرئيسية». لا يؤدي حذف تصنيف مرتبط بملفات إلى حذف الملفات.</p>':ownerNotice())+'</section>';
+    root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>التصنيفات التعليمية</h2><p>إدارة جدول categories الذي ترتبط به المواد.</p></div><span class="data-count">'+numberFormat(categories.length)+' تصنيف</span></div>'+(writable?'<button type="button" data-admin-action="lookup-add" data-kind="category">إضافة تصنيف</button>':'')+'<div class="data-table-wrap"><table class="data-table"><thead><tr><th>التصنيف</th><th>القسم الرئيسي</th><th>الرابط المختصر</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+(categoryRows||'<tr><td colspan="5">لا توجد تصنيفات.</td></tr>')+'</tbody></table></div><div class="data-module-head"><div><h2>أقسام الصفحة الرئيسية</h2><p>تُدار تفاصيل الأقسام ومحتواها من وحدة الصفحة الرئيسية.</p></div><span class="data-count">'+numberFormat(sections.length)+' قسم</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>القسم</th><th>يتبع</th><th>نوع المحتوى</th><th>الترتيب</th><th>الحالة</th><th>على الرئيسية</th></tr></thead><tbody>'+(sectionRows||'<tr><td colspan="6">لا توجد أقسام بعد.</td></tr>')+'</tbody></table></div>'+(writable?'<p class="data-note">يمكنك إدارة تفاصيل الأقسام من وحدة «الصفحة الرئيسية». لا يؤدي حذف تصنيف مرتبط بملفات إلى حذف الملفات.</p>':ownerNotice())+'</section>';
   }
 
   let currentAnalyticsDays = 30;
