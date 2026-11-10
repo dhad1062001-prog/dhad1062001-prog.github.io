@@ -73,3 +73,39 @@ button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none
 .login-foot{display:block;margin-top:16px;color:#aeb8a2;font-size:9px;line-height:1.8}
 .signout-button{border:1px solid #7b6940;border-radius:9px;background:#3b3928;color:#ead9a8;padding:8px 11px;font-size:10px;font-weight:800}
 @media(max-width:760px){.signout-button{padding:7px 8px;font-size:9px}}
+
+/* Analytics module */
+.analytics-panel{display:grid;gap:16px}
+.analytics-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 18px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#303d2b,#273323)}
+.analytics-toolbar h2{margin:0;color:var(--gold-light);font-size:16px}.analytics-toolbar p{margin:5px 0 0;color:var(--muted);font-size:10px;line-height:1.8}
+.analytics-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.period-switch{display:flex;padding:3px;border:1px solid #66724f;border-radius:9px;background:#20291c}
+.period-switch button,.refresh-analytics{border:0;border-radius:7px;padding:7px 10px;background:transparent;color:#d7ddce;font:700 10px Cairo,Tahoma,sans-serif}
+.period-switch button.selected{background:var(--gold);color:#20291c}
+.refresh-analytics{border:1px solid #806d43;background:#3b3928;color:#f0d998}
+.analytics-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.analytics-stats article{padding:14px 15px;border:1px solid var(--line);border-radius:11px;background:var(--surface);display:grid;gap:7px}
+.analytics-stats span{color:#c6ceba;font-size:10px}.analytics-stats strong{color:var(--gold-light);font-size:23px;font-weight:900}
+.analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.analytics-card{min-width:0;padding:16px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#303d2b,#273323)}
+.analytics-card h3{margin:0 0 13px;color:#f1e4bd;font-size:12px}
+.analytics-wide{grid-column:1/-1}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;color:#c4cdb8;font-size:9px}
+.chart-legend span{display:flex;align-items:center;gap:6px}.chart-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.legend-view,.views-bar{background:#c3a45f}.legend-download,.downloads-bar{background:#8fa17a}
+.daily-chart{display:grid;gap:8px}
+.daily-row{display:grid;grid-template-columns:52px minmax(0,1fr) 35px;align-items:center;gap:9px;color:#c5ceba;font-size:9px}
+.daily-row strong{text-align:left;color:#e7d293;font-size:9px}
+.daily-bars{height:9px;display:flex;flex-direction:column;gap:2px;justify-content:center}
+.daily-bars i{display:block;height:4px;border-radius:5px;min-width:0}
+.analytics-list{display:grid;gap:12px}
+.analytics-list-label{display:flex;justify-content:space-between;gap:10px;margin-bottom:5px;color:#cbd3c1;font-size:9px}
+.analytics-list-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:right}
+.analytics-list-label strong{flex:0 0 auto;color:var(--gold-light)}
+.analytics-track{height:6px;border-radius:9px;background:#1c2519;overflow:hidden}.analytics-track i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#8f9d72,var(--gold))}
+.analytics-empty,.analytics-loading{padding:20px;color:#c4cdb8;text-align:center;font-size:10px}
+.analytics-error{padding:18px;border:1px solid #986e57;border-radius:11px;background:#402f27;color:#f1c9b3}
+.analytics-error strong{font-size:12px}.analytics-error p{font-size:10px}.analytics-error small{font-size:9px;color:#dec1ad}
+.analytics-disclaimer{margin:0;padding:11px 13px;border:1px dashed #76663f;border-radius:9px;color:#c9c6ad;font-size:9px;line-height:1.8}
+@media(max-width:900px){.analytics-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-toolbar{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.analytics-grid{grid-template-columns:1fr}.analytics-wide{grid-column:auto}.analytics-controls{width:100%}.period-switch{flex:1;justify-content:space-between}.period-switch button{flex:1;padding:7px 5px}.analytics-stats{gap:8px}.analytics-stats article{padding:11px}.analytics-stats strong{font-size:20px}}
