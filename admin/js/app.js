@@ -415,7 +415,6 @@
     document.getElementById("homepageSectionType")?.addEventListener("change", updateHomepageSectionEditor);
     document.getElementById("homepageSectionLibraryFile")?.addEventListener("change", previewHomepageSection);
     ["homepageSectionTitle", "homepageSectionDescription", "homepageSectionContent"].forEach(id => document.getElementById(id)?.addEventListener("input", previewHomepageSection));
-    document.getElementById("homepageSectionFile")?.addEventListener("change", previewHomepageSection);
     updateHomepageSectionEditor();
   }
 
