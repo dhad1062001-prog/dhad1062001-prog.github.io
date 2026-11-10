@@ -168,10 +168,10 @@ root.querySelectorAll('[data-disconnect-storage]').forEach(b=>b.onclick=async()=
 function renderAnalytics(root){if(!canAnalytics()){root.innerHTML='<div class="notice error">لا تملك صلاحية عرض الإحصائيات.</div>';return;}const t=analytics?.totals||{};root.innerHTML='<div class="heading"><div><h2>لوحة الإحصائيات</h2><p>تقارير الزيارات والتنزيلات الحقيقية المسجلة، للإدارة فقط.</p></div><select id="period" class="search" style="width:150px"><option value="7">آخر 7 أيام</option><option value="30" selected>آخر 30 يومًا</option><option value="90">آخر 90 يومًا</option></select></div><div class="metrics">'+[['مشاهدات الصفحات',t.page_views],['زوار فريدون',t.unique_visitors],['التنزيلات',t.downloads],['معاينات الملفات',t.previews]].map(x=>'<article class="metric"><label>'+x[0]+'</label><strong>'+fmt(x[1])+'</strong></article>').join('')+'</div>'+panel('الحركة اليومية','<div id="analyticsChart" class="chart"></div>')+'<div class="columns">'+panel('أكثر الصفحات زيارة','<div class="card-list">'+(analytics?.top_pages||[]).map(x=>'<div class="item-row"><div class="item-main"><b>'+esc(x.path)+'</b></div><span class="tag gold">'+fmt(x.views)+'</span></div>').join('')+'</div>')+panel('مصادر الزيارات','<div class="card-list">'+(analytics?.referrers||[]).map(x=>'<div class="item-row"><div class="item-main"><b>'+esc(x.source)+'</b></div><span class="tag gold">'+fmt(x.visits)+'</span></div>').join('')+'</div>')+'</div>'+panel('الأجهزة المستخدمة','<div class="card-list">'+(analytics?.devices||[]).map(x=>'<div class="item-row"><div class="item-main"><b>'+esc(x.device_type)+'</b></div><span class="tag gold">'+fmt(x.events)+'</span></div>').join('')+'</div>');$('period').onchange=loadAnalytics;renderChart($('analyticsChart'),analytics?.daily||[]);}
 function renderPages(root){
 if(!canOwner()){root.innerHTML='<div class="notice error">إدارة الصفحات متاحة لمالك المنصة فقط.</div>';return;}
-const editable=pages.filter(p=>['about','privacy','contact','home-description'].includes(p.slug));
+const editable=pages.filter(p=>['about','privacy','contact','home-description'].includes(p.slug));if(!editable.some(p=>p.slug==='home-description'))editable.push({id:null,slug:'home-description',title:'وصف واجهة الاستقبال',content:'',home_title:'رحلتك إلى التميز تبدأ من هنا',home_subtitle:'تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية',is_visible:false});
 root.innerHTML='<div class="heading"><div><h2>صفحات الموقع</h2><p>تحرير صفحات من نحن وسياسة الخصوصية واتصل بنا ووصف واجهة الاستقبال.</p></div></div>'+panel('الصفحات','<div class="card-list">'+editable.map(p=>'<div class="item-row"><div class="item-main"><b>'+esc(p.title)+'</b><small>'+esc(p.slug)+' · '+(p.is_visible?'ظاهرة':'مخفية')+'</small></div><button class="btn small" data-edit-page="'+p.slug+'">تحرير الصفحة</button></div>').join('')+'</div>');
 root.querySelectorAll('[data-edit-page]').forEach(b=>b.onclick=()=>{
-const p=pages.find(x=>x.slug===b.dataset.editPage);
+const p=pages.find(x=>x.slug===b.dataset.editPage)||{id:null,slug:'home-description',title:'وصف واجهة الاستقبال',content:'',home_title:'رحلتك إلى التميز تبدأ من هنا',home_subtitle:'تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية',is_visible:false};
 const isHome=p.slug==='home-description';
 const body='<div class="field"><label>عنوان الصفحة</label><input id="pageTitle" value="'+esc(p.title)+'"></div>'+
 (isHome?'<div class="field"><label>عنوان الترحيب في الواجهة</label><input id="homeTitle" value="'+esc(p.home_title||'رحلتك إلى التميز تبدأ من هنا')+'"></div><div class="field"><label>النص الترحيبي المختصر</label><input id="homeSubtitle" value="'+esc(p.home_subtitle||'تعلّم .. اقرأ .. واكتشف جمال لغتنا العربية')+'"></div>':'')+
@@ -181,7 +181,8 @@ openModal('تحرير '+p.title,body);
 $('savePage').onclick=async()=>{
 const payload={title:$('pageTitle').value.trim(),content:$('pageContent').value,is_visible:$('pageVisible').checked,updated_at:new Date().toISOString(),updated_by:user.id};
 if(isHome){payload.home_title=$('homeTitle').value.trim();payload.home_subtitle=$('homeSubtitle').value.trim();if(!payload.home_title)return notice('أدخل عنوان الترحيب.','error');}
-const {error}=await sb.from('site_pages').update(payload).eq('id',p.id);
+const query=p.id?sb.from('site_pages').update(payload).eq('id',p.id):sb.from('site_pages').upsert({...payload,slug:p.slug},{onConflict:'slug'});
+const {error}=await query;
 if(error)return notice(error.message,'error');closeModal();await loadAll();notice('تم حفظ الصفحة.','good');
 };
 });
