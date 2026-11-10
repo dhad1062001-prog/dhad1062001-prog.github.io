@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/admin.css?v=20261110c">
+  <link rel="stylesheet" href="./assets/admin.css?v=20261110d">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0"></script>
-  <script defer src="./js/app.js?v=20261110c"></script>
+  <script defer src="./js/app.js?v=20261110d"></script>
 </head>
 <body>
   <div id="app">
@@ -27,6 +27,7 @@
         <div class="nav-group-label">إدارة المحتوى</div>
         <button class="nav-item" data-module="homepage"><span class="nav-icon">⌂</span><span>الصفحة الرئيسية</span></button>
         <button class="nav-item" data-module="sections"><span class="nav-icon">▦</span><span>الأقسام والتصنيفات</span></button>
+        <button class="nav-item" data-module="file-center"><span class="nav-icon">⇧</span><span>مركز رفع وإدارة الملفات</span></button>
         <button class="nav-item" data-module="materials"><span class="nav-icon">▤</span><span>الملفات التعليمية</span></button>
         <button class="nav-item" data-module="supplies"><span class="nav-icon">▧</span><span>لوازم المعلمين</span></button>
         <button class="nav-item" data-module="academic"><span class="nav-icon">🎓</span><span>الصفوف والمناهج</span></button>
@@ -85,11 +86,12 @@
             <article class="stat-card"><div class="stat-top"><span>عمليات التنزيل</span><span class="stat-icon">↓</span></div><strong>—</strong><small>وفق تعريف القياس المعتمد</small></article>
           </div>
 
-          <div class="section-heading"><div><h2>أقسام لوحة التحكم</h2><p>اختر الوحدة التي تريد إدارتها. ستُفعّل الوحدات تدريجيًا بعد ربطها واختبارها.</p></div><span class="section-count">18 وحدة</span></div>
+          <div class="section-heading"><div><h2>أقسام لوحة التحكم</h2><p>اختر الوحدة التي تريد إدارتها. ستُفعّل الوحدات تدريجيًا بعد ربطها واختبارها.</p></div><span class="section-count">19 وحدة</span></div>
           <div class="modules-grid" id="moduleCards">
             <button class="module-card" data-module="homepage"><span class="module-icon">⌂</span><span class="module-text"><strong>الصفحة الرئيسية</strong><small>النصوص والواجهة والصور والأزرار</small></span><span class="module-arrow">←</span></button>
             <button class="module-card" data-module="sections"><span class="module-icon">▦</span><span class="module-text"><strong>الأقسام والتصنيفات</strong><small>الأقسام الرئيسية والفرعية وترتيبها</small></span><span class="module-arrow">←</span></button>
-            <button class="module-card" data-module="materials"><span class="module-icon">▤</span><span class="module-text"><strong>الملفات التعليمية</strong><small>رفع الملفات ووصفها وربطها بالأقسام</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-module="file-center"><span class="module-icon">⇧</span><span class="module-text"><strong>مركز رفع وإدارة الملفات</strong><small>رفع موحّد وإدارة مكتبة جميع الأقسام</small></span><span class="module-arrow">←</span></button>
+            <button class="module-card" data-module="materials"><span class="module-icon">▤</span><span class="module-text"><strong>الملفات التعليمية</strong><small>استعراض الملفات التعليمية</small></span><span class="module-arrow">←</span></button>
             <button class="module-card" data-module="supplies"><span class="module-icon">▧</span><span class="module-text"><strong>لوازم المعلمين</strong><small>المذكرات والنماذج والموارد المهنية</small></span><span class="module-arrow">←</span></button>
             <button class="module-card" data-module="academic"><span class="module-icon">🎓</span><span class="module-text"><strong>الصفوف والمناهج</strong><small>الصفوف والفصول والوحدات والدروس</small></span><span class="module-arrow">←</span></button>
             <button class="module-card" data-module="staff"><span class="module-icon">♙</span><span class="module-text"><strong>المستخدمون والصلاحيات</strong><small>الأدوار والصلاحيات الدقيقة</small></span><span class="module-arrow">←</span></button>
