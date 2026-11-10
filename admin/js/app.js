@@ -1017,6 +1017,17 @@
     const sortOrder = Number(sort);
     if (!Number.isInteger(sortOrder) || sortOrder < 0) throw new Error("رقم الترتيب يجب أن يكون صفرًا أو أكبر.");
     const payload = { name: name.trim(), sort_order: sortOrder };
+    if (kind === "category") {
+      const {data: allCategories, error: categoriesError} = await supabase.from("categories").select("id,name,parent_id").order("sort_order");
+      if (categoriesError) throw categoriesError;
+      const possibleParents = (allCategories || []).filter(row => row.parent_id == null && String(row.id) !== String(id || ""));
+      const choices = ["0 = قسم رئيسي", ...possibleParents.map(row => row.id + " = " + row.name)].join("\n");
+      const parentInput = window.prompt("القسم الرئيسي الذي يتبعه هذا التصنيف. اكتب رقمه، أو 0 ليكون قسمًا رئيسيًا:\n" + choices, current?.parent_id ? String(current.parent_id) : "0");
+      if (parentInput === null) return;
+      const parentId = Number(parentInput);
+      if (!Number.isInteger(parentId) || parentId < 0 || (parentId !== 0 && !possibleParents.some(row => row.id === parentId))) throw new Error("اختر رقم قسم رئيسي صحيحًا من القائمة.");
+      payload.parent_id = parentId || null;
+    }
     if (kind === "category" || kind === "grade") {
       const slug = window.prompt("الرابط المختصر (slug):", current?.slug || "");
       if (slug === null) return;
