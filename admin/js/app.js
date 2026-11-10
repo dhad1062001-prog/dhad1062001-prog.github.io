@@ -263,6 +263,10 @@
             <h3 id="homepageSectionFormTitle">إضافة قسم جديد</h3>
             <input id="homepageSectionId" type="hidden">
             <label class="homepage-label">عنوان القسم<input id="homepageSectionTitle" maxlength="160" required placeholder="مثال: موارد تعليمية للمعلم"></label>
+            <div class="homepage-fields">
+              <label>القسم الرئيسي الأب<select id="homepageSectionParent"><option value="">قسم رئيسي (دون أب)</option></select></label>
+              <label>رمز القسم أو الأيقونة<input id="homepageSectionIcon" maxlength="12" placeholder="📚 أو ✦"></label>
+            </div>
             <label class="homepage-label">وصف مختصر يظهر أسفل عنوان القسم<textarea id="homepageSectionDescription" rows="3" placeholder="اكتب وصفًا مختصرًا يعرّف الزائر بهذا القسم..."></textarea></label>
             <label class="homepage-label">نوع المحتوى<select id="homepageSectionType"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف</option><option value="link">رابط</option></select></label>
             <label class="homepage-label"><span id="homepageSectionContentLabel">المحتوى النصي أو وصفه</span><textarea id="homepageSectionContent" rows="5" placeholder="اكتب المحتوى أو الوصف..."></textarea></label>
@@ -317,6 +321,7 @@
       document.getElementById("homepageDescription").value = page.content || "منصة ضاد مساحة تعليمية عربية تجمع الموارد والملفات والأنشطة التي يحتاج إليها معلم اللغة العربية والطالب وولي الأمر، وتسهّل الوصول إليها وتنظيمها في مكان واحد.";
       document.getElementById("homepageVisible").checked = page.is_visible !== false;
       homepageSections = sectionsResult.data || [];
+      renderHomepageParentOptions();
       renderHomepageSections();
       const order = document.getElementById("homepageSectionOrder");
       if (order) order.value = String(homepageSections.length + 1);
@@ -439,8 +444,32 @@
     document.getElementById("homepageSectionActive").checked = true;
     document.getElementById("homepageSectionShowOnHome").checked = true;
     document.getElementById("homepageSectionDescription").value = "";
+    document.getElementById("homepageSectionParent").value = "";
+    document.getElementById("homepageSectionIcon").value = "";
     document.getElementById("homepageSectionCurrentFile").textContent = "";
+    renderHomepageParentOptions();
     updateHomepageSectionEditor();
+  }
+
+  function renderHomepageParentOptions() {
+    const select = document.getElementById("homepageSectionParent");
+    if (!select) return;
+    const editingId = homepageEditingId === null ? null : String(homepageEditingId);
+    const descendants = new Set();
+    const collect = parentId => homepageSections.forEach(row => {
+      if (String(row.parent_id ?? "") === String(parentId) && !descendants.has(String(row.id))) {
+        descendants.add(String(row.id));
+        collect(row.id);
+      }
+    });
+    if (editingId !== null) collect(editingId);
+    const current = select.value;
+    const options = homepageSections
+      .filter(row => String(row.id) !== editingId && !descendants.has(String(row.id)))
+      .map(row => '<option value="' + escapeHtml(row.id) + '">' + escapeHtml(row.title || "قسم دون عنوان") + '</option>')
+      .join("");
+    select.innerHTML = '<option value="">قسم رئيسي (دون أب)</option>' + options;
+    if ([...select.options].some(option => option.value === current)) select.value = current;
   }
 
   function renderHomepageSections() {
@@ -450,15 +479,18 @@
       list.innerHTML = '<div class="homepage-empty">لا توجد أقسام حتى الآن. يمكنك إنشاء أول قسم من النموذج المجاور.</div>';
       return;
     }
-    list.innerHTML = homepageSections.map(row => `
+    list.innerHTML = homepageSections.map(row => {
+      const parent = homepageSections.find(item => String(item.id) === String(row.parent_id));
+      return `
       <article class="homepage-section-item">
-        <div class="homepage-section-info"><strong>${escapeHtml(row.title || "قسم دون عنوان")}</strong><small>النوع: ${escapeHtml(row.content_type)} · الترتيب: ${numberFormat(row.sort_order)} · ${row.is_active ? "مفعّل" : "معطّل"} · ${row.show_on_home === false ? "غير معروض في الرئيسية" : "معروض في الرئيسية"}</small></div>
+        <div class="homepage-section-info"><strong>${escapeHtml(row.icon || "▣")} ${escapeHtml(row.title || "قسم دون عنوان")}</strong><small>${parent ? "يتبع: " + escapeHtml(parent.title) + " · " : "قسم رئيسي · "}النوع: ${escapeHtml(row.content_type)} · الترتيب: ${numberFormat(row.sort_order)} · ${row.is_active ? "مفعّل" : "معطّل"} · ${row.show_on_home === false ? "غير معروض في الرئيسية" : "معروض في الرئيسية"}</small></div>
         <div class="homepage-section-actions">
           <button type="button" data-homepage-action="edit" data-id="${escapeHtml(row.id)}">تعديل</button>
           <button type="button" data-homepage-action="toggle" data-id="${escapeHtml(row.id)}">${row.is_active ? "إخفاء" : "إظهار"}</button>
           <button type="button" class="danger" data-homepage-action="delete" data-id="${escapeHtml(row.id)}">حذف</button>
         </div>
-      </article>`).join("");
+      </article>`;
+    }).join("");
   }
 
   function editHomepageSection(id) {
@@ -466,7 +498,10 @@
     const row = homepageSections.find(item => String(item.id) === String(id));
     if (!row) return setHomepageStatus("لم يتم العثور على القسم المطلوب.", "error");
     homepageEditingId = row.id;
+    renderHomepageParentOptions();
     document.getElementById("homepageSectionId").value = String(row.id);
+    document.getElementById("homepageSectionParent").value = row.parent_id == null ? "" : String(row.parent_id);
+    document.getElementById("homepageSectionIcon").value = row.icon || "";
     document.getElementById("homepageSectionTitle").value = row.title || "";
     document.getElementById("homepageSectionDescription").value = row.section_description || "";
     document.getElementById("homepageSectionType").value = row.content_type || "text";
@@ -494,9 +529,21 @@
     const active = document.getElementById("homepageSectionActive").checked;
     const showOnHome = document.getElementById("homepageSectionShowOnHome").checked;
     const sectionDescription = document.getElementById("homepageSectionDescription").value.trim();
+    const parentValue = document.getElementById("homepageSectionParent").value;
+    const parentId = parentValue ? Number(parentValue) : null;
+    const icon = document.getElementById("homepageSectionIcon").value.trim();
     const file = document.getElementById("homepageSectionFile").files?.[0] || null;
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
     if (!title) return setHomepageStatus("أدخل عنوان القسم.", "error");
+    if (parentId !== null && (!Number.isSafeInteger(parentId) || !homepageSections.some(row => Number(row.id) === parentId))) return setHomepageStatus("القسم الأب المحدد غير صالح. حدّث القائمة وحاول مجددًا.", "error");
+    if (parentId !== null && (String(parentId) === String(homepageEditingId) || (() => {
+      let current = homepageSections.find(row => Number(row.id) === parentId);
+      while (current) {
+        if (String(current.id) === String(homepageEditingId)) return true;
+        current = homepageSections.find(row => String(row.id) === String(current.parent_id));
+      }
+      return false;
+    })())) return setHomepageStatus("لا يمكن وضع القسم داخل نفسه أو داخل أحد أقسامه الفرعية.", "error");
     if (!["text", "image", "file", "link"].includes(type)) return setHomepageStatus("نوع المحتوى غير صالح.", "error");
     if (!Number.isInteger(sortOrder) || sortOrder < 0) return setHomepageStatus("أدخل ترتيبًا صحيحًا يبدأ من صفر.", "error");
     if (!Number.isInteger(displayLimit) || displayLimit < 1 || displayLimit > 50) return setHomepageStatus("عدد الملفات المرتبطة يجب أن يكون بين 1 و50.", "error");
@@ -522,6 +569,8 @@
       title, content_type: type, content,
       section_description: sectionDescription,
       show_on_home: showOnHome,
+      parent_id: parentId,
+      icon: icon || "folder",
       file_path: filePath || "",
       sort_order: sortOrder, display_limit: displayLimit,
       display_style: displayStyle, is_active: active,
@@ -543,6 +592,7 @@
     const { data, error } = await supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
     if (error) return setHomepageStatus("تم الحفظ لكن تعذر تحديث القائمة: " + error.message, "error");
     homepageSections = data || [];
+    renderHomepageParentOptions();
     renderHomepageSections();
     const order = document.getElementById("homepageSectionOrder");
     if (order) order.value = String(homepageSections.length + 1);
