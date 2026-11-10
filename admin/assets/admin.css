@@ -141,3 +141,7 @@ button,a{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none
 .data-module-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 10px}
 .data-module-head h2,.data-module-head h3{margin:0}
 .data-module .data-table td button{font-size:12px}
+
+.data-table input:not([type="checkbox"]),.data-table textarea,.data-table select{max-width:220px;min-width:125px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#20291c;color:var(--white);font:10px Cairo,Tahoma,sans-serif}
+.data-table textarea{min-width:180px;min-height:54px;white-space:normal;line-height:1.7;resize:vertical}
+.data-table input:focus,.data-table textarea:focus,.data-table select:focus{outline:2px solid var(--gold);outline-offset:1px}
