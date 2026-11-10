@@ -311,7 +311,7 @@
     try {
       const [pageResult, sectionsResult] = await Promise.all([
         supabase.from("site_pages").select("slug,title,content,is_visible,home_title,home_subtitle").eq("slug", HOMEPAGE_DESCRIPTION_SLUG).maybeSingle(),
-        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
+        supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,parent_id,icon,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true })
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
@@ -610,33 +610,54 @@
   }
 
   async function loadHomepageSectionsOnly() {
-    const { data, error } = await supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
-    if (error) return setHomepageStatus("تم الحفظ لكن تعذر تحديث القائمة: " + error.message, "error");
-    homepageSections = data || [];
-    renderHomepageParentOptions();
-    renderHomepageSections();
-    const order = document.getElementById("homepageSectionOrder");
-    if (order) order.value = String(homepageSections.length + 1);
+    try {
+      const { data, error } = await supabase.from("home_sections")
+        .select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,parent_id,icon,created_at")
+        .order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+      if (error) throw error;
+      homepageSections = data || [];
+      renderHomepageParentOptions();
+      renderHomepageSections();
+      const order = document.getElementById("homepageSectionOrder");
+      if (order) order.value = String(homepageSections.length + 1);
+    } catch (error) {
+      setHomepageStatus("تعذر تحديث قائمة الأقسام: " + (error?.message || "خطأ غير معروف"), "error");
+      throw error;
+    }
   }
 
   async function toggleHomepageSection(id) {
     if (accessState?.owner !== true) return setHomepageStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
     const row = homepageSections.find(item => String(item.id) === String(id));
     if (!row) return;
-    const { data, error } = await supabase.from("home_sections").update({ is_active: !row.is_active, updated_at: new Date().toISOString() }).eq("id", row.id).select("id").maybeSingle();
-    if (error || !data) return setHomepageStatus("تعذر تغيير حالة القسم: " + (error?.message || "لم تؤكد قاعدة البيانات التغيير."), "error");
-    await loadHomepageSectionsOnly();
-    setHomepageStatus(row.is_active ? "تم إخفاء القسم عن الزوار." : "تم إظهار القسم للزوار.", "success");
+    try {
+      const { data, error } = await supabase.from("home_sections")
+        .update({ is_active: !row.is_active, updated_at: new Date().toISOString() })
+        .eq("id", row.id).select("id").maybeSingle();
+      if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات التغيير.");
+      await loadHomepageSectionsOnly();
+      setHomepageStatus(row.is_active ? "تم إخفاء القسم عن الزوار." : "تم إظهار القسم للزوار.", "success");
+    } catch (error) {
+      setHomepageStatus("تعذر تغيير حالة القسم: " + (error?.message || "خطأ غير معروف"), "error");
+    }
   }
 
   async function deleteHomepageSection(id) {
     if (accessState?.owner !== true) return setHomepageStatus("هذه العملية متاحة لمالك المنصة فقط.", "error");
     const row = homepageSections.find(item => String(item.id) === String(id));
-    if (!row || !window.confirm("هل تريد حذف القسم «" + row.title + "»؟ لن يُحذف الملف من مساحة التخزين.")) return;
-    const { data, error } = await supabase.from("home_sections").delete().eq("id", row.id).select("id").maybeSingle();
-    if (error || !data) return setHomepageStatus("تعذر حذف القسم: " + (error?.message || "لم تؤكد قاعدة البيانات الحذف."), "error");
-    await loadHomepageSectionsOnly();
-    setHomepageStatus("تم حذف القسم. بقي الملف في مساحة التخزين دون حذف.", "success");
+    if (!row) return;
+    if (homepageSections.some(item => String(item.parent_id) === String(row.id))) {
+      return setHomepageStatus("لا يمكن حذف هذا القسم قبل نقل أقسامه الفرعية إلى قسم آخر أو جعلها أقسامًا رئيسية.", "error");
+    }
+    if (!window.confirm("هل تريد حذف القسم «" + row.title + "»؟ لن يُحذف الملف من مساحة التخزين.")) return;
+    try {
+      const { data, error } = await supabase.from("home_sections").delete().eq("id", row.id).select("id").maybeSingle();
+      if (error || !data) throw new Error(error?.message || "لم تؤكد قاعدة البيانات الحذف.");
+      await loadHomepageSectionsOnly();
+      setHomepageStatus("تم حذف القسم. بقي الملف في مساحة التخزين دون حذف.", "success");
+    } catch (error) {
+      setHomepageStatus("تعذر حذف القسم: " + (error?.message || "خطأ غير معروف"), "error");
+    }
   }
 
   function canAccessModule(key) {
