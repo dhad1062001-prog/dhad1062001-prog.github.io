@@ -32,7 +32,135 @@ async function loadPages(v){if(!canOwner()){v.innerHTML='<div class="notice">إ�
 async function loadLinks(v){if(!canOwner()){v.innerHTML='<div class="notice">إدارة روابط التواصل متاحة لمالك المنصة فقط.</div>';return}v.innerHTML='<div class="section-head"><div><h2>روابط التواصل الاجتماعي</h2><p>إدارة الروابط التي يعرضها الموقع للزوار.</p></div><button class="btn gold" id="newLink">＋ إضافة رابط</button></div><div id="linksList" class="empty">جارٍ تحميل الروابط…</div><div id="linkForm"></div>';document.getElementById("newLink").onclick=()=>linkForm();const {data,error}=await sb.from("site_contact_links").select("*").order("sort_order");if(error){document.getElementById("linksList").textContent=error.message;return}links=data||[];document.getElementById("linksList").innerHTML='<div class="panel table-wrap"><table><thead><tr><th>المنصة</th><th>الرابط</th><th>الترتيب</th><th>الإجراءات</th></tr></thead><tbody>'+links.map(x=>'<tr><td>'+esc(x.title)+'</td><td><a href="'+esc(x.url)+'" target="_blank" rel="noopener">فتح الرابط ↗</a></td><td>'+x.sort_order+'</td><td><div class="row-actions"><button class="btn light tiny" data-edit-link="'+esc(x.key)+'">تعديل</button><button class="btn danger tiny" data-del-link="'+esc(x.key)+'">حذف</button></div></td></tr>').join("")+'</tbody></table></div>';document.querySelectorAll("[data-edit-link]").forEach(b=>b.onclick=()=>linkForm(b.dataset.editLink));document.querySelectorAll("[data-del-link]").forEach(b=>b.onclick=()=>deleteLink(b.dataset.delLink))}
 function linkForm(key=null){const old=links.find(x=>x.key===key)||{};const el=document.getElementById("linkForm");el.innerHTML='<div class="panel"><h3>'+(key?"تعديل رابط":"إضافة رابط تواصل")+'</h3><form id="linkEditor"><div class="form-grid"><div class="field"><label>معرّف المنصة (key)</label><input name="key" value="'+esc(old.key||"")+'" '+(key?"readonly":"")+' required placeholder="facebook"></div><div class="field"><label>اسم المنصة</label><input name="title" value="'+esc(old.title||"")+'" required></div><div class="field"><label>الرابط</label><input name="url" type="url" value="'+esc(old.url||"")+'" required></div><div class="field"><label>الترتيب</label><input name="sort_order" type="number" value="'+Number(old.sort_order||0)+'"></div></div><div class="toolbar"><button class="btn gold">حفظ</button><button type="button" class="btn light" id="cancelLink">إلغاء</button></div></form></div>';document.getElementById("cancelLink").onclick=()=>el.innerHTML="";document.getElementById("linkEditor").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget);const payload={key:String(f.get("key")).trim(),title:String(f.get("title")).trim(),url:String(f.get("url")).trim(),sort_order:Number(f.get("sort_order")||0),updated_by:session.user.id,updated_at:new Date().toISOString()};const q=key?sb.from("site_contact_links").update(payload).eq("key",key):sb.from("site_contact_links").insert(payload);const {error}=await q;if(error)return fail(error);toast("تم حفظ الرابط");loadLinks(document.getElementById("view"))}}
 async function deleteLink(key){if(!confirm("حذف رابط التواصل المحدد؟"))return;const {error}=await sb.from("site_contact_links").delete().eq("key",key);if(error)return fail(error);toast("تم حذف الرابط");loadLinks(document.getElementById("view"))}
-function filesPlaceholder(v){v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>الخطوة التالية هي بناء تدفق رفع آمن ومتوافق مع مسارات التخزين الحالية.</p></div></div><div class="panel"><div class="notice">لن ننفذ رفعاً أو حذفاً قبل إنهاء فحص سياسات Storage وطريقة ربط الملف بسجلات materials وhome_section_materials، حتى لا ننتج ملفات يتيمة أو نكسر روابط الملفات القديمة.</div><p>الحقول الموجودة في قاعدة البيانات تدعم الاسم والوصف والمرحلة والفصل والتصنيف وحجم الملف ومساره وعدد التنزيلات.</p><button class="btn gold" id="browseMaterials">استعراض الملفات الحالية</button><div id="materialsPreview"></div></div>';document.getElementById("browseMaterials").onclick=async()=>{const el=document.getElementById("materialsPreview");el.textContent="جارٍ التحميل…";const {data,error}=await sb.from("materials").select("id,title,file_name,file_path,file_type,file_size,is_public,download_count,created_at").order("created_at",{ascending:false}).limit(100);if(error){el.textContent=error.message;return}el.innerHTML='<div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>النوع</th><th>الحجم</th><th>التنزيلات</th><th>الحالة</th></tr></thead><tbody>'+data.map(m=>'<tr><td>'+esc(m.title||m.file_name)+'</td><td>'+esc(m.file_type||"—")+'</td><td>'+((Number(m.file_size||0)/1024/1024).toFixed(2))+' MB</td><td>'+Number(m.download_count||0)+'</td><td>'+(m.is_public?"منشور":"مخفي")+'</td></tr>').join("")+'</tbody></table></div>'}}
+let uploadFiles=[],uploadGrades=[],uploadSemesters=[],uploadCategories=[];
+const legacySections=[
+ ["school_grades","الصفوف الدراسية"],
+ ["curricula","المناهج الدراسية"],
+ ["teacher_supplies","لوازم المعلمين"],
+ ["interactive_games","الألعاب التفاعلية"],
+ ["supplementary_education","التعليم الإضافي"]
+];
+function filesPlaceholder(v){
+ v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><button class="btn light" id="refreshMaterials">تحديث القائمة</button></div>'+
+ '<div class="panel"><h3>رفع ملفات جديدة</h3><div class="notice">يُحفظ الملف في مخزن materials ثم يُنشأ سجل له في قاعدة البيانات ويُربط بالقسم الذي تختاره. لا يتم استبدال الملفات الموجودة أو تغيير مساراتها.</div>'+
+ '<div class="field"><label>اختيار الملفات (يمكن تحديد عدة ملفات)</label><input id="uploadPicker" type="file" multiple></div>'+
+ '<div class="form-grid"><div class="field"><label>الصف الدراسي (اختياري ويطبق على المجموعة)</label><select id="uploadGrade"><option value="">بدون تحديد صف</option></select></div>'+
+ '<div class="field"><label>الفصل الدراسي (اختياري ويطبق على المجموعة)</label><select id="uploadSemester"><option value="">بدون تحديد فصل</option></select></div>'+
+ '<div class="field"><label>نوع المادة / التصنيف التفصيلي (اختياري)</label><select id="uploadCategory"><option value="">بدون تصنيف تفصيلي</option></select></div>'+
+ '<div class="field"><label>حالة الملفات</label><select id="uploadVisibility"><option value="true">منشورة للزوار</option><option value="false">مسودة / غير منشورة</option></select></div></div>'+
+ '<div id="uploadRows" class="upload-rows"><div class="empty">اختر ملفاً واحداً أو أكثر للبدء.</div></div>'+
+ '<div class="toolbar"><button class="btn gold" id="startUpload" disabled>رفع الملفات وحفظها</button><button class="btn light" id="clearUpload" type="button">إفراغ الاختيار</button><span id="uploadStatus" class="muted"></span></div></div>'+
+ '<div class="panel"><div class="section-head" style="margin-top:0"><div><h3>الملفات المسجلة</h3><p>أحدث 100 ملف، مع عدد التنزيلات المسجل.</p></div><button class="btn light tiny" id="loadMaterials">عرض الملفات</button></div><div id="materialsPreview" class="empty">اضغط «عرض الملفات» لتحميل القائمة.</div></div>';
+ document.getElementById("refreshMaterials").onclick=()=>loadMaterialsList();
+ document.getElementById("loadMaterials").onclick=()=>loadMaterialsList();
+ document.getElementById("uploadPicker").onchange=e=>{uploadFiles=Array.from(e.target.files||[]).map(file=>({file,title:file.name.replace(/\.[^.]+$/,""),description:"",sectionId:"",legacy:""}));drawUploadRows();};
+ document.getElementById("clearUpload").onclick=()=>{uploadFiles=[];document.getElementById("uploadPicker").value="";drawUploadRows();document.getElementById("uploadStatus").textContent="";};
+ document.getElementById("startUpload").onclick=()=>uploadSelectedFiles();
+ loadUploadOptions();
+}
+async function loadUploadOptions(){
+ const status=document.getElementById("uploadStatus");
+ try{
+  const results=await Promise.all([
+   sb.from("home_sections").select("id,title,parent_id,is_active,sort_order").order("sort_order").order("id"),
+   sb.from("grades").select("id,name").order("id"),
+   sb.from("semesters").select("id,name").order("id"),
+   sb.from("categories").select("id,name").order("id")
+  ]);
+  for(const r of results)if(r.error)throw r.error;
+  sections=results[0].data||[];uploadGrades=results[1].data||[];uploadSemesters=results[2].data||[];uploadCategories=results[3].data||[];
+  document.getElementById("uploadGrade").innerHTML='<option value="">بدون تحديد صف</option>'+uploadGrades.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");
+  document.getElementById("uploadSemester").innerHTML='<option value="">بدون تحديد فصل</option>'+uploadSemesters.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");
+  document.getElementById("uploadCategory").innerHTML='<option value="">بدون تصنيف تفصيلي</option>'+uploadCategories.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");
+  if(!sections.length)status.textContent="أضف قسماً من «إدارة الأقسام» قبل رفع الملفات.";
+  drawUploadRows();
+ }catch(e){status.textContent="تعذر تحميل خيارات الرفع: "+e.message;status.className="error"}
+}
+function uploadSectionOptions(selected){
+ const ordered=sections.filter(s=>s.is_active!==false);
+ if(!ordered.length)return '<option value="">لا توجد أقسام نشطة — أنشئ قسماً أولاً</option>';
+ return '<option value="">اختر القسم الذي سيظهر فيه الملف</option>'+ordered.map(s=>{
+  const parent=ordered.find(p=>String(p.id)===String(s.parent_id));
+  const label=(parent?parent.title+" / ":"")+s.title+(parent?" (فرعي)":" (رئيسي)");
+  return '<option value="'+s.id+'" '+(String(selected)===String(s.id)?"selected":"")+'>'+esc(label)+'</option>';
+ }).join("");
+}
+function drawUploadRows(){
+ const box=document.getElementById("uploadRows"),button=document.getElementById("startUpload");
+ if(!box)return;
+ if(!uploadFiles.length){box.innerHTML='<div class="empty">اختر ملفاً واحداً أو أكثر للبدء.</div>';button.disabled=true;return}
+ box.innerHTML=uploadFiles.map((item,i)=>'<article class="upload-item"><div class="upload-item-head"><b>'+esc(item.file.name)+'</b><span class="muted">'+(item.file.size/1024/1024).toFixed(2)+' MB</span></div>'+
+ '<div class="form-grid"><div class="field"><label>العنوان الظاهر للزوار</label><input data-upload-title="'+i+'" value="'+esc(item.title)+'" maxlength="180" required></div>'+
+ '<div class="field"><label>القسم الذي ينتمي إليه الملف</label><select data-upload-section="'+i+'">'+uploadSectionOptions(item.sectionId)+'</select></div>'+
+ '<div class="field"><label>التصنيف الأساسي المتوافق مع قاعدة البيانات الحالية</label><select data-upload-legacy="'+i+'"><option value="">اختر التصنيف الأساسي</option>'+legacySections.map(([key,label])=>'<option value="'+key+'" '+(item.legacy===key?"selected":"")+'>'+label+'</option>').join("")+'</select></div>'+
+ '<div class="field"><label>وصف الملف</label><textarea data-upload-description="'+i+'" rows="3" placeholder="اكتب وصفاً يوضح محتوى الملف وفائدته والفئة المستهدفة...">'+esc(item.description)+'</textarea></div></div></article>').join("");
+ box.querySelectorAll("[data-upload-title]").forEach(el=>el.oninput=()=>uploadFiles[Number(el.dataset.uploadTitle)].title=el.value);
+ box.querySelectorAll("[data-upload-description]").forEach(el=>el.oninput=()=>uploadFiles[Number(el.dataset.uploadDescription)].description=el.value);
+ box.querySelectorAll("[data-upload-section]").forEach(el=>el.onchange=()=>uploadFiles[Number(el.dataset.uploadSection)].sectionId=el.value);
+ box.querySelectorAll("[data-upload-legacy]").forEach(el=>el.onchange=()=>uploadFiles[Number(el.dataset.uploadLegacy)].legacy=el.value);
+ button.disabled=!sections.some(s=>s.is_active!==false);
+}
+function safeStorageName(name){
+ const ext=(name.match(/\.([a-z0-9]{1,10})$/i)||[])[1]||"bin";
+ const base=name.replace(/\.[^.]+$/,"").normalize("NFKD").replace(/[^\w-]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"").slice(0,70)||"file";
+ return base+"."+ext.toLowerCase();
+}
+async function uploadSelectedFiles(){
+ if(!canOwner())return toast("رفع الملفات متاح لمالك المنصة فقط.",true);
+ if(!uploadFiles.length)return;
+ const grade=document.getElementById("uploadGrade").value||null;
+ const semester=document.getElementById("uploadSemester").value||null;
+ const category=document.getElementById("uploadCategory").value||null;
+ const isPublic=document.getElementById("uploadVisibility").value==="true";
+ const invalid=uploadFiles.find(x=>!x.title.trim()||!x.sectionId||!x.legacy);
+ if(invalid){toast("أكمل عنوان الملف والقسم والتصنيف الأساسي لكل ملف.",true);return}
+ const btn=document.getElementById("startUpload"),status=document.getElementById("uploadStatus");
+ btn.disabled=true;let successes=0,failures=[];
+ for(let i=0;i<uploadFiles.length;i++){
+  const item=uploadFiles[i],file=item.file;
+  status.textContent="جارٍ رفع "+(i+1)+" من "+uploadFiles.length+": "+file.name;
+  let storagePath=null,materialId=null;
+  try{
+   const section=sections.find(s=>String(s.id)===String(item.sectionId));
+   if(!section||section.is_active===false)throw new Error("القسم المختار غير نشط أو لم يعد موجوداً.");
+   const safeName=safeStorageName(file.name);
+   storagePath="admin-v2/"+item.legacy+"/"+crypto.randomUUID()+"-"+safeName;
+   const {error:storageError}=await sb.storage.from("materials").upload(storagePath,file,{upsert:false,contentType:file.type||"application/octet-stream",cacheControl:"3600"});
+   if(storageError)throw storageError;
+   const payload={
+    title:item.title.trim(),description:item.description.trim()||null,
+    grade_id:grade?Number(grade):null,semester_id:semester?Number(semester):null,category_id:category?Number(category):null,
+    file_path:storagePath,file_name:file.name,file_type:file.type||file.name.split(".").pop()?.toLowerCase()||null,
+    file_size:file.size,is_public:isPublic,created_by:session.user.id,
+    primary_section:item.legacy,additional_sections:[]
+   };
+   const {data:material,error:materialError}=await sb.from("materials").insert(payload).select("id").single();
+   if(materialError)throw materialError;
+   materialId=material.id;
+   const {error:linkError}=await sb.from("home_section_materials").insert({section_id:Number(item.sectionId),material_id:materialId,is_primary:true,sort_order:0});
+   if(linkError)throw linkError;
+   successes++;
+  }catch(e){
+   if(materialId){const {error:rollbackError}=await sb.from("materials").delete().eq("id",materialId);if(rollbackError)console.error("material rollback failed",rollbackError)}
+   if(storagePath){const {error:removeError}=await sb.storage.from("materials").remove([storagePath]);if(removeError)console.error("storage rollback failed",removeError)}
+   failures.push(file.name+": "+(e.message||"تعذر الحفظ"));
+  }
+ }
+ status.textContent="اكتمل الرفع: "+successes+" ناجح، "+failures.length+" لم يكتمل.";
+ if(failures.length)toast("بعض الملفات لم تكتمل. راجع تفاصيل الأخطاء أسفل نموذج الرفع.",true);
+ else toast("تم رفع جميع الملفات وربطها بالأقسام بنجاح.");
+ if(failures.length){const box=document.getElementById("uploadRows");box.insertAdjacentHTML("beforeend",'<div class="error upload-errors">'+failures.map(x=>esc(x)).join("<br>")+'</div>')}
+ if(successes){uploadFiles=uploadFiles.filter((x,i)=>failures.some(f=>f.startsWith(x.file.name+":")));document.getElementById("uploadPicker").value="";drawUploadRows();await loadMaterialsList()}
+ btn.disabled=false;
+}
+async function loadMaterialsList(){
+ const el=document.getElementById("materialsPreview");if(!el)return;
+ el.textContent="جارٍ تحميل الملفات…";
+ const {data,error}=await sb.from("materials").select("id,title,file_name,file_path,file_type,file_size,is_public,download_count,created_at").order("created_at",{ascending:false}).limit(100);
+ if(error){el.textContent="تعذر تحميل القائمة: "+error.message;return}
+ if(!data?.length){el.innerHTML='<div class="empty">لا توجد ملفات مسجلة.</div>';return}
+ el.innerHTML='<div class="table-wrap"><table><thead><tr><th>اسم الملف</th><th>نوعه</th><th>الحجم</th><th>التنزيلات</th><th>الحالة</th><th>تاريخ الإضافة</th></tr></thead><tbody>'+data.map(m=>'<tr><td><b>'+esc(m.title||m.file_name)+'</b><div class="muted">'+esc(m.file_name||"")+'</div></td><td>'+esc(m.file_type||"—")+'</td><td>'+((Number(m.file_size||0)/1024/1024).toFixed(2))+' MB</td><td>'+Number(m.download_count||0)+'</td><td><span class="pill '+(m.is_public?"":"off")+'">'+(m.is_public?"منشور":"غير منشور")+'</span></td><td>'+new Date(m.created_at).toLocaleDateString("ar")+'</td></tr>').join("")+'</tbody></table></div>';
+}
 async function boot(){const {data:{session:s}}=await sb.auth.getSession();session=s;if(!session){login();return}try{access=await adminAction("my_access");if(!access.allowed){denied();return}shell()}catch(e){await sb.auth.signOut({scope:"local"});login("تعذر التحقق من صلاحية الحساب: "+e.message)}}
 sb.auth.onAuthStateChange((_event,s)=>{if(!s){session=null;login()}});
 boot();
