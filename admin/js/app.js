@@ -1229,6 +1229,14 @@
     const options=(items,selected)=>items.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join("");
     const sections=[["school_grades","الصفوف الدراسية"],["curricula","المناهج"],["teacher_supplies","لوازم المعلمين"],["interactive_games","الألعاب التفاعلية"],["supplementary_education","التعليم الإضافي"]];
     root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
+    root.querySelectorAll("[data-admin-upload-row]").forEach(row=>{
+      const index=Number(row.dataset.adminUploadRow),item=adminMaterialQueue[index];if(!item)return;
+      row.querySelector("[data-upload-title]")?.addEventListener("input",event=>item.title=event.target.value);
+      row.querySelector("[data-upload-grade]")?.addEventListener("change",event=>item.gradeId=event.target.value);
+      row.querySelector("[data-upload-semester]")?.addEventListener("change",event=>item.semesterId=event.target.value);
+      row.querySelector("[data-upload-category]")?.addEventListener("change",event=>item.categoryId=event.target.value);
+      row.querySelector("[data-upload-section]")?.addEventListener("change",event=>item.primarySection=event.target.value);
+    });
   }
   function formatAdminFileSize(bytes) {
     const value=Number(bytes)||0;
