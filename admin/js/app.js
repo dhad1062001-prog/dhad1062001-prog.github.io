@@ -15,6 +15,7 @@
     homepage: "إدارة الصفحة الرئيسية",
     sections: "إدارة الأقسام والتصنيفات",
     materials: "إدارة الملفات التعليمية",
+    "file-center": "مركز رفع وإدارة الملفات",
     supplies: "لوازم المعلمين",
     academic: "الصفوف والمناهج",
     staff: "المستخدمون والصلاحيات",
@@ -34,7 +35,8 @@
   const descriptions = {
     homepage: "التحكم بمحتوى واجهة الاستقبال والعناوين والوصف والصور والأزرار والروابط، مع معاينة التغييرات قبل نشرها.",
     sections: "إنشاء الأقسام الرئيسية والفرعية، وضبط ترتيبها وظهورها، وربط الملفات بها دون إنشاء نسخ مكررة من الملفات.",
-    materials: "رفع ملف واحد أو مجموعة ملفات، وإضافة الوصف والبيانات التعليمية، وتحديد القسم الأساسي والأقسام الإضافية، وإدارة المعاينة والتنزيل.",
+    materials: "استعراض الملفات التعليمية وإدارة بياناتها ونشرها وأرشفتها. رفع الملفات متاح حصريًا من مركز الملفات.",
+    "file-center": "المكان الوحيد لرفع الملفات إلى ضاد وإدارة المكتبة الموحدة وربط الملفات بالأقسام دون تكرار.",
     supplies: "تنظيم الموارد المهنية الخاصة بالمعلمين، وإدارتها ضمن قسم مستقل مع إمكانية تصنيفها وربطها بالملفات.",
     academic: "إدارة الصفوف والفصول والمناهج والوحدات والدروس والمواد التعليمية مع المحافظة على العلاقات الحالية.",
     staff: "إدارة حسابات فريق العمل، وتحديد الأدوار والصلاحيات على مستوى الوحدات والإجراءات، والتحقق من الصلاحيات في الخادم.",
@@ -207,6 +209,11 @@
       breadcrumb.textContent = titles.overview;
       view.innerHTML = overviewMarkup + '<section class="data-module" id="overviewLiveStats"><div class="data-loading">جارٍ تحميل ملخص قاعدة البيانات…</div></section>';
       loadOverviewSummary();
+    } else if (key === "file-center") {
+      title.textContent = titles[key];
+      subtitle.textContent = "مركز موحد لجميع الملفات؛ الرفع من هنا فقط، والإدارة والربط من مكان واحد.";
+      breadcrumb.textContent = titles[key];
+      loadMaterials(key);
     } else if (key === "materials" || key === "supplies") {
       title.textContent = titles[key];
       subtitle.textContent = "عرض الملفات التعليمية المسجلة — دون تعديل البيانات.";
@@ -334,7 +341,7 @@
             <label class="homepage-label">وصف مختصر يظهر أسفل عنوان القسم<textarea id="homepageSectionDescription" rows="3" placeholder="اكتب وصفًا مختصرًا يعرّف الزائر بهذا القسم..."></textarea></label>
             <label class="homepage-label">نوع المحتوى<select id="homepageSectionType"><option value="text">نص</option><option value="image">صورة</option><option value="file">ملف</option><option value="link">رابط</option><option value="materials">ملفات مرتبطة فقط</option></select></label>
             <label class="homepage-label"><span id="homepageSectionContentLabel">المحتوى النصي أو وصفه</span><textarea id="homepageSectionContent" rows="5" placeholder="اكتب المحتوى أو الوصف..."></textarea></label>
-            <label class="homepage-label" id="homepageSectionFileWrap" hidden>اختيار صورة أو ملف<input id="homepageSectionFile" type="file"></label>
+            <label class="homepage-label" id="homepageSectionFileWrap" hidden>اختيار ملف موجود في مركز الملفات<select id="homepageSectionLibraryFile"><option value="">اختر ملفًا من المكتبة</option></select></label>
             <p id="homepageSectionCurrentFile" class="homepage-help"></p>
             <div class="homepage-fields">
               <label>ترتيب العرض<input id="homepageSectionOrder" type="number" min="0" step="1" value="1" required></label>
@@ -376,7 +383,7 @@
       const [pageResult, sectionsResult, materialsResult] = await Promise.all([
         supabase.from("site_pages").select("slug,title,content,is_visible,home_title,home_subtitle").eq("slug", HOMEPAGE_DESCRIPTION_SLUG).maybeSingle(),
         supabase.from("home_sections").select("id,title,content_type,content,file_path,sort_order,is_active,display_limit,display_style,section_description,show_on_home,parent_id,icon,created_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
-        supabase.from("materials").select("id,title,file_name,description,is_public").eq("is_public", true).order("created_at", { ascending: false }).limit(1000)
+        supabase.from("materials").select("id,title,file_name,file_path,file_type,file_size,description,is_public").eq("is_public", true).order("created_at", { ascending: false }).limit(1000)
       ]);
       if (pageResult.error) throw pageResult.error;
       if (sectionsResult.error) throw sectionsResult.error;
@@ -405,6 +412,7 @@
     document.getElementById("homepageHeroForm")?.addEventListener("submit", saveHomepageHero);
     document.getElementById("homepageSectionForm")?.addEventListener("submit", saveHomepageSection);
     document.getElementById("homepageSectionType")?.addEventListener("change", updateHomepageSectionEditor);
+    document.getElementById("homepageSectionLibraryFile")?.addEventListener("change", previewHomepageSection);
     ["homepageSectionTitle", "homepageSectionDescription", "homepageSectionContent"].forEach(id => document.getElementById(id)?.addEventListener("input", previewHomepageSection));
     document.getElementById("homepageSectionFile")?.addEventListener("change", previewHomepageSection);
     updateHomepageSectionEditor();
@@ -450,8 +458,13 @@
       content.required = type === "text" || type === "link";
       content.placeholder = type === "link" ? "https://example.com" : "اكتب المحتوى أو الوصف...";
     }
-    const file = document.getElementById("homepageSectionFile");
-    if (file) file.accept = type === "image" ? "image/*" : ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif,.mp3,.wav,.mp4,.webm,.zip";
+    const libraryFile = document.getElementById("homepageSectionLibraryFile");
+    if (libraryFile) {
+      const oldValue = libraryFile.value;
+      const candidates = homepageMaterials.filter(item => type === "image" ? String(item.file_type || "").startsWith("image/") : type === "file");
+      libraryFile.innerHTML = '<option value="">اختر ملفًا موجودًا في المكتبة</option>' + candidates.map(item => '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.title || item.file_name) + ' — ' + escapeHtml(item.file_name) + '</option>').join("");
+      if ([...libraryFile.options].some(option => option.value === oldValue)) libraryFile.value = oldValue;
+    }
     previewHomepageSection();
   }
 
@@ -469,21 +482,18 @@
     const description = document.getElementById("homepageSectionDescription")?.value.trim() || "";
     const type = document.getElementById("homepageSectionType")?.value || "text";
     const content = document.getElementById("homepageSectionContent")?.value.trim() || "";
-    const file = document.getElementById("homepageSectionFile")?.files?.[0] || null;
+    const selectedLibraryFile = homepageMaterials.find(item => String(item.id) === String(document.getElementById("homepageSectionLibraryFile")?.value || ""));
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
-    const filePath = file ? "" : (old?.content_type === type ? (old?.file_path || "") : "");
-    const fileName = file?.name || (filePath ? filePath.split("/").pop() : "");
-    const fileSize = file ? numberFormat(Math.ceil(file.size / 1024)) + " كيلوبايت" : "";
+    const filePath = selectedLibraryFile?.file_path || (old?.content_type === type ? (old?.file_path || "") : "");
+    const fileName = selectedLibraryFile?.file_name || (filePath ? filePath.split("/").pop() : "");
+    const fileSize = selectedLibraryFile?.file_size ? formatAdminFileSize(selectedLibraryFile.file_size) : "";
     let media = "";
 
     if (type === "materials") {
       media = '<div class="homepage-preview-meta">سيظهر هنا عدد الملفات التي تختار ربطها بهذا القسم.</div>';
     } else if (type === "image") {
       let imageUrl = "";
-      if (file && file.type.startsWith("image/")) {
-        homepagePreviewObjectUrl = URL.createObjectURL(file);
-        imageUrl = homepagePreviewObjectUrl;
-      } else if (filePath) {
+      if (filePath) {
         imageUrl = supabase.storage.from(MATERIALS_BUCKET).getPublicUrl(filePath).data?.publicUrl || "";
       }
       if (imageUrl) {
@@ -660,6 +670,11 @@
     document.getElementById("homepageSectionStyle").value = row.display_style === "list" ? "list" : "grid";
     document.getElementById("homepageSectionActive").checked = !!row.is_active;
     document.getElementById("homepageSectionShowOnHome").checked = row.show_on_home !== false;
+    const librarySelect = document.getElementById("homepageSectionLibraryFile");
+    if (librarySelect) {
+      const match = homepageMaterials.find(item => item.file_path === row.file_path);
+      if (match) librarySelect.value = String(match.id);
+    }
     document.getElementById("homepageSectionCurrentFile").textContent = row.file_path ? "الملف الحالي: " + row.file_path : "لا يوجد ملف مرتبط حاليًا.";
     document.getElementById("homepageSectionFormTitle").textContent = "تعديل القسم";
     updateHomepageSectionEditor();
@@ -681,7 +696,7 @@
     const parentValue = document.getElementById("homepageSectionParent").value;
     const parentId = parentValue || null;
     const icon = document.getElementById("homepageSectionIcon").value.trim();
-    const file = document.getElementById("homepageSectionFile").files?.[0] || null;
+    const selectedLibraryFile = homepageMaterials.find(item => String(item.id) === String(document.getElementById("homepageSectionLibraryFile")?.value || "")) || null;
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
 
     if (!title) return setHomepageStatus("أدخل عنوان القسم.", "error");
@@ -708,24 +723,14 @@
         return setHomepageStatus("الرابط غير صالح. استخدم رابطًا يبدأ بـ http:// أو https://.", "error");
       }
     }
-    if (type === "image" && file && !file.type.startsWith("image/")) return setHomepageStatus("اختر ملف صورة صالحًا.", "error");
-    if ((type === "image" || type === "file") && file && file.size > 50 * 1024 * 1024) return setHomepageStatus("الحد الأعلى لحجم الملف 50 ميجابايت.", "error");
     const needsFile = type === "image" || type === "file";
-    if (needsFile && !file && (!old?.file_path || old.content_type !== type)) return setHomepageStatus("اختر صورة أو ملفًا مناسبًا لنوع المحتوى المحدد.", "error");
+    if (needsFile && !selectedLibraryFile && (!old?.file_path || old.content_type !== type)) return setHomepageStatus("اختر ملفًا موجودًا في مركز الملفات أولًا.", "error");
+    if (type === "image" && selectedLibraryFile && !String(selectedLibraryFile.file_type || "").startsWith("image/")) return setHomepageStatus("اختر صورة من مركز الملفات.", "error");
 
     setHomepageStatus("جارٍ حفظ القسم...");
-    let filePath = needsFile ? (old?.content_type === type ? (old?.file_path || null) : null) : null;
-    let uploadedNewFile = false;
+    let filePath = needsFile ? (selectedLibraryFile?.file_path || (old?.content_type === type ? (old?.file_path || null) : null)) : null;
     let recordSaved = false;
     try {
-      if (needsFile && file) {
-        const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 120) || "file";
-        const path = "home-sections/" + crypto.randomUUID() + "-" + safeName;
-        const { data, error } = await supabase.storage.from(MATERIALS_BUCKET).upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
-        if (error) throw new Error("تعذر رفع الملف: " + error.message);
-        filePath = data?.path || path;
-        uploadedNewFile = true;
-      }
 
       const payload = {
         title, content_type: type, content,
@@ -749,10 +754,6 @@
       await loadHomepageSectionsOnly();
       setHomepageStatus("تم حفظ القسم بنجاح.", "success");
     } catch (error) {
-      if (!recordSaved && uploadedNewFile && filePath) {
-        const { error: cleanupError } = await supabase.storage.from(MATERIALS_BUCKET).remove([filePath]);
-        if (cleanupError) console.warn("تعذر تنظيف الملف المرفوع بعد فشل الحفظ:", cleanupError);
-      }
       setHomepageStatus(recordSaved
         ? "تم حفظ القسم، لكن تعذر تحديث القائمة: " + (error?.message || "خطأ غير معروف")
         : "تعذر حفظ القسم: " + (error?.message || "خطأ غير معروف"), "error");
@@ -1270,7 +1271,7 @@
     if (key === "overview") return true;
     if (key === "homepage") return accessState?.owner === true;
     if (isOwnerOrAdmin) return true;
-    if (["materials", "supplies"].includes(key)) return p.files === true;
+    if (["materials", "supplies", "file-center"].includes(key)) return p.files === true;
     if (key === "analytics") return p.analytics === true;
     if (["homepage", "sections", "academic", "pages", "seo", "games"].includes(key)) return p.content === true;
     if (["staff", "storage", "drive", "ads", "settings", "security", "audit", "backups", "trash"].includes(key)) {
@@ -1390,9 +1391,9 @@
     window.__adminLookups={grades,semesters,categories};
     const writable=["owner","admin"].includes(accessState?.role);
     const row=item=>'<tr><td><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.file_name)+'</small><small>'+escapeHtml(item.description||"دون وصف")+'</small></td><td>'+escapeHtml(lookup(grades,item.grade_id))+'</td><td>'+escapeHtml(lookup(semesters,item.semester_id))+'</td><td>'+escapeHtml(lookup(categories,item.category_id))+'</td><td>'+numberFormat(item.download_count)+'</td><td>'+(item.is_public?'منشور':'غير منشور')+'</td><td>'+fmtDate(item.created_at)+'</td><td>'+(writable?'<button type="button" data-admin-action="material-edit" data-id="'+item.id+'">تعديل الوصف</button> <button type="button" data-admin-action="material-toggle" data-id="'+item.id+'">'+(item.is_public?'إخفاء':'نشر')+'</button> <button type="button" data-admin-action="material-trash" data-id="'+item.id+'">إلى السلة</button>':'—')+'</td></tr>';
-    const uploadMarkup=writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع مجموعة ملفات</h2><p>كل ملف له صف مستقل لتحديد الصف والفصل والتصنيف والقسم الأساسي.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
+    const uploadMarkup=viewKey==="file-center"&&writable?'<section class="data-module"><div class="data-module-head"><div><h2>رفع ملفات جديدة</h2><p>هذه هي نقطة الرفع الوحيدة في لوحة الإدارة. اختر ملفًا أو عدة ملفات وحدد بيانات كل ملف وقسمه.</p></div><span class="data-count">حتى 50MB للملف</span></div><label>اختر الملفات<input id="adminMaterialFiles" type="file" multiple></label><div id="adminMaterialQueue"></div><div class="homepage-actions"><button type="button" id="adminMaterialUploadButton">بدء رفع الملفات</button><button type="button" id="adminMaterialClearButton">مسح القائمة</button></div><p id="adminMaterialUploadStatus" class="data-note">'+escapeHtml(adminUploadMessage)+'</p></section>':'';
     root.innerHTML=uploadMarkup+'<section class="data-module"><div class="data-module-head"><div><h2>'+escapeHtml(titles[viewKey]) + '</h2><p>بيانات مباشرة من قاعدة البيانات — تعديل النشر والوصف ورفع الملفات متاح للحسابات الإدارية المعتمدة.</p></div><span class="data-count">'+numberFormat(materials.length)+' ملف</span></div><input class="data-search" id="materialsSearch" type="search" placeholder="ابحث باسم الملف أو عنوانه"><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>التنزيلات المسجلة</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="materialsRows">'+(materials.map(row).join("")||'<tr><td colspan="8">لا توجد ملفات.</td></tr>')+'</tbody></table></div><p class="data-note">الحذف من قائمة الملفات ينقل الملف إلى سلة المحذوفات ولا يحذف ملف التخزين. الحذف النهائي يتم من وحدة السلة بواسطة المالك.</p></section>';
-    if(writable){
+    if(writable && viewKey==="file-center"){
       renderAdminMaterialQueue(grades,semesters,categories);
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
         for(const file of Array.from(event.target.files||[])){
