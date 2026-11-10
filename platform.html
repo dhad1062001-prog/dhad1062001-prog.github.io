@@ -1236,14 +1236,19 @@ function renderGrades(){
   const gradeRank=(name)=>{
     const n=String(name||'').replace(/[\u0640\s]/g,'');
     if(n.includes('رياضالأطفال')||n.includes('روضة'))return 0;
-    /* نضع أسماء الصفوف المركبة قبل الأسماء الأقصر حتى لا يُصنّف "الثاني عشر" على أنه "الثاني". */
-    const words=['الحاديعشر','الثانيعشر','التوجيهي','الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
-    const index=words.findIndex(w=>n.includes(w));
-    return index<0?999:index+1;
+    /* ترتيب المراحل كما طلب المستخدم، مع فحص الصفين المركبين قبل الصفوف المفردة. */
+    const ordered=[
+      ['الحاديعشر',11],['الثانيعشر',12],['التوجيهي',12],
+      ['الأول',1],['الثاني',2],['الثالث',3],['الرابع',4],
+      ['الخامس',5],['السادس',6],['السابع',7],['الثامن',8],
+      ['التاسع',9],['العاشر',10]
+    ];
+    const match=ordered.find(([word])=>n.includes(word));
+    return match?match[1]:999;
   };
   const displayGrades=[...grades].sort((a,b)=>gradeRank(a.name)-gradeRank(b.name));
   el.innerHTML=displayGrades.map((g,i)=>{
-    const isKindergarten=gradeRank(g.name)===5.5;
+    const isKindergarten=gradeRank(g.name)===0;
     return `
     <button class="grade ui-shape${isKindergarten?' kindergarten-grade':''}" onclick="showGrade(${g.id})">
       <span class="circle ${colors[i%colors.length]}">${escapeHtml(g.emoji||icons[i%icons.length])}</span>
