@@ -99,7 +99,7 @@ const legacySections=[
 ];
 function canManageFiles(){return access?.owner===true||access?.permissions?.files===true}
 function filesPlaceholder(v){
- v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><div class="toolbar">+(access?.owner||(!access?.staff&&access?.role==="admin")?'<button class="btn light" id="showTrash">سلة المحذوفات</button>':'')+'<button class="btn light" id="refreshMaterials">تحديث القائمة</button></div></div>'+
+ v.innerHTML='<div class="section-head"><div><h2>إدارة الملفات</h2><p>رفع ملف واحد أو مجموعة ملفات، وتحديد القسم والوصف لكل ملف قبل الحفظ.</p></div><div class="toolbar">'+(access?.owner||(!access?.staff&&access?.role==="admin")?'<button class="btn light" id="showTrash">سلة المحذوفات</button>':'')+'<button class="btn light" id="refreshMaterials">تحديث القائمة</button></div></div>'+
  '<div class="panel"><h3>رفع ملفات جديدة</h3><div class="notice">يُحفظ الملف في مخزن materials ثم يُنشأ سجل له في قاعدة البيانات ويُربط بالقسم الذي تختاره. لا يتم استبدال الملفات الموجودة أو تغيير مساراتها.</div>'+
  '<div class="field"><label>اختيار الملفات (يمكن تحديد عدة ملفات)</label><input id="uploadPicker" type="file" multiple></div>'+
  '<div class="form-grid"><div class="field"><label>الصف الدراسي (اختياري ويطبق على المجموعة)</label><select id="uploadGrade"><option value="">بدون تحديد صف</option></select></div>'+
