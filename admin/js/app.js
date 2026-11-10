@@ -1349,17 +1349,26 @@
     const root=document.getElementById("adminMaterialQueue");
     if(!root)return;
     if(!adminMaterialQueue.length){root.innerHTML='<div class="data-note">اختر ملفات لإضافتها إلى قائمة الرفع.</div>';return;}
+    const roots=(categories||[]).filter(x=>x.parent_id==null);
     const options=(items,selected)=>items.map(x=>'<option value="'+escapeHtml(String(x.id))+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+escapeHtml(x.name)+'</option>').join("");
     const sections=[["school_grades","الصفوف الدراسية"],["curricula","المناهج"],["teacher_supplies","لوازم المعلمين"],["interactive_games","الألعاب التفاعلية"],["supplementary_education","التعليم الإضافي"]];
     const homeOptions=homeSections.map(section=>{const parent=homeSections.find(x=>String(x.id)===String(section.parent_id));return '<option value="'+escapeHtml(section.id)+'">'+(parent?'↳ ':'')+escapeHtml(section.title)+'</option>';}).join("");
-    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>التصنيف</th><th>القسم الأساسي</th><th>أقسام الموقع الرئيسية والفرعية</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-category>'+options(categories,item.categoryId)+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td>'+(accessState?.owner===true?'<select data-upload-home-sections multiple size="4" title="يمكن اختيار أكثر من قسم">'+homeOptions+'</select>':'<small>ربط الأقسام الرئيسية والفرعية متاح للمالك</small>')+'</td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
+    root.innerHTML='<div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف والعنوان</th><th>الصف</th><th>الفصل</th><th>القسم الرئيسي</th><th>القسم الفرعي</th><th>القسم الأساسي</th><th>أقسام الموقع الرئيسية والفرعية</th><th>الحالة</th></tr></thead><tbody>'+adminMaterialQueue.map((item,index)=>'<tr data-admin-upload-row="'+index+'"><td><small>'+escapeHtml(item.file.name)+' · '+formatAdminFileSize(item.file.size)+'</small><input data-upload-title value="'+escapeHtml(item.title)+'" aria-label="عنوان الملف"><textarea data-upload-description rows="2" placeholder="وصف الملف">'+escapeHtml(item.description||"")+'</textarea></td><td><select data-upload-grade>'+options(grades,item.gradeId)+'</select></td><td><select data-upload-semester>'+options(semesters,item.semesterId)+'</select></td><td><select data-upload-parent-category>'+options(roots,((categories.find(x=>String(x.id)===String(item.categoryId))?.parent_id)||item.categoryId||roots[0]?.id))+'</select></td><td><select data-upload-sub-category><option value="">بدون قسم فرعي</option>'+options(categories.filter(x=>String(x.parent_id)===String((categories.find(y=>String(y.id)===String(item.categoryId))?.parent_id)||item.categoryId||roots[0]?.id)),(categories.find(x=>String(x.id)===String(item.categoryId))?.parent_id?item.categoryId:""))+'</select></td><td><select data-upload-section>'+sections.map(x=>'<option value="'+x[0]+'" '+(x[0]===item.primarySection?'selected':'')+'>'+x[1]+'</option>').join("")+'</select></td><td>'+(accessState?.owner===true?'<select data-upload-home-sections multiple size="4" title="يمكن اختيار أكثر من قسم">'+homeOptions+'</select>':'<small>ربط الأقسام الرئيسية والفرعية متاح للمالك</small>')+'</td><td data-upload-status>'+escapeHtml(item.status||"بانتظار الرفع")+'</td></tr>').join("")+'</tbody></table></div>';
     root.querySelectorAll("[data-admin-upload-row]").forEach(row=>{
       const index=Number(row.dataset.adminUploadRow),item=adminMaterialQueue[index];if(!item)return;
       row.querySelector("[data-upload-title]")?.addEventListener("input",event=>item.title=event.target.value);
       row.querySelector("[data-upload-description]")?.addEventListener("input",event=>item.description=event.target.value);
       row.querySelector("[data-upload-grade]")?.addEventListener("change",event=>item.gradeId=event.target.value);
       row.querySelector("[data-upload-semester]")?.addEventListener("change",event=>item.semesterId=event.target.value);
-      row.querySelector("[data-upload-category]")?.addEventListener("change",event=>item.categoryId=event.target.value);
+      const parentSelect=row.querySelector("[data-upload-parent-category]");
+      const childSelect=row.querySelector("[data-upload-sub-category]");
+      if(parentSelect&&childSelect){
+        parentSelect.addEventListener("change",event=>{
+          item.parentCategoryId=event.target.value;item.subCategoryId="";item.categoryId=event.target.value;
+          childSelect.innerHTML='<option value="">بدون قسم فرعي</option>'+options(categories.filter(x=>String(x.parent_id)===String(event.target.value)),"");
+        });
+        childSelect.addEventListener("change",event=>{item.subCategoryId=event.target.value;item.categoryId=event.target.value||item.parentCategoryId||parentSelect.value;});
+      }
       row.querySelector("[data-upload-section]")?.addEventListener("change",event=>item.primarySection=event.target.value);
       const homeSelect=row.querySelector("[data-upload-home-sections]");
       if(homeSelect){Array.from(homeSelect.options).forEach(option=>option.selected=(item.homeSectionIds||[]).includes(String(option.value)));homeSelect.addEventListener("change",()=>item.homeSectionIds=Array.from(homeSelect.selectedOptions).map(option=>String(option.value)));}
@@ -1390,7 +1399,9 @@
         const title=row?.querySelector("[data-upload-title]")?.value.trim()||item.title;
         const gradeId=Number(row?.querySelector("[data-upload-grade]")?.value);
         const semesterId=Number(row?.querySelector("[data-upload-semester]")?.value);
-        const categoryId=Number(row?.querySelector("[data-upload-category]")?.value);
+        const parentCategoryId=Number(row?.querySelector("[data-upload-parent-category]")?.value);
+        const subCategoryId=Number(row?.querySelector("[data-upload-sub-category]")?.value||0);
+        const categoryId=subCategoryId||parentCategoryId;
         const primarySection=row?.querySelector("[data-upload-section]")?.value||"school_grades";
         const setStatus=value=>{item.status=value;const cell=row?.querySelector("[data-upload-status]");if(cell)cell.textContent=value;};
         if(!title||!gradeId||!semesterId||!categoryId){setStatus("فشل: أكمل البيانات");failed++;continue;}
@@ -1497,7 +1508,8 @@
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
           if(duplicate&&!window.confirm("يوجد ملف بالاسم والحجم نفسيهما: «"+file.name+"». هل تريد إضافته رغم احتمال التكرار؟"))continue;
-          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:categories[0]?.id||"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
+          const firstRootCategory=(categories||[]).find(category=>category.parent_id==null);
+          adminMaterialQueue.push({file,title:file.name.replace(/\.[^.]+$/,""),description:"",gradeId:grades[0]?.id||"",semesterId:semesters[0]?.id||"",categoryId:firstRootCategory?.id||"",parentCategoryId:firstRootCategory?.id||"",subCategoryId:"",primarySection:activeUploadPrimarySection,homeSectionIds:[],status:"بانتظار الرفع"});
         }
         event.target.value="";
         renderAdminMaterialQueue(grades,semesters,categories,activeUploadHomeSections);
