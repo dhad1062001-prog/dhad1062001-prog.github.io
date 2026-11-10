@@ -1302,7 +1302,7 @@ function updateUploadSectionFields(){
   });
   if(grade)grade.required=academicRequired;
   if(semester)semester.required=academicRequired;
-  if(category)category.required=academicRequired;
+  if(category)category.required=false; // القيمة تُدار من قائمتي القسم الرئيسي والفرعي ويجري التحقق منها داخل uploadMaterial
   if(gradeLabel)gradeLabel.textContent=academicRequired?(primary==='curricula'?'الصف أو المرحلة':'الصف'):'الصف أو المرحلة (اختياري)';
   if(semesterLabel)semesterLabel.textContent=academicRequired?'الفصل الدراسي':'الفصل الدراسي (اختياري)';
   if(categoryLabel)categoryLabel.textContent=primary==='curricula'?'المادة/التصنيف':academicRequired?'القسم التعليمي':'المادة/التصنيف (اختياري)';
