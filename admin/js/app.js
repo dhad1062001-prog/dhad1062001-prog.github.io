@@ -1467,11 +1467,12 @@
         uploadTarget.value=activeUploadPrimarySection;
         uploadTarget.addEventListener("change",event=>{
           activeUploadPrimarySection=event.target.value;
-          const filtered=allMaterials.filter(x=>x.primary_section===activeUploadPrimarySection||(x.additional_sections||[]).includes(activeUploadPrimarySection));
+          materials=allMaterials.filter(x=>x.primary_section===activeUploadPrimarySection||(x.additional_sections||[]).includes(activeUploadPrimarySection));
           const body=document.getElementById("materialsRows");
-          if(body)body.innerHTML=filtered.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات مرتبطة بهذا القسم بعد.</td></tr>';
-          const count=document.querySelector("#moduleView .data-count");
-          if(count)count.textContent=numberFormat(filtered.length)+" ملف في هذا القسم";
+          if(body)body.innerHTML=materials.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات مرتبطة بهذا القسم بعد.</td></tr>';
+          const counts=document.querySelectorAll("#moduleView .data-count");
+          const count=counts[counts.length-1];
+          if(count)count.textContent=numberFormat(materials.length)+" ملف في هذا القسم";
         });
       }
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
