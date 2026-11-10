@@ -661,40 +661,9 @@ if(window.__DHAD_DIRECT_ENTRY__){
         </section>
         <div class="admin-grid">
           <div class="admin-card">
-            <h3>إضافة مادة</h3>
-            <form id="uploadForm" onsubmit="uploadMaterial(event)">
-              <div class="field"><label>عنوان المادة</label><input id="matTitle" required></div>
-              <div class="field"><label>الوصف</label><textarea id="matDescription"></textarea></div>
-              <div class="field"><label>نبذة عن محتويات الملف (اختياري)</label><textarea id="matSummary" placeholder="ماذا يتضمن الملف؟"></textarea></div>
-              <div class="field"><label>الأهداف التعليمية (اختياري)</label><textarea id="matObjectives" placeholder="ما المهارات أو المعارف التي يدعمها الملف؟"></textarea></div>
-              <div class="field"><label>الفئة المستهدفة (اختياري)</label><input id="matAudience" placeholder="مثال: طلبة الصف السادس أو معلمو اللغة العربية"></div>
-              <div class="field"><label>عدد الصفحات (اختياري)</label><input id="matPageCount" type="number" min="1" step="1" placeholder="مثال: 12"></div>
-              <div class="field"><label for="matPrimarySection">القسم الرئيسي للملف</label><select id="matPrimarySection" required>
-                <option value="school_grades" selected>الصفوف الدراسية</option>
-                <option value="curricula">المناهج الدراسية</option>
-                <option value="teacher_supplies">لوازم المعلمين</option>
-                <option value="interactive_games">الألعاب التفاعلية</option>
-                <option value="supplementary_education">التعليم الإضافي</option>
-              </select><small class="callout-help">اختر القسم الأساسي الذي ينتمي إليه الملف. يمكن ربطه بأقسام أخرى اختيارية.</small></div>
-              <div class="field"><label for="matAdditionalSections">أقسام إضافية (اختياري)</label><select id="matAdditionalSections" multiple size="5">
-                <option value="school_grades">الصفوف الدراسية</option>
-                <option value="curricula">المناهج الدراسية</option>
-                <option value="teacher_supplies">لوازم المعلمين</option>
-                <option value="interactive_games">الألعاب التفاعلية</option>
-                <option value="supplementary_education">التعليم الإضافي</option>
-              </select><small class="callout-help">يمكن اختيار أكثر من قسم. لن يتكرر رفع الملف؛ سيظهر في الأقسام المحددة.</small></div>
-              <div class="field" id="matGradeField"><label id="matGradeLabel">الصف أو المرحلة</label><select id="matGrade"></select></div>
-              <div class="field" id="trackWrap" style="display:none"><label>المسار</label><select id="matTrack"></select></div>
-              <div class="field" id="fieldWrap" style="display:none"><label>الحقل</label><select id="matField"></select></div>
-              <div class="field" id="matSemesterField"><label id="matSemesterLabel">الفصل الدراسي</label><select id="matSemester"></select></div>
-              <div class="field" id="matCategoryField"><label id="matCategoryLabel">المادة/التصنيف</label><select id="matCategory"></select></div>
-              <div class="field"><label for="matHomeSections">أقسام الصفحة الرئيسية (اختياري)</label><select id="matHomeSections" multiple size="4" aria-describedby="matHomeSectionsHelp"></select><small id="matHomeSectionsHelp" class="callout-help">يمكنك اختيار قسم أو أكثر ليظهر الملف ضمنها، مثل «لوازم المعلمين». لا يؤثر ذلك في تصنيفه الدراسي.</small></div>
-              <div class="field"><label>الملف</label><input type="file" id="matFile" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div>
-              <button class="primary" type="submit">رفع المادة</button>
-              <div class="status" id="uploadStatus"></div><div id="uploadedMaterialLink" class="dhad-uploaded-link" aria-live="polite"></div>
-            </form>
-            <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
-            <section aria-labelledby="batchUploadTitle"><h3 id="batchUploadTitle">رفع عدة ملفات</h3><p class="callout-help">اختر ملفات متعددة، ثم حدّد الصف والفصل والقسم لكل ملف قبل بدء الرفع. الحد الأقصى لكل ملف 50MB.</p><div class="field"><label for="batchFilesInput">الملفات</label><input id="batchFilesInput" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.mp3,.wav,.mp4"></div><div id="batchFilesList" class="admin-list" aria-live="polite"><div class="empty">اختر ملفات لعرضها هنا.</div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="primary" id="batchUploadButton" type="button" onclick="uploadMaterialBatch()">بدء رفع الملفات</button><button class="secondary" id="batchCancelButton" type="button" onclick="cancelMaterialBatch()" disabled>إلغاء الرفع</button></div><div class="status" id="batchUploadStatus" role="status" aria-live="polite"></div><div id="batchUploadedLinks" class="dhad-uploaded-link" aria-live="polite"></div></section>
+            <h3>إدارة رفع الملفات</h3>
+            <p class="callout-help">تم توحيد رفع الملفات من لوحة الإدارة المستقلة، بحيث تختار القسم أولًا ثم ترفع ملفاته من داخله. لم يعد الرفع متاحًا من هذه الشاشة لتجنب توزيع الملفات على أقسام غير مقصودة.</p>
+            <a class="primary" href="/admin/">فتح لوحة إدارة ضاد</a>
           </div>
           <div class="admin-card">
             <h3>آخر الملفات</h3>
