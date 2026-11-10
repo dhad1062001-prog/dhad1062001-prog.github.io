@@ -389,7 +389,7 @@
     const content = document.getElementById("homepageSectionContent")?.value.trim() || "";
     const file = document.getElementById("homepageSectionFile")?.files?.[0] || null;
     const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
-    const filePath = file ? "" : (old?.file_path || "");
+    const filePath = file ? "" : (old?.content_type === type ? (old?.file_path || "") : "");
     const fileName = file?.name || (filePath ? filePath.split("/").pop() : "");
     const fileSize = file ? numberFormat(Math.ceil(file.size / 1024)) + " كيلوبايت" : "";
     let media = "";
@@ -496,10 +496,10 @@
     if (type === "image" && file && !file.type.startsWith("image/")) return setHomepageStatus("اختر ملف صورة صالحًا.", "error");
     if ((type === "image" || type === "file") && file && file.size > 50 * 1024 * 1024) return setHomepageStatus("الحد الأعلى لحجم الملف 50 ميجابايت.", "error");
     const needsFile = type === "image" || type === "file";
-    if (needsFile && !file && !old?.file_path) return setHomepageStatus("اختر صورة أو ملفًا قبل الحفظ.", "error");
+    if (needsFile && !file && (!old?.file_path || old.content_type !== type)) return setHomepageStatus("اختر صورة أو ملفًا مناسبًا لنوع المحتوى المحدد.", "error");
 
     setHomepageStatus("جارٍ حفظ القسم...");
-    let filePath = needsFile ? (old?.file_path || null) : null;
+    let filePath = needsFile ? (old?.content_type === type ? (old?.file_path || null) : null) : null;
     let uploadedNewFile = false;
     if (needsFile && file) {
       const safeName = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/-+/g, "-").slice(0, 120) || "file";
