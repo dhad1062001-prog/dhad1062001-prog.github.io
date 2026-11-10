@@ -395,6 +395,7 @@
       document.getElementById("homepageVisible").checked = page.is_visible !== false;
       homepageSections = sectionsResult.data || [];
       homepageMaterials = materialsResult.data || [];
+      updateHomepageSectionEditor();
       await loadHomepageSectionLinks();
       renderHomepageParentOptions();
       renderHomepageSections();
