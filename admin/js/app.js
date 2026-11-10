@@ -917,6 +917,23 @@
       await loadTrash();
       return;
     }
+    if (action === "drive-edit") {
+      if(!ownerCanWrite())throw new Error("إدارة حسابات Drive متاحة للمالك فقط.");
+      const label=window.prompt("الاسم التعريفي للحساب:",button.dataset.label||"");
+      if(label===null)return;
+      const account_email=window.prompt("البريد الإلكتروني:",button.dataset.email||"");
+      if(account_email===null)return;
+      const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:"storage_update",id,label:label.trim(),account_email:account_email.trim()}});
+      if(error||data?.error)throw new Error(data?.detail||data?.error||error.message);
+      await loadDrive();return;
+    }
+    if (action === "drive-disconnect") {
+      if(!ownerCanWrite())throw new Error("إدارة حسابات Drive متاحة للمالك فقط.");
+      if(!window.confirm("هل تريد فصل هذا الحساب المسجل؟ لن تُحذف الملفات الموجودة."))return;
+      const {data,error}=await supabase.functions.invoke("admin-control",{body:{action:"storage_disconnect",id}});
+      if(error||data?.error)throw new Error(data?.detail||data?.error||error.message);
+      await loadDrive();return;
+    }
     if (action === "seo-edit") {
       const row=(window.__adminSeoEntries||[]).find(item=>item.page_path===id);
       if(!row) throw new Error("لم يتم العثور على إعداد SEO.");
@@ -1138,7 +1155,7 @@
     try{
       const result=await invokeAdmin("storage_list");
       const accounts=result.accounts||[];
-      root.innerHTML='<section class="data-module"><h2>حسابات Google Drive</h2><p>يمكن تسجيل بيانات الحساب الآن، لكن الاتصال الفعلي ومزامنة الملفات يتطلبان إعداد Google OAuth على الخادم. لا تُدخل كلمات مرور أو رموز وصول هنا.</p><form id="adminDriveForm"><label>اسم تعريفي للحساب<input id="driveLabel" maxlength="80" required></label><label>البريد الإلكتروني للحساب (اختياري)<input id="driveEmail" type="email"></label><button type="submit">تسجيل مساحة Drive</button></form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الاسم</th><th>البريد</th><th>الحالة</th></tr></thead><tbody>'+(accounts.map(x=>'<tr><td>'+escapeHtml(x.label)+'</td><td>'+escapeHtml(x.account_email||"—")+'</td><td>'+escapeHtml(x.status)+'</td></tr>').join("")||'<tr><td colspan="3">لا توجد حسابات مسجلة.</td></tr>')+'</tbody></table></div></section>';
+      root.innerHTML='<section class="data-module"><h2>حسابات Google Drive</h2><p>يمكن تسجيل بيانات الحساب الآن، لكن الاتصال الفعلي ومزامنة الملفات يتطلبان إعداد Google OAuth على الخادم. لا تُدخل كلمات مرور أو رموز وصول هنا.</p><form id="adminDriveForm"><label>اسم تعريفي للحساب<input id="driveLabel" maxlength="80" required></label><label>البريد الإلكتروني للحساب (اختياري)<input id="driveEmail" type="email"></label><button type="submit">تسجيل مساحة Drive</button></form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الاسم</th><th>البريد</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>'+(accounts.map(x=>'<tr><td>'+escapeHtml(x.label)+'</td><td>'+escapeHtml(x.account_email||"—")+'</td><td>'+escapeHtml(x.status)+'</td><td><button type="button" data-admin-action="drive-edit" data-id="'+x.id+'" data-label="'+escapeHtml(x.label)+'" data-email="'+escapeHtml(x.account_email||"")+'">تعديل</button> '+(x.status==="disconnected"?'—':'<button type="button" data-admin-action="drive-disconnect" data-id="'+x.id+'">فصل</button>')+'</td></tr>').join("")||'<tr><td colspan="4">لا توجد حسابات مسجلة.</td></tr>')+'</tbody></table></div></section>';
       document.getElementById("adminDriveForm").addEventListener("submit",async event=>{
         event.preventDefault();
         const label=document.getElementById("driveLabel").value.trim(),account_email=document.getElementById("driveEmail").value.trim();
@@ -1217,7 +1234,7 @@
     try{
       const result=await invokeAdmin("trash_list");
       const entries=result.entries||[];
-      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات المؤرشفة</h2><p>النقل إلى السلة يخفي الملف ولا يحذف ملف التخزين. الحذف النهائي لا يتم إلا من هنا.</p></div><span class="data-count">'+numberFormat(entries.length)+' ملف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>تاريخ النقل</th><th>الحذف التلقائي</th><th>الإجراءات</th></tr></thead><tbody>'+(entries.map(x=>'<tr><td>'+escapeHtml(x.title)+'</td><td>'+fmtDate(x.deleted_at)+'</td><td>'+fmtDate(x.expires_at)+'</td><td>'+(ownerCanWrite()?'<button type="button" data-admin-action="trash-restore" data-id="'+x.id+'">استعادة</button> <button type="button" data-admin-action="trash-purge" data-id="'+x.id+'">حذف نهائي</button>':'متاح للمالك فقط')+'</td></tr>').join("")||'<tr><td colspan="4">سلة المحذوفات فارغة.</td></tr>')+'</tbody></table></div><p class="data-note">النسخة الحالية تدعم أرشفة ملفات materials فقط. لا تُحذف الملفات تلقائيًا عند انتهاء 30 يومًا؛ يتطلب ذلك مهمة مجدولة منفصلة.</p></section>';
+      root.innerHTML='<section class="data-module"><div class="data-module-head"><div><h2>الملفات المؤرشفة</h2><p>النقل إلى السلة يخفي الملف ولا يحذف ملف التخزين. الحذف النهائي لا يتم إلا من هنا.</p></div><span class="data-count">'+numberFormat(entries.length)+' ملف</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>الملف</th><th>مكان التخزين</th><th>تاريخ النقل</th><th>موعد انتهاء المهلة</th><th>الإجراءات</th></tr></thead><tbody>'+(entries.map(x=>{const isDrive=String(x.storage_path||"").startsWith("drive:");return '<tr><td>'+escapeHtml(x.title)+'</td><td>'+(isDrive?'Google Drive':'Supabase Storage')+'</td><td>'+fmtDate(x.deleted_at)+'</td><td>'+fmtDate(x.expires_at)+'</td><td>'+(ownerCanWrite()?'<button type="button" data-admin-action="trash-restore" data-id="'+x.id+'">استعادة</button> '+(isDrive?'يتطلب ربط Drive للحذف النهائي':'<button type="button" data-admin-action="trash-purge" data-id="'+x.id+'">حذف نهائي</button>'):'متاح للمالك فقط')+'</td></tr>';}).join("")||'<tr><td colspan="5">سلة المحذوفات فارغة.</td></tr>')+'</tbody></table></div><p class="data-note">النسخة الحالية تدعم أرشفة ملفات materials فقط. لا تُحذف الملفات تلقائيًا عند انتهاء 30 يومًا؛ يتطلب ذلك مهمة مجدولة منفصلة.</p></section>';
     }catch(error){moduleError(root,error.message);}
   }
 
