@@ -2543,7 +2543,7 @@ function renderPublicHomeSections(rows,directSectionId=null){
       const itemTitle=escapeHtml(item.title||'');
       const itemDescription=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
       if(item.content_type==='text'){
-        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\\r?\\n/g,'<br>')+'</div></article>';
+        return '<article class="home-section-content-item"><h4>'+itemTitle+'</h4>'+itemDescription+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\r?\n/g,'<br>')+'</div></article>';
       }
       if(item.content_type==='html'&&item.storage_path){
         const htmlUrl=getMaterialUrl(item.storage_path);
