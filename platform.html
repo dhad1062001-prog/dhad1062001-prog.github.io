@@ -2535,7 +2535,7 @@ function renderPublishedPlacementContent(){
     holder.innerHTML=items.map(item=>{
       const itemTitle=escapeHtml(item.title||'');
       const description=item.description?'<p class="home-section-caption">'+escapeHtml(item.description)+'</p>':'';
-      if(item.content_type==='text')return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\\r?\\n/g,'<br>')+'</div></article>';
+      if(item.content_type==='text')return '<article class="home-section-content-item"><h3>'+itemTitle+'</h3>'+description+'<div class="home-section-text">'+escapeHtml(item.body||'').replace(/\r?\n/g,'<br>')+'</div></article>';
       if(item.content_type==='html'&&item.storage_path){
         const url=getMaterialUrl(item.storage_path);
         if(!url)return '';
