@@ -1435,7 +1435,11 @@
       const trashedIds=new Set((trashData?.entries||[]).map(item=>String(item.entity_id)));
       allMaterials=allMaterials.filter(item=>!trashedIds.has(String(item.id)));
     } catch(error) { console.warn("تعذر استبعاد الملفات المؤرشفة من قائمة الإدارة:",error); }
-    const materials=viewKey === "supplies" ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies")) : allMaterials;
+    let materials=viewKey === "supplies"
+      ? allMaterials.filter(x => x.primary_section === "teacher_supplies" || (x.additional_sections || []).includes("teacher_supplies"))
+      : viewKey === "section-workspace"
+        ? allMaterials.filter(x => x.primary_section === activeUploadPrimarySection || (x.additional_sections || []).includes(activeUploadPrimarySection))
+        : allMaterials;
     const grades=g.data||[], semesters=s.data||[], categories=c.data||[];
     const homeSectionsResult=await supabase.from("home_sections").select("id,title,parent_id,is_active").order("sort_order");
     if(homeSectionsResult.error){root.innerHTML='<div class="data-error">تعذر تحميل الأقسام لربط الملفات: '+escapeHtml(homeSectionsResult.error.message)+'</div>';return;}
@@ -1459,7 +1463,17 @@
     if(writable && viewKey==="section-workspace"){
       renderAdminMaterialQueue(grades,semesters,categories,homeSections);
       const uploadTarget=document.getElementById("adminUploadTarget");
-      if(uploadTarget){uploadTarget.value=activeUploadPrimarySection;uploadTarget.addEventListener("change",event=>{activeUploadPrimarySection=event.target.value;});}
+      if(uploadTarget){
+        uploadTarget.value=activeUploadPrimarySection;
+        uploadTarget.addEventListener("change",event=>{
+          activeUploadPrimarySection=event.target.value;
+          const filtered=allMaterials.filter(x=>x.primary_section===activeUploadPrimarySection||(x.additional_sections||[]).includes(activeUploadPrimarySection));
+          const body=document.getElementById("materialsRows");
+          if(body)body.innerHTML=filtered.map(row).join("")||'<tr><td colspan="9">لا توجد ملفات مرتبطة بهذا القسم بعد.</td></tr>';
+          const count=document.querySelector("#moduleView .data-count");
+          if(count)count.textContent=numberFormat(filtered.length)+" ملف في هذا القسم";
+        });
+      }
       document.getElementById("adminMaterialFiles")?.addEventListener("change",event=>{
         for(const file of Array.from(event.target.files||[])){
           const duplicate=adminMaterialQueue.some(x=>x.file.name===file.name&&x.file.size===file.size)||allMaterials.some(x=>x.file_name===file.name&&Number(x.file_size)===file.size);
