@@ -374,15 +374,53 @@
     previewHomepageSection();
   }
 
+  let homepagePreviewObjectUrl = null;
+
   function previewHomepageSection() {
     const box = document.getElementById("homepageSectionPreview");
     if (!box) return;
+    if (homepagePreviewObjectUrl) {
+      URL.revokeObjectURL(homepagePreviewObjectUrl);
+      homepagePreviewObjectUrl = null;
+    }
+
     const title = document.getElementById("homepageSectionTitle")?.value.trim() || "عنوان القسم";
     const type = document.getElementById("homepageSectionType")?.value || "text";
-    const content = document.getElementById("homepageSectionContent")?.value || "";
-    const file = document.getElementById("homepageSectionFile")?.files?.[0];
-    const fileText = file ? "الملف المحدد: " + file.name : "";
-    box.textContent = title + " — " + (type === "link" ? (content || "أدخل الرابط") : content || fileText || "لا يوجد محتوى بعد");
+    const content = document.getElementById("homepageSectionContent")?.value.trim() || "";
+    const file = document.getElementById("homepageSectionFile")?.files?.[0] || null;
+    const old = homepageSections.find(row => String(row.id) === String(homepageEditingId));
+    const filePath = file ? "" : (old?.file_path || "");
+    const fileName = file?.name || (filePath ? filePath.split("/").pop() : "");
+    const fileSize = file ? numberFormat(Math.ceil(file.size / 1024)) + " كيلوبايت" : "";
+    let media = "";
+
+    if (type === "image") {
+      let imageUrl = "";
+      if (file && file.type.startsWith("image/")) {
+        homepagePreviewObjectUrl = URL.createObjectURL(file);
+        imageUrl = homepagePreviewObjectUrl;
+      } else if (filePath) {
+        imageUrl = supabase.storage.from(MATERIALS_BUCKET).getPublicUrl(filePath).data?.publicUrl || "";
+      }
+      if (imageUrl) {
+        media = '<img src="' + escapeHtml(imageUrl) + '" alt="' + escapeHtml(title) + '" style="display:block;max-width:100%;max-height:220px;object-fit:contain;border-radius:9px;margin:10px 0">';
+      } else {
+        media = '<div class="homepage-preview-meta">اختر صورة لمعاينتها هنا.</div>';
+      }
+    } else if (type === "file") {
+      const details = fileName ? '<strong>' + escapeHtml(fileName) + '</strong>' + (fileSize ? '<small>' + escapeHtml(fileSize) + '</small>' : '') : '<span>لم يتم اختيار ملف بعد.</span>';
+      let fileUrl = "";
+      if (filePath) fileUrl = supabase.storage.from(MATERIALS_BUCKET).getPublicUrl(filePath).data?.publicUrl || "";
+      media = '<div class="homepage-preview-file">📄 ' + details + (fileUrl ? '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer">فتح الملف الحالي</a>' : '') + '</div>';
+    } else if (type === "link") {
+      media = content && /^https?:\/\//i.test(content)
+        ? '<a href="' + escapeHtml(content) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(content) + '</a>'
+        : '<span>أدخل رابطًا صحيحًا يبدأ بـ http:// أو https://</span>';
+    } else {
+      media = '<div>' + escapeHtml(content || "اكتب محتوى القسم لمعاينته هنا.") + '</div>';
+    }
+
+    box.innerHTML = '<strong>' + escapeHtml(title) + '</strong><div class="homepage-preview-content">' + media + '</div>';
   }
 
   function resetHomepageSectionForm() {
