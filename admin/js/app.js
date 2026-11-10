@@ -1132,6 +1132,13 @@
       let value;try{value=JSON.parse(document.getElementById("adminFeatureJson").value);}catch(_){return moduleError(root,"صيغة JSON غير صحيحة.");}
       if(feature?.[2]==="array"&&!Array.isArray(value))return moduleError(root,"هذا النوع يتطلب قائمة JSON تبدأ بـ [].");
       if(feature?.[2]==="object"&&(!value||typeof value!=="object"||Array.isArray(value)))return moduleError(root,"هذا النوع يتطلب كائن JSON يبدأ بـ {}.");
+      if(Array.isArray(value)){
+        if(value.some(item=>!item||typeof item!=="object"||Array.isArray(item)||typeof item.id!=="string"||!String(item.title||"").trim()))return moduleError(root,"كل عنصر يجب أن يحتوي على معرّف نصي وعنوان غير فارغ.");
+        if(slug==="dhad-games-v1"&&value.some(item=>!Array.isArray(item.files)||!String(item.mainPath||"").trim()))return moduleError(root,"كل لعبة يجب أن تحتوي على قائمة ملفات ومسار ملف HTML رئيسي.");
+        if(slug==="dhad-calendar-items-v1"&&value.some(item=>!String(item.imagePath||"").trim()))return moduleError(root,"كل عنصر تقويم يجب أن يحتوي على مسار صورة محفوظ.");
+        if(slug==="dhad-additional-items-v1"&&value.some(item=>!Array.isArray(item.images)||typeof item.text!=="string"))return moduleError(root,"كل عنصر تعليم إضافي يجب أن يحتوي على قائمة صور ونص تعليمي.");
+        if(slug==="dhad-home-cards-v1"&&value.some(item=>typeof item.visible!=="boolean"||!String(item.target||"").trim()))return moduleError(root,"كل بطاقة رئيسية يجب أن تحتوي على حالة ظهور ووجهة صحيحة.");
+      }
       const title=feature?.[1]||slug;
       const {error:saveError}=await supabase.from("site_pages").upsert({slug,title,content:JSON.stringify(value),is_visible:true,updated_at:new Date().toISOString(),updated_by:accessState?.user?.id||null},{onConflict:"slug"});
       if(saveError)return moduleError(root,saveError.message);
