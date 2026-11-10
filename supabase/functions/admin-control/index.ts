@@ -39,6 +39,18 @@ Deno.serve(async (req: Request) => {
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const body = await req.json().catch(() => ({}));
     const action = String(body.action ?? "");
+    const recordAudit = async (auditAction: string, targetType = "", targetId = "", details: Record<string, unknown> = {}) => {
+      const { error } = await admin.from("admin_audit_log").insert({
+        actor_id: userData.user.id,
+        actor_email: callerEmail,
+        action: auditAction,
+        target_type: targetType,
+        target_id: targetId,
+        details,
+        result: "success",
+      });
+      return !error;
+    };
     if (!ADMIN_EMAILS.has(callerEmail) && action !== "my_access") {
       const { data: staffAccess, error: staffAccessError } = await admin.from("admin_staff")
         .select("id,email,role,permissions,status")
@@ -69,6 +81,120 @@ Deno.serve(async (req: Request) => {
         .order("created_at", { ascending: false });
       if (error) return json({ error: "staff_list_failed", detail: error.message }, 400);
       return json({ staff: data ?? [] });
+    }
+
+    if (action === "audit_record") {
+      if (!ADMIN_EMAILS.has(callerEmail)) return json({ error: "forbidden" }, 403);
+      const auditAction = typeof body.audit_action === "string" ? body.audit_action.trim().slice(0, 80) : "";
+      const targetType = typeof body.target_type === "string" ? body.target_type.trim().slice(0, 80) : "";
+      const targetId = typeof body.target_id === "string" ? body.target_id.trim().slice(0, 200) : "";
+      const details = body.details && typeof body.details === "object" && !Array.isArray(body.details) ? body.details : {};
+      if (!auditAction) return json({ error: "audit_action_required" }, 400);
+      const recorded = await recordAudit(auditAction, targetType, targetId, details);
+      if (!recorded) return json({ error: "audit_record_failed" }, 400);
+      return json({ success: true });
+    }
+
+    if (action === "audit_list") {
+      if (callerEmail !== OWNER_EMAIL) return json({ error: "owner_only" }, 403);
+      const { data, error } = await admin.from("admin_audit_log")
+        .select("id,actor_email,action,target_type,target_id,details,result,created_at")
+        .order("created_at", { ascending: false }).limit(250);
+      if (error) return json({ error: "audit_list_failed", detail: error.message }, 400);
+      return json({ entries: data ?? [] });
+    }
+
+    if (action === "trash_list") {
+      if (!ADMIN_EMAILS.has(callerEmail)) return json({ error: "forbidden" }, 403);
+      const { data, error } = await admin.from("admin_trash")
+        .select("id,entity_type,entity_id,title,storage_path,deleted_by_email,deleted_at,expires_at")
+        .is("restored_at", null).order("deleted_at", { ascending: false }).limit(250);
+      if (error) return json({ error: "trash_list_failed", detail: error.message }, 400);
+      return json({ entries: data ?? [] });
+    }
+
+    if (action === "trash_material") {
+      if (!ADMIN_EMAILS.has(callerEmail)) return json({ error: "forbidden" }, 403);
+      const id = String(body.id ?? "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+        return json({ error: "invalid_material_id" }, 400);
+      }
+      const { data: material, error: materialError } = await admin.from("materials")
+        .select("*").eq("id", id).maybeSingle();
+      if (materialError || !material) return json({ error: "material_not_found", detail: materialError?.message }, 404);
+      const { data: existing, error: existingError } = await admin.from("admin_trash")
+        .select("id").eq("entity_type", "material").eq("entity_id", id).is("restored_at", null).maybeSingle();
+      if (existingError) return json({ error: "trash_lookup_failed", detail: existingError.message }, 400);
+      if (existing) return json({ error: "material_already_in_trash" }, 409);
+      const { data: trashEntry, error: trashError } = await admin.from("admin_trash").insert({
+        entity_type: "material",
+        entity_id: id,
+        title: material.title || material.file_name || "ملف تعليمي",
+        payload: material,
+        storage_path: material.file_path || "",
+        deleted_by: userData.user.id,
+        deleted_by_email: callerEmail,
+      }).select("id").single();
+      if (trashError) return json({ error: "trash_save_failed", detail: trashError.message }, 400);
+      const { error: hideError } = await admin.from("materials")
+        .update({ is_public: false, updated_at: new Date().toISOString() }).eq("id", id);
+      if (hideError) {
+        await admin.from("admin_trash").delete().eq("id", trashEntry.id);
+        return json({ error: "material_archive_failed", detail: hideError.message }, 400);
+      }
+      await recordAudit("material_moved_to_trash", "material", id, { title: material.title || material.file_name });
+      return json({ success: true, trash_id: trashEntry.id, message: "تم نقل الملف إلى سلة المحذوفات وإخفاؤه عن الزوار دون حذف ملف التخزين." });
+    }
+
+    if (action === "trash_restore") {
+      if (callerEmail !== OWNER_EMAIL) return json({ error: "owner_only" }, 403);
+      const trashId = String(body.id ?? "");
+      const { data: entry, error: entryError } = await admin.from("admin_trash")
+        .select("*").eq("id", trashId).is("restored_at", null).maybeSingle();
+      if (entryError || !entry) return json({ error: "trash_entry_not_found", detail: entryError?.message }, 404);
+      if (entry.entity_type !== "material") return json({ error: "unsupported_trash_type" }, 400);
+      const payload = entry.payload as Record<string, unknown>;
+      const materialId = String(payload.id ?? entry.entity_id);
+      const { data: current, error: currentError } = await admin.from("materials")
+        .select("id").eq("id", materialId).maybeSingle();
+      if (currentError) return json({ error: "material_lookup_failed", detail: currentError.message }, 400);
+      const restored = current
+        ? await admin.from("materials").update({
+            is_public: payload.is_public === true,
+            updated_at: new Date().toISOString(),
+          }).eq("id", materialId)
+        : await admin.from("materials").insert({ ...payload, is_public: payload.is_public === true });
+      if (restored.error) return json({ error: "material_restore_failed", detail: restored.error.message }, 400);
+      const { error: markError } = await admin.from("admin_trash")
+        .update({ restored_at: new Date().toISOString() }).eq("id", trashId);
+      if (markError) return json({ error: "trash_restore_mark_failed", detail: markError.message }, 400);
+      await recordAudit("material_restored_from_trash", "material", materialId, { title: entry.title });
+      return json({ success: true, message: "تمت استعادة سجل الملف. بقي مسار التخزين الأصلي كما هو." });
+    }
+
+    if (action === "trash_purge") {
+      if (callerEmail !== OWNER_EMAIL) return json({ error: "owner_only" }, 403);
+      const trashId = String(body.id ?? "");
+      const { data: entry, error: entryError } = await admin.from("admin_trash")
+        .select("*").eq("id", trashId).is("restored_at", null).maybeSingle();
+      if (entryError || !entry) return json({ error: "trash_entry_not_found", detail: entryError?.message }, 404);
+      if (entry.entity_type !== "material") return json({ error: "unsupported_trash_type" }, 400);
+      const materialId = String(entry.entity_id);
+      if (String(entry.storage_path || "").startsWith("drive:")) {
+        return json({ error: "external_storage_delete_not_connected", detail: "هذا الملف مرتبط بمساحة Google Drive غير المتصلة حاليًا. بقي الملف في السلة ولم يُحذف أي سجل أو ملف خارجي." }, 409);
+      }
+      const { error: linksError } = await admin.from("home_section_materials").delete().eq("material_id", materialId);
+      if (linksError) return json({ error: "material_links_delete_failed", detail: linksError.message }, 400);
+      const { error: materialDeleteError } = await admin.from("materials").delete().eq("id", materialId);
+      if (materialDeleteError) return json({ error: "material_delete_failed", detail: materialDeleteError.message }, 400);
+      if (entry.storage_path) {
+        const { error: storageError } = await admin.storage.from("materials").remove([entry.storage_path]);
+        if (storageError) return json({ error: "storage_delete_failed", detail: storageError.message, record_deleted: true }, 400);
+      }
+      const { error: trashDeleteError } = await admin.from("admin_trash").delete().eq("id", trashId);
+      if (trashDeleteError) return json({ error: "trash_entry_delete_failed", detail: trashDeleteError.message }, 400);
+      await recordAudit("material_permanently_deleted", "material", materialId, { title: entry.title });
+      return json({ success: true, message: "تم حذف سجل الملف وروابطه وملف التخزين نهائيًا." });
     }
 
     if (action === "staff_invite") {
@@ -162,6 +288,7 @@ Deno.serve(async (req: Request) => {
         .insert({ provider: "google_drive", label, account_email: accountEmail || null, status: "pending", created_by: userData.user.id })
         .select("id,provider,label,account_email,status,metadata,created_at,updated_at").single();
       if (error) return json({ error: "storage_add_failed", detail: error.message }, 400);
+      await recordAudit("storage_account_registered", "storage_account", data.id, { label, account_email: accountEmail });
       return json({ success: true, account: data, connection_ready: false, message: "تم تسجيل مساحة التخزين. يلزم إعداد Google OAuth قبل تفعيل الاتصال الآمن." });
     }
 
@@ -175,6 +302,7 @@ Deno.serve(async (req: Request) => {
         .update({ label, account_email: accountEmail || null, updated_at: new Date().toISOString() })
         .eq("id", id).select("id,provider,label,account_email,status,metadata,created_at,updated_at").single();
       if (error) return json({ error: "storage_update_failed", detail: error.message }, 400);
+      await recordAudit("storage_account_updated", "storage_account", id, { label, account_email: accountEmail });
       return json({ success: true, account: data });
     }
 
@@ -186,6 +314,7 @@ Deno.serve(async (req: Request) => {
         .update({ status: "disconnected", updated_at: new Date().toISOString() })
         .eq("id", id).select("id,provider,label,account_email,status,metadata,created_at,updated_at").single();
       if (error) return json({ error: "storage_disconnect_failed", detail: error.message }, 400);
+      await recordAudit("storage_account_disconnected", "storage_account", id, { label: data.label });
       return json({ success: true, account: data });
     }
 
