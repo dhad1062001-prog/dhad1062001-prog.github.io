@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>معاينة تطوير الشاشة الرئيسية | ضاد</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#20291C}
+#previewFrame{display:block;width:100%;height:100dvh;border:0;background:#20291C}
+</style>
+</head>
+<body>
+<iframe id="previewFrame" src="platform.html" title="معاينة الشاشة الرئيسية المطوّرة لمنصة ضاد"></iframe>
+<script>
+(function(){
+  'use strict';
+  const frame=document.getElementById('previewFrame');
+  const SUPABASE_URL='https://rjkrfvnexrhebvulrtgp.supabase.co';
+  const PUBLISHABLE_KEY='sb_publishable_INgrDnl6WPs_vNhpvwXMSA_YiHX8x7J';
+
+  function installPreview(){
+    let doc;
+    try{doc=frame.contentDocument;}catch(e){return;}
+    if(!doc||doc.getElementById('dhad-home-preview-styles'))return;
+    const home=doc.getElementById('home');
+    const search=doc.getElementById('searchSection');
+    const grades=doc.getElementById('homeGradesSection');
+    if(!home||!search||!grades)return;
+
+    const style=doc.createElement('style');
+    style.id='dhad-home-preview-styles';
+    style.textContent=`
+      #searchSection{max-width:1180px!important;width:100%;padding:20px 18px 10px!important;margin:0 auto!important}
+      #searchSection .section-head{margin-bottom:9px!important}
+      #searchSection .section-head h3{font-size:20px!important;color:#D9B96B!important}
+      #searchSection .section-head p{font-size:12px!important}
+      #searchSection .search{max-width:none!important;margin:0!important;border-radius:15px!important;background:#2D3829!important;border-color:#59654D!important}
+      #searchSection .search input{min-height:48px!important}
+      #searchSection .search button{border-radius:10px!important}
+      #dhadIntroPreview,#dhadStatsPreview{max-width:1180px;margin:0 auto;padding:12px 18px}
+      .dhad-intro-card{border:1px solid #59654D;border-right:4px solid #C3A45F;border-radius:17px;background:linear-gradient(135deg,#2D3829,#34412F);padding:19px 22px;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+      .dhad-intro-kicker{color:#D9B96B;font-size:12px;font-weight:900;margin:0 0 5px}
+      .dhad-intro-card h2{font-size:clamp(20px,3vw,27px);color:#fff;margin:0 0 7px;font-weight:900}
+      .dhad-intro-card p{margin:0;color:#E1E5DA;font-size:14px;line-height:2;font-weight:600}
+      .dhad-stats-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:3px 0 11px}
+      .dhad-stats-head h3{margin:0;color:#D9B96B;font-size:20px;font-weight:900}
+      .dhad-stats-head span{color:#C8CEBF;font-size:11px}
+      .dhad-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+      .dhad-stat{min-width:0;background:#2D3829;border:1px solid #59654D;border-radius:15px;padding:13px 10px;text-align:center}
+      .dhad-stat strong{display:block;color:#D9B96B;font-size:clamp(21px,3vw,29px);font-weight:900;line-height:1.35}
+      .dhad-stat span{display:block;color:#E1E5DA;font-size:11px;font-weight:700;margin-top:4px}
+      .dhad-stat small{display:block;color:#9FA995;font-size:9px;margin-top:3px}
+      @media(max-width:600px){
+        #searchSection{padding:14px 13px 7px!important}
+        #dhadIntroPreview,#dhadStatsPreview{padding:8px 13px}
+        .dhad-intro-card{padding:15px 16px}
+        .dhad-intro-card p{font-size:12px;line-height:1.9}
+        .dhad-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+        .dhad-stat{padding:11px 8px}
+        .dhad-stat span{font-size:10px}
+        .dhad-stats-head h3{font-size:17px}
+      }
+    `;
+    doc.head.appendChild(style);
+
+    const intro=doc.createElement('section');
+    intro.id='dhadIntroPreview';
+    intro.setAttribute('aria-labelledby','dhadIntroTitle');
+    intro.innerHTML='<div class="dhad-intro-card"><p class="dhad-intro-kicker">أهلاً بكم في ضاد</p><h2 id="dhadIntroTitle">منصة ضاد – منصة اللغة العربية</h2><p>منصة تعليمية متخصصة في خدمة معلمي اللغة العربية والطلبة وأولياء الأمور، تجمع الموارد والملفات التعليمية في مكان واحد، وتسهّل الوصول إليها والاستفادة منها، بما يدعم التعليم والتعلّم ويجعل الموارد أقرب إلى الجميع.</p></div>';
+
+    const stats=doc.createElement('section');
+    stats.id='dhadStatsPreview';
+    stats.setAttribute('aria-labelledby','dhadStatsTitle');
+    stats.innerHTML='<div class="dhad-stats-head"><h3 id="dhadStatsTitle">ضاد بالأرقام</h3><span id="dhadStatsUpdated">إحصائيات فعلية من المنصة</span></div><div class="dhad-stats-grid"><div class="dhad-stat"><strong data-stat="materials">—</strong><span>ملف تعليمي متاح</span><small>من قاعدة البيانات</small></div><div class="dhad-stat"><strong data-stat="grades">—</strong><span>صف دراسي</span><small>من قاعدة البيانات</small></div><div class="dhad-stat"><strong data-stat="page_views">—</strong><span>زيارة مسجلة</span><small>من سجل الزيارات</small></div><div class="dhad-stat"><strong data-stat="downloads">—</strong><span>عملية تنزيل مسجلة</span><small>من سجل التنزيلات</small></div></div>';
+
+    home.insertBefore(search,home.firstChild);
+    search.insertAdjacentElement('afterend',intro);
+    intro.insertAdjacentElement('afterend',stats);
+
+    fetch(SUPABASE_URL+'/functions/v1/home-public-stats',{
+      method:'GET',
+      headers:{'apikey':PUBLISHABLE_KEY,'Authorization':'Bearer '+PUBLISHABLE_KEY}
+    }).then(function(response){
+      if(!response.ok)throw new Error('stats_request_failed');
+      return response.json();
+    }).then(function(data){
+      ['materials','grades','page_views','downloads'].forEach(function(key){
+        const el=stats.querySelector('[data-stat="'+key+'"]');
+        if(el&&Number.isFinite(Number(data[key])))el.textContent=Number(data[key]).toLocaleString('ar');
+      });
+      const updated=doc.getElementById('dhadStatsUpdated');
+      if(updated)updated.textContent='تُحدّث تلقائياً عند فتح الصفحة';
+    }).catch(function(){
+      stats.querySelectorAll('[data-stat]').forEach(function(el){el.textContent='—';});
+      const updated=doc.getElementById('dhadStatsUpdated');
+      if(updated)updated.textContent='تعذر تحميل الإحصائيات حالياً';
+    });
+  }
+
+  frame.addEventListener('load',installPreview);
+})();
+</script>
+</body>
+</html>
