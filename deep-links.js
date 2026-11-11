@@ -313,7 +313,7 @@
               id="dhadShowDownloadPageButton"
               class="primary dhad-direct-main-button"
               type="button">
-              📥 عرض صفحة التنزيل
+              📥 الذهاب إلى صفحة التنزيل
             </button>
 
           </article>
