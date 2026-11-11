@@ -1,0 +1,44 @@
+/* DHAD academic navy & bronze identity — prototype only */
+:root{
+ --bg:#101b2d!important;--paper:#19283d!important;--paper-2:#22354b!important;
+ --ink:#eadfce!important;--muted:#b8b0a4!important;--wine:#b7834f!important;
+ --wine-dark:#8d623d!important;--sand:#c99b68!important;--line:#3c4c60!important;
+ --teal:#b7834f!important;--gold:#c99b68!important;--white:#eadfce!important;
+ --panel:#19283d!important;--panel2:#22354b!important;
+ --shadow:0 14px 36px rgba(0,0,0,.28)!important;
+}
+html,body{background-color:#101b2d!important;color:#eadfce!important}
+body{background-image:radial-gradient(ellipse at 82% -12%,#263b55 0,transparent 38rem),linear-gradient(180deg,#101b2d,#0c1625)!important}
+body:before{color:#c99b68!important;opacity:.025!important}
+.top,.nav,.header,.navbar{background:rgba(16,27,45,.97)!important;border-color:#8d623d!important}
+.brand h1,.brand-name,.brand strong,.brand-mark,.brand-symbol{color:#d1a875!important}
+.brand-mark,.brand-symbol,.brand .mark{background:linear-gradient(145deg,#30445c,#18283d)!important;border:1px solid #b7834f!important}
+a{color:#d1a875}
+button,.btn,.primary,.enter,.login-btn,.search button{background:linear-gradient(135deg,#c99b68,#a87548)!important;color:#172235!important;border-color:#b7834f!important}
+button:hover,.btn:hover,.enter:hover{filter:brightness(1.08)}
+.secondary,.ghost,.back,.section-link,.quick-item,.feature-link{background:#1c2d43!important;color:#d1a875!important;border:1px solid #45566b!important}
+input,textarea,select{background:#142238!important;color:#eadfce!important;border-color:#45566b!important}
+input::placeholder,textarea::placeholder{color:#a9a194!important}
+.card,.panel,.frame,.feature,.home-panel,.home-panel,.stat,.material,.grade,.term,.track-card,.field-card,.event,.page-title,.filter,.admin-shell,.admin-card,.admin-file-card,.empty{
+ background:linear-gradient(145deg,#1c2d43,#17263b)!important;color:#eadfce!important;border-color:#3c4c60!important;
+ box-shadow:0 14px 36px rgba(0,0,0,.24)!important;
+}
+h1,h2,h3,h4,.section-head h3,.page-title h2,.card h2{color:#eadfce!important}
+p,.muted,.section-head p,.feature p,.page-body,.description,.lead{color:#c6beb2!important}
+.eyebrow,.tag,.count-badge,.hero-kicker,.motto,.section-link{color:#d1a875!important}
+.hero,.hero-wrap,.hero-visual,.page-hero{background-color:#17263b!important}
+.hero-visual{background-image:linear-gradient(90deg,rgba(16,27,45,.18),rgba(16,27,45,.76) 54%,#101b2d 100%),url('assets/hero-visual.jpg')!important}
+.grade:before{background-image:linear-gradient(145deg,rgba(183,131,79,.65),rgba(16,27,45,.88)),url('assets/card-visual.jpg')!important}
+.grade:after{background:linear-gradient(180deg,transparent 20%,rgba(7,13,23,.78))!important}
+.grade .circle{background:#263b52!important;color:#d1a875!important;border:1px solid #b7834f!important}
+.footer,footer{background:#0b1523!important;color:#c6beb2!important;border-color:#3c4c60!important}
+.footer-visual{background-image:linear-gradient(90deg,rgba(9,17,29,.97),rgba(16,27,45,.9)),url('assets/footer-visual.jpg')!important}
+.footer a,footer a,.foot p,.foot a{color:#c6beb2!important}
+.footer h3,.foot h4{color:#d1a875!important}
+.admin-sidebar,.admin-side{background:#101b2d!important;border-color:#45566b!important}
+.admin-menu button,.admin-side button{color:#c6beb2!important}
+.admin-menu button.active,.admin-side button.active{background:#b7834f22!important;color:#d1a875!important;border-color:#8d623d!important}
+.download,.preview,.edit,.danger{filter:saturate(.7)}
+hr{border-color:#3c4c60!important}
+::selection{background:#b7834f;color:#101b2d}
+@media(max-width:700px){.nav,.top{background:#101b2d!important}.hero,.page-hero{background-color:#17263b!important}.card,.panel{padding:20px!important}}
