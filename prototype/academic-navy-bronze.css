@@ -42,3 +42,102 @@ p,.muted,.section-head p,.feature p,.page-body,.description,.lead{color:#c6beb2!
 hr{border-color:#3c4c60!important}
 ::selection{background:#b7834f;color:#101b2d}
 @media(max-width:700px){.nav,.top{background:#101b2d!important}.hero,.page-hero{background-color:#17263b!important}.card,.panel{padding:20px!important}}
+
+
+/* Comprehensive pass: remove legacy olive/teal/gold surfaces from every UI layer */
+:root{
+ color-scheme:dark!important;
+ --bg:#101b2d!important;--paper:#19283d!important;--paper-2:#22354b!important;
+ --panel:#19283d!important;--panel2:#22354b!important;
+ --ink:#eadfce!important;--white:#eadfce!important;--muted:#b8b0a4!important;
+ --gold:#b7834f!important;--sand:#c99b68!important;--teal:#b7834f!important;
+ --green:#101b2d!important;--green2:#19283d!important;
+ --line:#3c4c60!important;--brown:#b7834f!important;
+}
+html,body{background-color:#101b2d!important;color:#eadfce!important}
+body,body.dark{background-image:radial-gradient(ellipse at 82% -12%,#263b55 0,transparent 38rem),linear-gradient(180deg,#101b2d,#0c1625)!important}
+header,.top,.topbar,.site-header,.navbar,.nav,.navigation,.main-nav,.mobile-nav,
+.sidebar,.side-menu,.admin-sidebar,.admin-side,.admin-header,.admin-topbar{
+ background:#101b2d!important;color:#eadfce!important;border-color:#3c4c60!important;
+}
+nav a,nav button,.nav a,.nav button,.sidebar a,.sidebar button,.side-menu a,.side-menu button,
+.admin-menu a,.admin-menu button,.admin-side a,.admin-side button{
+ color:#d7c5ad!important;
+}
+nav a:hover,nav button:hover,.nav a:hover,.nav button:hover,.sidebar a:hover,.sidebar button:hover,
+.side-menu a:hover,.side-menu button:hover,.admin-menu a:hover,.admin-menu button:hover{
+ background:#263b55!important;color:#e5b985!important;border-color:#b7834f!important;
+}
+nav .active,.nav .active,.active-link,.active-tab,.selected,.is-active,
+.sidebar .active,.side-menu .active,.admin-menu .active,.admin-side .active,
+[aria-current="page"],[aria-selected="true"]{
+ background:linear-gradient(120deg,#493a30,#263b55)!important;
+ color:#f0c28f!important;border-color:#b7834f!important;
+}
+.dropdown,.dropdown-menu,.dropdown-content,.menu,.menu-list,.menu-item,.nav-menu,.nav-dropdown,
+.submenu,.select-menu,.select-options,.search-results,.suggestions,.autocomplete,
+.list-group,.list-item,.breadcrumb,.pagination,.page-link,.tabs,.tab,.tab-list,
+.accordion,.accordion-item,.accordion-header,.accordion-content,.popover,.tooltip,
+.modal,.modal-content,.drawer,.drawer-content,.filter-panel,.filter-options,
+.context-menu,.action-menu,.user-menu,.profile-menu{
+ background:#19283d!important;color:#eadfce!important;border-color:#3c4c60!important;
+}
+.dropdown a,.dropdown-menu a,.dropdown-content a,.menu a,.menu-item,.nav-menu a,.submenu a,
+.search-results a,.suggestions a,.list-group-item,.list-item,.page-link,.tab,
+.accordion-header,.filter-option,.select-options option{
+ color:#d9c8b4!important;border-color:#3c4c60!important;
+}
+.dropdown a:hover,.dropdown-menu a:hover,.menu a:hover,.nav-menu a:hover,.submenu a:hover,
+.search-results a:hover,.list-group-item:hover,.list-item:hover,.page-link:hover,.tab:hover{
+ background:#263b55!important;color:#efc08b!important;
+}
+.card,.panel,.frame,.feature,.home-panel,.stat,.material,.grade,.term,.track-card,
+.field-card,.event,.page-title,.filter,.admin-shell,.admin-card,.admin-file-card,
+.empty,.category-card,.section-card,.quick-card,.resource-card,.file-card,.grade-card,
+.teacher-card,.tool-card,.content-card,.info-card,.stat-card{
+ background:linear-gradient(145deg,#1c2d43,#17263b)!important;
+ color:#eadfce!important;border-color:#3c4c60!important;
+}
+button,.btn,.primary,.enter,.login-btn,.search button,.action-btn,.download-btn,
+.preview-btn,.share-btn,.submit-btn,.save-btn,.add-btn{
+ background:linear-gradient(135deg,#c99b68,#a87548)!important;
+ color:#172235!important;border-color:#b7834f!important;
+}
+.secondary,.ghost,.back,.section-link,.quick-item,.feature-link,.outline,.btn-secondary,
+.filter-btn,.sort-btn,.tab-button{
+ background:#1c2d43!important;color:#d1a875!important;border:1px solid #45566b!important;
+}
+input,textarea,select,option{background:#142238!important;color:#eadfce!important;border-color:#45566b!important}
+input::placeholder,textarea::placeholder{color:#a9a194!important}
+.badge,.pill,.tag,.chip,.count-badge,.status,.status-badge,.category-label,.grade-label,
+.eyebrow,.hero-kicker,.motto,.section-link{
+ background-color:#263b52!important;color:#e5b985!important;border-color:#8d623d!important;
+}
+hr,.divider,.separator{border-color:#3c4c60!important}
+.footer,footer,.site-footer{background:#0b1523!important;color:#c6beb2!important;border-color:#3c4c60!important}
+.footer a,footer a,.foot p,.foot a{color:#c6beb2!important}
+.footer h3,.foot h4{color:#d1a875!important}
+.admin-menu button.active,.admin-side button.active{
+ background:#b7834f22!important;color:#e5b985!important;border-color:#b7834f!important;
+}
+.grade:before{background-image:linear-gradient(145deg,rgba(38,59,82,.74),rgba(16,27,45,.9)),url('assets/card-visual.jpg')!important}
+.grade:after{background:linear-gradient(180deg,transparent 20%,rgba(7,13,23,.82))!important}
+::selection{background:#b7834f;color:#101b2d}
+:focus-visible{outline:2px solid #c99b68!important;outline-offset:2px}
+.hero-visual{background-image:linear-gradient(90deg,rgba(16,27,45,.12),rgba(16,27,45,.76) 54%,#101b2d 100%),url('assets/hero-visual.jpg')!important}
+
+/* Welcome artwork: shift the surrounding olive field toward navy while retaining the bronze emblem */
+.image-space{position:relative!important;overflow:hidden!important;background:#101b2d!important;border:1px solid rgba(183,131,79,.55)!important}
+.image-space img{display:block!important;width:100%!important;height:auto!important;object-fit:contain!important;position:relative!important;z-index:0!important}
+.image-space:after{
+ content:""!important;position:absolute!important;inset:0!important;pointer-events:none!important;
+ background:radial-gradient(ellipse at center,transparent 0 27%,rgba(16,27,45,.82) 78%,#101b2d 100%)!important;
+ mix-blend-mode:color!important;z-index:1!important;
+}
+.page .brand-symbol{background:linear-gradient(145deg,#30445c,#18283d)!important;color:#d1a875!important;border-color:#b7834f!important}
+.page .brand-name,.page .eyebrow,.page .motto,.page footer strong{color:#d1a875!important}
+.page .frame{background:linear-gradient(145deg,#1c2d43,#17263b)!important;border-color:#3c4c60!important}
+.page .lead,.page .description,.page .contact-title,.page footer{color:#c6beb2!important}
+.page .enter{background:linear-gradient(135deg,#c99b68,#a87548)!important;color:#172235!important}
+.page .contact-link{background:#1c2d43!important;color:#eadfce!important;border-color:#8d623d!important}
+.page .contact-link svg{fill:#c99b68!important}
