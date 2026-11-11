@@ -296,9 +296,7 @@
 
             <article class="dhad-direct-card">
 
-              <h3>تفاصيل المادة التعليمية</h3>
-
-              <div id="dhadDownloadMaterialDescription"></div>
+              <h3>معلومات الملف</h3>
 
               <div id="dhadDownloadMaterialMeta"
                    class="dhad-direct-meta"></div>
@@ -993,9 +991,6 @@
         (fileName?'<p><b>اسم الملف:</b> '+safeText(fileName)+'</p>':'');
 
       body.innerHTML=detailsHTML;
-      document.getElementById('dhadDownloadMaterialDescription').innerHTML=
-        '<div class="dhad-material-overline">عن هذه المادة</div>'+detailsHTML;
-
       document.getElementById('dhadDownloadMaterialMeta').innerHTML=
         '<div class="dhad-material-file-meta">'+
           '<div><span>نوع الملف</span><b>'+safeText(fileType)+'</b></div>'+
