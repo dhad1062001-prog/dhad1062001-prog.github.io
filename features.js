@@ -4,11 +4,12 @@
  */
 const DHAD_FEATURE_SLUGS={homeCards:'dhad-home-cards-v1',additional:'dhad-additional-items-v1',calendar:'dhad-calendar-items-v1',games:'dhad-games-v1',certificate:'dhad-certificate-v1'};
 const DHAD_HOME_CARD_DEFAULTS=[
-  {id:'grades',title:'الصفوف الدراسية',description:'جميع الصفوف والمناهج في مكان واحد',icon:'🎓',color:'#3986D9',size:'normal',order:1,visible:true,target:'grades',url:'',imagePath:''},
-  {id:'games',title:'استديو الألعاب التفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#E85B68',size:'normal',order:2,visible:true,target:'games',url:'',imagePath:''},
-  {id:'additional',title:'التعليم الإضافي',description:'دروس وموارد إضافية لتعزيز مهاراتك',icon:'💡',color:'#35B6B0',size:'normal',order:3,visible:true,target:'additional',url:'',imagePath:''},
-  {id:'calendar',title:'التقويم الدراسي',description:'تابع مواعيدك الدراسية بكل سهولة',icon:'🗓️',color:'#F0A23B',size:'normal',order:4,visible:true,target:'calendar',url:'',imagePath:''},
-  {id:'certificate',title:'شهادات التقدير',description:'احصل على شهادتك بكل إنجاز',icon:'🏅',color:'#8764D8',size:'normal',order:5,visible:true,target:'certificate',url:'',imagePath:''}
+  {id:'teacher_supplies',title:'لوازم المعلمين',description:'ملفات وموارد تعليمية للمعلمين',icon:'📚',color:'#D9A441',size:'normal',order:1,visible:true,target:'teacher_supplies',url:'',imagePath:''},
+  {id:'additional',title:'التعليم الإضافي',description:'دروس وموارد إضافية لتعزيز مهاراتك',icon:'✏️',color:'#D9A441',size:'normal',order:2,visible:true,target:'additional',url:'',imagePath:''},
+  {id:'games',title:'استديو الألعاب التفاعلية',description:'تعلّم بطريقة ممتعة ومشوّقة',icon:'🎮',color:'#D9A441',size:'normal',order:3,visible:true,target:'games',url:'',imagePath:''},
+  {id:'certificate',title:'شهادات التقدير',description:'أنشئ شهادة تقدير واحتفل بالإنجاز',icon:'🏅',color:'#D9A441',size:'normal',order:4,visible:true,target:'certificate',url:'',imagePath:''},
+  {id:'grades',title:'الصفوف الدراسية',description:'جميع الصفوف والمناهج في مكان واحد',icon:'🎓',color:'#D9A441',size:'normal',order:5,visible:true,target:'grades',url:'',imagePath:''},
+  {id:'calendar',title:'التقويم الدراسي',description:'تابع مواعيدك الدراسية بكل سهولة',icon:'🗓️',color:'#D9A441',size:'normal',order:6,visible:false,target:'calendar',url:'',imagePath:''}
 ];
 const DHAD_CERTIFICATE_DEFAULT={title:'شهادة تقدير',intro:'تُمنح هذه الشهادة بكل فخر واعتزاز إلى',body:'تقديرًا لجهوده المميزة وإبداعه واجتهاده في تعلّم اللغة العربية. مع تمنياتنا له بدوام التوفيق والنجاح.',footer:'مع خالص التقدير',school:'',teacher:'',color:'#D9A441',showBrand:true};
 const DHAD_CONTENT_STATUS_LABELS={draft:'مسودة',review:'قيد المراجعة',approved:'معتمد',published:'منشور',archived:'مؤرشف'};
@@ -68,7 +69,10 @@ function dhadPublicUrl(value){
 }
 function renderDhadHomeCards(){
   const container=document.getElementById('homeCardsGrid');if(!container)return;
-  const cards=dhadNormalizeCards(dhadFeatureData.homeCards).filter(card=>card.visible).sort((a,b)=>a.order-b.order);
+  const fixedOrder=['teacher_supplies','additional','games','certificate','grades'];
+  const normalized=dhadNormalizeCards(dhadFeatureData.homeCards);
+  const labels={teacher_supplies:['لوازم المعلمين','ملفات وموارد تعليمية للمعلمين','📚'],additional:['التعليم الإضافي','دروس وموارد إضافية لتعزيز مهاراتك','✏️'],games:['استديو الألعاب التفاعلية','تعلّم بطريقة ممتعة ومشوّقة','🎮'],certificate:['شهادات التقدير','أنشئ شهادة تقدير واحتفل بالإنجاز','🏅'],grades:['الصفوف الدراسية','جميع الصفوف والمناهج في مكان واحد','🎓']};
+  const cards=fixedOrder.map((id,index)=>{const base=normalized.find(item=>item.id===id)||DHAD_HOME_CARD_DEFAULTS.find(item=>item.id===id);const label=labels[id];return {...base,title:label[0],description:label[1],icon:label[2],order:index+1,visible:true,target:id};}).filter(Boolean);
   container.innerHTML=cards.map(card=>'<button class="platform-card size-'+(card.size==='compact'?'compact':card.size==='large'?'large':'normal')+'" type="button" data-home-card="'+escapeHtml(card.id)+'" style="--card-accent:'+dhadSafeColor(card.color,card.color)+'"><span class="platform-card-icon" aria-hidden="true">'+escapeHtml(card.icon||'📘')+'</span><strong class="platform-card-title">'+escapeHtml(card.title||'قسم تعليمي')+'</strong><span class="platform-card-description">'+escapeHtml(card.description||'')+'</span><span class="platform-card-arrow" aria-hidden="true">←</span></button>').join('');
   container.querySelectorAll('[data-home-card]').forEach(button=>{
     const card=cards.find(item=>item.id===button.getAttribute('data-home-card'));
@@ -119,7 +123,7 @@ async function uploadDhadFeatureFile(file,folder,relativePath=''){
   return data?.path||path;
 }
 async function renderDhadFeaturePages(){
-  await Promise.all([renderDhadAdditional(),renderDhadCalendar(),renderDhadGames()]);
+  await Promise.all([renderDhadAdditional(),renderDhadCalendar(),renderDhadGames(),renderDhadTeacherSupplies()]);
   renderDhadCertificate();
 }
 async function renderDhadAdditional(){
@@ -146,6 +150,22 @@ async function renderDhadCalendar(){
     return '<article class="calendar-item" id="dhad-calendar-'+escapeHtml(item.id)+'" data-dhad-calendar-item="'+escapeHtml(item.id)+'"><h3>'+escapeHtml(item.title||'التقويم الدراسي')+'</h3>'+(item.year?'<div class="feature-card-meta">'+escapeHtml(item.year)+'</div>':'')+(item.description?'<p>'+escapeHtml(item.description)+'</p>':'')+'<img src="'+escapeHtml(result.url)+'" alt="'+escapeHtml(item.title||'صورة التقويم')+'" loading="lazy" data-calendar-image="'+escapeHtml(item.id)+'"><div class="calendar-item-actions"><button class="preview" type="button" data-calendar-preview="'+escapeHtml(item.id)+'">فتح بحجم أكبر</button><button class="download" type="button" data-calendar-download="'+escapeHtml(item.id)+'">تنزيل الصورة</button><button class="secondary" type="button" onclick="shareDhadLink(\'calendar\',\''+escapeHtml(item.id)+'\')">مشاركة التقويم</button></div></article>';
   }));
   list.innerHTML=cards.filter(Boolean).join('')||'<div class="empty">تعذر تحميل الصور من مساحة التخزين.</div>';
+}
+async function renderDhadTeacherSupplies(){
+  const list=document.getElementById('teacherSuppliesPublicList');if(!list)return;
+  list.innerHTML='<div class="empty">جارٍ تحميل الملفات...</div>';
+  if(!sb){list.innerHTML='<div class="empty">تعذر الاتصال بقاعدة البيانات.</div>';return;}
+  try{
+    const [materialsResult,linksResult]=await Promise.all([
+      sb.from('materials').select('id,title,description,file_name,file_type,file_size,download_count,is_public').eq('is_public',true).order('created_at',{ascending:false}).limit(1000),
+      sb.from('home_section_materials').select('material_id,sort_order').eq('section_id',2).order('sort_order',{ascending:true})
+    ]);
+    if(materialsResult.error)throw materialsResult.error;if(linksResult.error)throw linksResult.error;
+    const byId=new Map((materialsResult.data||[]).map(row=>[String(row.id),row]));
+    const rows=(linksResult.data||[]).map(link=>byId.get(String(link.material_id))).filter(Boolean);
+    if(!rows.length){list.innerHTML='<div class="empty">لا توجد ملفات منشورة في قسم لوازم المعلمين حتى الآن.</div>';return;}
+    list.innerHTML=rows.map(row=>'<article class="feature-content-card teacher-supply-public-card"><h3>'+escapeHtml(row.title||row.file_name||'ملف تعليمي')+'</h3>'+(row.description?'<p>'+escapeHtml(row.description)+'</p>':'')+'<div class="feature-card-meta">'+escapeHtml((row.file_type||'ملف').split('/').pop().toUpperCase())+' · '+escapeHtml(typeof formatBytes==='function'?formatBytes(row.file_size):'')+'</div><div class="game-card-actions"><button class="primary" type="button" onclick="openMaterialInfoPage(\''+escapeHtml(String(row.id))+'\')">تفاصيل الملف والذهاب إلى التنزيل ←</button></div></article>').join('');
+  }catch(error){console.warn('تعذر تحميل ملفات لوازم المعلمين:',error);list.innerHTML='<div class="empty">تعذر تحميل ملفات القسم حاليًا. حاول تحديث الصفحة.</div>';}
 }
 async function renderDhadGames(){
   const list=document.getElementById('gamesGrid');if(!list)return;
@@ -206,14 +226,14 @@ async function downloadCertificatePng(){
   canvas.toBlob(blob=>{if(!blob)return showInfo('تنزيل الشهادة','تعذر تجهيز ملف PNG.');const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);},'image/png');
 }
 function showDhadFeaturePage(key,push=true){
-  if(!['games','additional','calendar','certificate'].includes(key))return;
+  if(!['games','additional','calendar','certificate','teacher_supplies'].includes(key))return;
   if(push)pushNav({type:'feature',id:key});
-  hideAll();const page=document.getElementById(key==='games'?'gamesPage':key==='additional'?'additionalPage':key==='calendar'?'calendarPage':'certificatePage');
+  hideAll();const page=document.getElementById(key==='teacher_supplies'?'teacherSuppliesPage':key==='games'?'gamesPage':key==='additional'?'additionalPage':key==='calendar'?'calendarPage':'certificatePage');
   if(page)page.style.display='block';setRoute(key);scrollTop();
   loadDhadFeatureData().then(renderDhadFeaturePages);
 }
 showCalendar=function(push=true){showDhadFeaturePage('calendar',push);};
-hideAll=(function(oldHideAll){return function(){oldHideAll();['gamesPage','additionalPage','certificatePage','featureAdminPage'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});};})(hideAll);
+hideAll=(function(oldHideAll){return function(){oldHideAll();['gamesPage','additionalPage','certificatePage','teacherSuppliesPage','featureAdminPage'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});};})(hideAll);
 goBack=function(){
   if(window.__dhadNavStack?.length){const item=window.__dhadNavStack.pop();if(item.type==='home')return goHome();if(item.type==='feature')return showDhadFeaturePage(item.id,false);if(item.type==='grades')return showGradesPage(false);if(item.type==='grade')return showGrade(item.id,false);if(item.type==='track')return showTrack(item.gradeId,item.trackIndex,false);if(item.type==='field')return showField(item.gradeId,item.trackIndex,item.fieldIndex,false);if(item.type==='semester')return showSemester(item.gradeId,item.trackIndex,item.fieldIndex,item.semesterIndex,false);}
   return goHome();
