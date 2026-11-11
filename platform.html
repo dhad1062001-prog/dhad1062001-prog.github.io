@@ -453,6 +453,21 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
  #gradesHubPage .grade{min-height:150px!important}
  #terms .track-card,#terms .field-card,#terms .term{background:linear-gradient(145deg,#34412F,#2D3829)!important}
 }
+
+/* إظهار الصفوف الدراسية مباشرة على الصفحة الرئيسية دون إضافة أقسام أخرى */
+#homeGradesSection{max-width:1440px;padding-top:22px;padding-bottom:24px}
+#homeGradesSection .section-head{justify-content:center;text-align:center;margin-bottom:16px}
+#homeGradesSection .section-head h3{color:#C3A45F;font-size:27px;font-weight:900}
+#homeGradesSection .section-head p{color:#C8CEBF}
+#homeGradesSection .home-grades-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+#homeGradesSection .grade{min-width:0;min-height:126px;padding:13px;border:1px solid #59654D;border-radius:16px;background:linear-gradient(145deg,#34412F,#2D3829);color:#fff;box-shadow:0 7px 18px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:7px;transition:transform .2s,border-color .2s}
+#homeGradesSection .grade:hover{transform:translateY(-3px);border-color:#C3A45F}
+#homeGradesSection .grade .circle{width:45px;height:45px;min-width:45px;margin:0;border:1px solid rgba(195,164,95,.32);border-radius:13px;background:#3B4634;color:#D2B574;font-size:22px;display:grid;place-items:center}
+#homeGradesSection .grade .name{margin:0;color:#fff;font-size:15px;line-height:1.45;font-weight:900}
+#homeGradesSection .grade .sub{margin:0;color:#C8CEBF;font-size:10px}
+@media(max-width:1080px){#homeGradesSection .home-grades-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){#homeGradesSection .home-grades-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}}
+@media(max-width:480px){#homeGradesSection{padding-inline:14px}#homeGradesSection .home-grades-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#homeGradesSection .grade{min-height:112px;padding:10px}#homeGradesSection .grade .circle{width:40px;height:40px;min-width:40px;font-size:20px}#homeGradesSection .grade .name{font-size:13px}}
 </style>
 
 </head>
@@ -481,6 +496,10 @@ if(window.__DHAD_DIRECT_ENTRY__){
 </div>
 
 <main id="home">
+  <section class="section home-grades-section" id="homeGradesSection" aria-labelledby="homeGradesHeading">
+    <div class="section-head platform-heading"><div><h3 id="homeGradesHeading">الصفوف الدراسية</h3><p>اختر الصف للوصول إلى مواده وملفاته التعليمية.</p></div></div>
+    <div class="grades home-grades-grid" id="homeGrades" aria-live="polite"></div>
+  </section>
   <section class="section platform-section" id="gradesSection" aria-labelledby="gradesHeading">
     <div class="section-head platform-heading"><div><h3 id="gradesHeading"><span aria-hidden="true">▣</span> أقسام المنصة</h3><p>كل ما تحتاجه في مكان واحد</p></div></div>
     <div id="homeCardsGrid" class="platform-card-grid" aria-live="polite"></div>
@@ -1247,7 +1266,7 @@ function renderGrades(){
     return match?match[1]:999;
   };
   const displayGrades=[...grades].sort((a,b)=>gradeRank(a.name)-gradeRank(b.name));
-  el.innerHTML=displayGrades.map((g,i)=>{
+  const markup=displayGrades.map((g,i)=>{
     const isKindergarten=gradeRank(g.name)===0;
     return `
     <button class="grade ui-shape${isKindergarten?' kindergarten-grade':''}" onclick="showGrade(${g.id})">
@@ -1256,6 +1275,9 @@ function renderGrades(){
       ${g.id===13?'<span class="sub">(التوجيهي)</span>':''}
     </button>`;
   }).join('') || '<div class="empty">لا توجد صفوف.</div>';
+  el.innerHTML=markup;
+  const homeGrades=document.getElementById('homeGrades');
+  if(homeGrades)homeGrades.innerHTML=markup;
 }
 
 function fillAdminSelects(){
