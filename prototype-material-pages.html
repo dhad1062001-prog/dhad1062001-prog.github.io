@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#20291c">
+<title>معاينة فصل صفحة الوصف عن التنزيل | ضاد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--green:#173f35;--deep:#20291c;--gold:#c3a45f;--paper:#fff;--soft:#f4f7f4;--ink:#24332e;--muted:#68766e;--line:#e2e8e3}
+*{box-sizing:border-box}body{margin:0;background:#f1f3ef;color:var(--ink);font-family:Cairo,Tahoma,Arial,sans-serif}
+.top{background:var(--deep);color:#fff;border-bottom:3px solid var(--gold)}.topin{max-width:1100px;margin:auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:12px}.mark{width:48px;height:48px;border-radius:13px;background:var(--gold);color:var(--green);display:grid;place-items:center;font-size:30px;font-weight:900}.brand b{display:block;font-size:21px;color:#fff}.brand small{color:#e4d6b4}.demo{font-size:12px;color:#f0d99f;border:1px solid #8e7845;border-radius:30px;padding:6px 12px}
+main{max-width:980px;margin:28px auto;padding:0 18px 36px}.crumb{color:#718078;font-size:13px;margin:0 0 16px}.crumb span{color:#b18b3f;margin:0 7px}.pagehead{background:linear-gradient(120deg,#173f35,#20291c);color:white;border-radius:18px;padding:25px 28px;margin-bottom:18px;position:relative;overflow:hidden}.pagehead:after{content:"ض";position:absolute;left:25px;top:-35px;font-size:150px;color:#ffffff0b;font-weight:900}.eyebrow{color:#e0c47e;font-size:12px;font-weight:800}.pagehead h1{margin:4px 0;font-size:clamp(22px,4vw,30px)}.pagehead p{margin:0;color:#e1e7df;font-size:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:clamp(18px,3vw,27px);box-shadow:0 8px 24px #17271a0c;margin-bottom:16px}.title{display:flex;align-items:center;gap:10px;color:var(--green);font-size:20px;font-weight:900;margin:0 0 14px}.title:before{content:"";width:4px;height:25px;border-radius:4px;background:var(--gold)}
+.meta{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.chip{background:var(--soft);border:1px solid var(--line);color:var(--green);border-radius:30px;padding:6px 12px;font-size:12px;font-weight:800}
+.description{line-height:2.15;color:#35453d;font-size:15px}.subhead{color:var(--green);font-weight:900;margin:18px 0 7px}.go,.action{border:0;border-radius:11px;padding:13px 18px;font-family:inherit;font-weight:900;cursor:pointer;transition:.18s}.go{background:var(--green);color:white;width:100%;font-size:15px;margin-top:18px}.go:hover,.action:hover{filter:brightness(1.08);transform:translateY(-1px)}.gold{background:var(--gold);color:#20291c}.outline{background:white;color:var(--green);border:1px solid var(--gold)}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:16px 0}.stat{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px;text-align:center}.stat span{display:block;color:var(--muted);font-size:12px}.stat b{display:block;color:var(--green);font-size:23px}
+.filebox{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fileitem{padding:12px 14px;background:var(--soft);border-radius:11px}.fileitem span{display:block;font-size:11px;color:var(--muted)}.fileitem b{font-size:14px;color:var(--green);overflow-wrap:anywhere}
+.preview{margin-top:16px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#e9eee9}.previewbar{background:#26342e;color:white;padding:10px 14px;font-size:12px;display:flex;justify-content:space-between}.paper{width:min(85%,520px);min-height:300px;margin:18px auto;background:white;border:7px double var(--gold);padding:30px 22px;text-align:center;box-shadow:0 4px 16px #0001}.paper h2{color:var(--green);margin:12px 0}.paper p{line-height:2;color:#58665e}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:17px}.action{min-height:48px;font-size:14px}.return{display:block;text-align:center;margin-top:14px;padding:12px;border-radius:11px;background:#faf7ef;color:var(--green);border:1px solid #e9dfc8;text-decoration:none;font-weight:800;cursor:pointer}
+.notice{text-align:center;color:#7b6a43;font-size:11px;margin:12px 0 0}.foot{text-align:center;background:var(--deep);color:#d8dfd6;padding:18px;font-size:12px}.foot b{color:var(--gold)}
+@media(max-width:620px){.topin{padding:12px 15px}.demo{max-width:125px;text-align:center}.stats{grid-template-columns:repeat(2,1fr)}.actions{grid-template-columns:1fr}.filebox{grid-template-columns:1fr}.pagehead{padding:20px}.paper{min-height:250px}.brand b{font-size:18px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand"><div class="mark">ض</div><div><b>ضاد</b><small>منصة اللغة العربية</small></div></div><span class="demo">نسخة تجريبية للعرض فقط</span></div></header>
+<main>
+<p class="crumb">الرئيسية <span>›</span> الصفوف الدراسية <span>›</span> الصف التاسع <span>›</span> اللغة العربية</p>
+<section id="descriptionPage">
+ <div class="pagehead"><div class="eyebrow">تفاصيل المورد التعليمي</div><h1>اللغة العربية – الصف التاسع</h1><p>الفصل الأول · مادة تعليمية بصيغة PDF</p></div>
+ <article class="card">
+  <h2 class="title">وصف المادة</h2>
+  <div class="meta"><span class="chip">مادة تعليمية</span><span class="chip">PDF</span><span class="chip">الصف التاسع</span><span class="chip">الفصل الأول</span></div>
+  <div class="description">
+   <p>تقدم هذه المادة التعليمية محتوى منظماً لدعم تعلم اللغة العربية لدى طلبة الصف التاسع، وتساعدهم على مراجعة المفاهيم والمهارات اللغوية المقررة خلال الفصل الدراسي الأول. وقد أُعدت لتكون مورداً مساعداً للطالب والمعلم، مع تنظيم المحتوى بطريقة واضحة تسهّل الوصول إلى الموضوعات والاستفادة منها.</p>
+   <p>تتضمن المادة تدريبات وأنشطة تساعد على تنمية مهارات القراءة والفهم والتحليل والتعبير، كما يمكن توظيفها في التعلم الصفي أو المراجعة المنزلية. وينصح بالاستفادة منها إلى جانب الكتاب المدرسي وتوجيهات المعلم، بما يحقق تعلماً متدرجاً ويراعي الفروق الفردية بين المتعلمين.</p>
+  </div>
+  <h3 class="subhead">أهداف المادة</h3><ul class="description"><li>تعزيز فهم المفاهيم والمهارات اللغوية.</li><li>تنمية القراءة والتحليل والتعبير.</li><li>دعم المراجعة والتعلم الذاتي.</li></ul>
+  <h3 class="subhead">الفئة المستهدفة</h3><p class="description">طلبة الصف التاسع ومعلمو اللغة العربية.</p>
+  <button class="go" id="goDownload">الذهاب إلى صفحة التنزيل ←</button>
+ </article>
+ <p class="notice">هذه الصفحة مخصصة للوصف التفصيلي فقط.</p>
+</section>
+<section id="downloadPage" class="hidden">
+ <div class="pagehead"><div class="eyebrow">صفحة الحصول على الملف</div><h1>اللغة العربية – الصف التاسع</h1><p>الفصل الأول · ملف PDF</p></div>
+ <article class="card">
+  <h2 class="title">إحصائيات المادة</h2>
+  <div class="stats"><div class="stat"><span>المشاهدات</span><b>—</b></div><div class="stat"><span>التنزيلات</span><b>—</b></div><div class="stat"><span>المعاينات</span><b>—</b></div><div class="stat"><span>المشاركات</span><b>—</b></div></div>
+  <p class="notice">ستظهر هنا الإحصائيات الحقيقية عند ربط النسخة التجريبية بالنظام الفعلي.</p>
+ </article>
+ <article class="card">
+  <h2 class="title">معلومات الملف</h2>
+  <div class="filebox"><div class="fileitem"><span>اسم الملف</span><b>اللغة العربية - الصف التاسع.pdf</b></div><div class="fileitem"><span>نوع الملف</span><b>PDF</b></div><div class="fileitem"><span>حجم الملف</span><b>يُقرأ من بيانات الملف</b></div><div class="fileitem"><span>تاريخ الإضافة</span><b>يُقرأ من قاعدة البيانات</b></div></div>
+  <div class="preview" id="previewBox"><div class="previewbar"><span>معاينة الملف · نموذج توضيحي</span><span>1 / —</span></div><div class="paper"><div class="eyebrow">منصة ضاد</div><h2>اللغة العربية</h2><h3>الصف التاسع – الفصل الأول</h3><p>تظهر معاينة الملف الحقيقي هنا عند ربط الصفحة برابط الملف المخزن.</p></div></div>
+  <div class="actions"><button class="action" id="shareBtn">مشاركة الرابط</button><button class="action gold" id="previewBtn">معاينة الملف</button><button class="action" style="background:#173f35;color:white" id="downloadBtn">تنزيل الملف</button></div>
+  <button class="return" id="backDescription">↩ العودة إلى صفحة الوصف</button>
+ </article>
+ <p class="notice">صفحة التنزيل مختصرة: لا يوجد فيها وصف للمادة.</p>
+</section>
+</main>
+<footer class="foot">ضاد – منصة اللغة العربية<br><b>كل ما يحتاجه معلم اللغة العربية والطالب وولي الأمر</b></footer>
+<script>
+const descriptionPage=document.getElementById('descriptionPage'),downloadPage=document.getElementById('downloadPage');
+function showDownload(){descriptionPage.classList.add('hidden');downloadPage.classList.remove('hidden');history.replaceState(null,'','#download');window.scrollTo({top:0,behavior:'smooth'});}
+function showDescription(){downloadPage.classList.add('hidden');descriptionPage.classList.remove('hidden');history.replaceState(null,'','#description');window.scrollTo({top:0,behavior:'smooth'});}
+document.getElementById('goDownload').addEventListener('click',showDownload);
+document.getElementById('backDescription').addEventListener('click',showDescription);
+document.getElementById('previewBtn').addEventListener('click',()=>document.getElementById('previewBox').scrollIntoView({behavior:'smooth',block:'center'}));
+document.getElementById('downloadBtn').addEventListener('click',()=>alert('هذا زر تجريبي. في الموقع الفعلي سينزّل الملف الأصلي من التخزين.'));
+document.getElementById('shareBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(location.href);alert('تم نسخ رابط صفحة العرض التجريبي.')}catch{alert('يمكنك نسخ رابط الصفحة من شريط العنوان.')}});
+if(location.hash==='#download')showDownload();
+</script>
+</body></html>
