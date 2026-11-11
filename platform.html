@@ -488,6 +488,41 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 #teacherSuppliesPublicList .feature-content-card{border-color:#667252}
 @media(max-width:600px){#gradesSection{padding-inline:13px}#homeCardsGrid .platform-card{min-height:78px!important;grid-template-columns:48px minmax(0,1fr) 22px!important;gap:10px!important;padding:13px!important}#homeCardsGrid .platform-card-icon{width:44px;height:44px;font-size:23px}#homeCardsGrid .platform-card-title{font-size:17px!important}#homeCardsGrid .platform-card-description{font-size:11px!important}}
 </style>
+
+<style id="dhad-home-intro-stats-styles">
+#searchSection{max-width:1180px!important;width:100%;padding:20px 18px 10px!important;margin:0 auto!important}
+#searchSection .section-head{margin-bottom:9px!important}
+#searchSection .section-head h3{font-size:20px!important;color:#D9B96B!important}
+#searchSection .section-head p{font-size:12px!important}
+#searchSection .search{max-width:none!important;margin:0!important;border-radius:15px!important;background:#2D3829!important;border-color:#59654D!important}
+#searchSection .search input{min-height:48px!important}
+#searchSection .search button{border-radius:10px!important}
+#dhadHomeIntro,#dhadHomeStats{max-width:1180px!important;width:100%;margin:0 auto!important;padding:12px 18px!important}
+.dhad-home-intro-card{border:1px solid #59654D;border-right:4px solid #C3A45F;border-radius:17px;background:linear-gradient(135deg,#2D3829,#34412F);padding:19px 22px;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.dhad-home-intro-kicker{color:#D9B96B;font-size:12px;font-weight:900;margin:0 0 5px}
+.dhad-home-intro-card h2{font-size:clamp(20px,3vw,27px);color:#fff;margin:0 0 7px;font-weight:900}
+.dhad-home-intro-card p:last-child{margin:0;color:#E1E5DA;font-size:14px;line-height:2;font-weight:600}
+.dhad-home-stats-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:3px 0 11px}
+.dhad-home-stats-head h3{margin:0;color:#D9B96B;font-size:20px;font-weight:900}
+.dhad-home-stats-head p{margin:2px 0 0;color:#C8CEBF;font-size:11px}
+#dhadHomeStatsUpdated{color:#C8CEBF;font-size:10px}
+.dhad-home-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.dhad-home-stat{min-width:0;background:#2D3829;border:1px solid #59654D;border-radius:15px;padding:13px 10px;text-align:center}
+.dhad-home-stat strong{display:block;color:#D9B96B;font-size:clamp(21px,3vw,29px);font-weight:900;line-height:1.35}
+.dhad-home-stat span{display:block;color:#E1E5DA;font-size:11px;font-weight:700;margin-top:4px}
+.dhad-home-stat small{display:block;color:#9FA995;font-size:9px;margin-top:3px}
+@media(max-width:600px){
+ #searchSection{padding:14px 13px 7px!important}
+ #dhadHomeIntro,#dhadHomeStats{padding:8px 13px!important}
+ .dhad-home-intro-card{padding:15px 16px}
+ .dhad-home-intro-card p:last-child{font-size:12px;line-height:1.9}
+ .dhad-home-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .dhad-home-stat{padding:11px 8px}
+ .dhad-home-stat span{font-size:10px}
+ .dhad-home-stats-head h3{font-size:17px}
+}
+</style>
+
 </head>
 <body>
 <script>
@@ -514,6 +549,36 @@ if(window.__DHAD_DIRECT_ENTRY__){
 </div>
 
 <main id="home">
+
+    <section class="section search-section" id="searchSection" aria-labelledby="searchHeading">
+    <div class="section-head"><div><h3 id="searchHeading">ابحث في مكتبة ضاد</h3><p>ابحث في المواد والكتب والملفات والاختبارات والصفوف والأقسام المتاحة.</p></div></div>
+    <div class="search" id="searchBox" role="search">
+      <input id="searchInput" type="search" aria-label="كلمات البحث" placeholder="ابحث عن مادة أو كتاب أو ملف أو صف..." onkeydown="if(event.key==='Enter') doSearch()">
+      <button type="button" onclick="doSearch()">بحث</button>
+    </div>
+  </section>
+
+  <section class="section dhad-home-intro" id="dhadHomeIntro" aria-labelledby="dhadHomeIntroTitle">
+    <div class="dhad-home-intro-card">
+      <p class="dhad-home-intro-kicker">أهلاً بكم في ضاد</p>
+      <h2 id="dhadHomeIntroTitle">منصة ضاد – منصة اللغة العربية</h2>
+      <p>منصة تعليمية متخصصة في خدمة معلمي اللغة العربية والطلبة وأولياء الأمور، تجمع الموارد والملفات التعليمية في مكان واحد، وتسهّل الوصول إليها والاستفادة منها، بما يدعم التعليم والتعلّم ويجعل الموارد أقرب إلى الجميع.</p>
+    </div>
+  </section>
+
+  <section class="section dhad-home-stats" id="dhadHomeStats" aria-labelledby="dhadHomeStatsTitle">
+    <div class="dhad-home-stats-head">
+      <div><h3 id="dhadHomeStatsTitle">ضاد بالأرقام</h3><p>إحصائيات فعلية من بيانات المنصة</p></div>
+      <span id="dhadHomeStatsUpdated" aria-live="polite">جارٍ تحميل الإحصائيات...</span>
+    </div>
+    <div class="dhad-home-stats-grid" aria-live="polite">
+      <article class="dhad-home-stat"><strong data-home-stat="materials">—</strong><span>ملف تعليمي متاح</span><small>من قاعدة البيانات</small></article>
+      <article class="dhad-home-stat"><strong data-home-stat="grades">—</strong><span>صف دراسي</span><small>من قاعدة البيانات</small></article>
+      <article class="dhad-home-stat"><strong data-home-stat="page_views">—</strong><span>زيارة مسجلة</span><small>خلال آخر 12 شهراً</small></article>
+      <article class="dhad-home-stat"><strong data-home-stat="downloads">—</strong><span>عملية تنزيل مسجلة</span><small>خلال آخر 12 شهراً</small></article>
+    </div>
+  </section>
+
   <section class="section home-grades-section" id="homeGradesSection" aria-labelledby="homeGradesHeading">
     <div class="section-head platform-heading"><div><h3 id="homeGradesHeading">الصفوف الدراسية</h3><p>اختر الصف للوصول إلى مواده وملفاته التعليمية.</p></div></div>
     <div class="grades home-grades-grid" id="homeGrades" aria-live="polite"></div>
@@ -524,13 +589,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
     <div id="homeSectionsContainer" class="home-sections-grid" aria-live="polite"></div>
   </section>
 
-  <section class="section search-section" id="searchSection" aria-labelledby="searchHeading">
-    <div class="section-head"><div><h3 id="searchHeading">ابحث في مكتبة ضاد</h3><p>ابحث في المواد والكتب والملفات والاختبارات والصفوف والأقسام المتاحة.</p></div></div>
-    <div class="search" id="searchBox" role="search">
-      <input id="searchInput" type="search" aria-label="كلمات البحث" placeholder="ابحث عن مادة أو كتاب أو ملف أو صف..." onkeydown="if(event.key==='Enter') doSearch()">
-      <button type="button" onclick="doSearch()">بحث</button>
-    </div>
-  </section>
+
 
 </main>
 
@@ -3383,4 +3442,30 @@ setTimeout(()=>{
 <script src="analytics.js?v=20261111a"></script>
 <script src="floating-back.js?v=20261110a"></script>
 <script src="seo.js?v=20261110a"></script>
+
+<script id="dhad-home-live-stats">
+(async function loadDhadHomePublicStats(){
+  const root=document.getElementById('dhadHomeStats');
+  if(!root)return;
+  const status=document.getElementById('dhadHomeStatsUpdated');
+  const url='https://rjkrfvnexrhebvulrtgp.supabase.co/functions/v1/home-public-stats';
+  const key='sb_publishable_INgrDnl6WPs_vNhpvwXMSA_YiHX8x7J';
+  try{
+    const response=await fetch(url,{method:'GET',headers:{apikey:key,Authorization:'Bearer '+key},cache:'no-store'});
+    if(!response.ok)throw new Error('stats_http_'+response.status);
+    const data=await response.json();
+    ['materials','grades','page_views','downloads'].forEach(function(name){
+      const target=root.querySelector('[data-home-stat="'+name+'"]');
+      if(!target||!Number.isFinite(Number(data[name])))throw new Error('invalid_stat_'+name);
+      target.textContent=Number(data[name]).toLocaleString('ar');
+    });
+    if(status)status.textContent='تُحدّث تلقائياً عند فتح الصفحة';
+  }catch(error){
+    console.warn('تعذر تحميل إحصائيات الصفحة الرئيسية:',error);
+    root.querySelectorAll('[data-home-stat]').forEach(function(target){target.textContent='—';});
+    if(status)status.textContent='الإحصائيات غير متاحة حالياً';
+  }
+})();
+</script>
+
 </body></html>
