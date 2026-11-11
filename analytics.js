@@ -81,6 +81,7 @@ window.loadDhadAdminAnalytics=async function(){
   setStatus('تم تحديث الإحصائيات. الزوار الفريدون تقديريون ويُحسبون بمعرّف مجهول محفوظ في المتصفح.','ok');
  }catch(e){console.warn('تعذر تحميل إحصائيات الإدارة:',e);setStatus('تعذر تحميل الإحصائيات. تحقق من تسجيل الدخول وصلاحية الإدارة ثم أعد المحاولة.','error');}
 };
+window.recordDhadAnalyticsEvent=function(type,materialId){return record(type,materialId);};
 function start(){
  if(started||!api())return;started=true;hookNavigation();hookActions();hookAdminPage();pageView();
  const id=new URL(location.href).searchParams.get('material');if(id)record('material_view',id);
