@@ -470,6 +470,24 @@ body.dark .content-page .page-title{background:radial-gradient(circle at 8% 100%
 @media(max-width:480px){#homeGradesSection{padding-inline:14px}#homeGradesSection .home-grades-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#homeGradesSection .grade{min-height:112px;padding:10px}#homeGradesSection .grade .circle{width:40px;height:40px;min-width:40px;font-size:20px}#homeGradesSection .grade .name{font-size:13px}}
 </style>
 
+
+<style id="dhad-home-sections-vertical">
+#homeGradesSection{display:none!important}
+#gradesSection{width:min(100%,1240px);padding-top:28px;padding-bottom:32px}
+#gradesSection .section-head{justify-content:center;text-align:center;margin-bottom:20px}
+#gradesSection .section-head h3{font-size:clamp(25px,3vw,34px);font-weight:900;color:#D9B96B}
+#gradesSection .section-head p{color:#d7ddcf;font-weight:700}
+#homeCardsGrid.platform-card-grid{display:flex!important;flex-direction:column!important;gap:13px!important;width:100%;grid-template-columns:1fr!important}
+#homeCardsGrid .platform-card{width:100%!important;min-height:88px!important;max-width:none!important;display:grid!important;grid-template-columns:62px minmax(0,1fr) 30px!important;grid-template-rows:auto auto!important;align-items:center!important;column-gap:15px!important;padding:17px 22px!important;text-align:right!important;border:1px solid #667252!important;border-right:5px solid #D9A441!important;border-radius:17px!important;background:linear-gradient(105deg,#34412F,#263326)!important;color:#fff!important;box-shadow:0 8px 22px rgba(0,0,0,.13)!important}
+#homeCardsGrid .platform-card:hover{transform:translateY(-2px);border-color:#D9A441!important}
+#homeCardsGrid .platform-card-icon{grid-column:1;grid-row:1/3;width:54px;height:54px;border-radius:14px;background:rgba(217,164,65,.13);display:grid;place-items:center;font-size:28px}
+#homeCardsGrid .platform-card-title{grid-column:2;grid-row:1;color:#F1D58E!important;font-size:20px!important;font-weight:900!important}
+#homeCardsGrid .platform-card-description{grid-column:2;grid-row:2;color:#e0e5d9!important;font-size:13px!important;margin-top:3px}
+#homeCardsGrid .platform-card-arrow{grid-column:3;grid-row:1/3;color:#E4C982!important;font-size:25px}
+#homeSectionsContainer{margin-top:22px}
+#teacherSuppliesPublicList .feature-content-card{border-color:#667252}
+@media(max-width:600px){#gradesSection{padding-inline:13px}#homeCardsGrid .platform-card{min-height:78px!important;grid-template-columns:48px minmax(0,1fr) 22px!important;gap:10px!important;padding:13px!important}#homeCardsGrid .platform-card-icon{width:44px;height:44px;font-size:23px}#homeCardsGrid .platform-card-title{font-size:17px!important}#homeCardsGrid .platform-card-description{font-size:11px!important}}
+</style>
 </head>
 <body>
 <script>
@@ -501,7 +519,7 @@ if(window.__DHAD_DIRECT_ENTRY__){
     <div class="grades home-grades-grid" id="homeGrades" aria-live="polite"></div>
   </section>
   <section class="section platform-section" id="gradesSection" aria-labelledby="gradesHeading">
-    <div class="section-head platform-heading"><div><h3 id="gradesHeading"><span aria-hidden="true">▣</span> أقسام المنصة</h3><p>كل ما تحتاجه في مكان واحد</p></div></div>
+    <div class="section-head platform-heading"><div><h3 id="gradesHeading">اكتشف أقسام ضاد</h3><p>اختر القسم الذي تريد استكشافه</p></div></div>
     <div id="homeCardsGrid" class="platform-card-grid" aria-live="polite"></div>
     <div id="homeSectionsContainer" class="home-sections-grid" aria-live="polite"></div>
   </section>
@@ -523,6 +541,8 @@ if(window.__DHAD_DIRECT_ENTRY__){
 <section class="content-page feature-page" id="additionalPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← التعليم الإضافي</div><div class="page-title"><h2>التعليم الإضافي</h2><p>موارد وأنشطة إثرائية مرتبة لدعم تعلم اللغة العربية.</p></div><div id="additionalContent" class="feature-content-grid"></div></div></section>
 <section class="content-page feature-page" id="calendarPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← التقويم الدراسي</div><div class="page-title"><h2>التقويم الدراسي</h2><p>صور ومواعيد التقويم التي تنشرها إدارة المنصة.</p></div><div id="calendarGallery" class="calendar-gallery"></div></div></section>
 <section class="content-page feature-page" id="certificatePage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← شهادات التقدير</div><div class="page-title"><h2>إنشاء شهادة تقدير</h2><p>اكتب اسم الطالب لمعاينة شهادة قابلة للتنزيل. يظل الاسم فارغًا حتى تدخله.</p></div><div class="certificate-toolbar"><div class="field"><label for="studentName">اسم الطالب</label><input id="studentName" maxlength="100" autocomplete="off" placeholder="اكتب اسم الطالب"></div><div class="certificate-actions"><button class="primary" type="button" onclick="previewCertificate()">معاينة الشهادة</button><button class="download" type="button" onclick="downloadCertificatePng()">تنزيل PNG</button><button class="secondary" type="button" onclick="window.print()">طباعة / PDF</button></div></div><div id="certificatePreview" class="certificate-preview" aria-live="polite"></div></div></section>
+
+<section class="content-page feature-page" id="teacherSuppliesPage"><div class="panel"><button class="back" type="button" onclick="goBack()">↩ رجوع</button><div class="crumb">الرئيسية ← لوازم المعلمين</div><div class="page-title"><h2>لوازم المعلمين</h2><p>ملفات وموارد تعليمية مخصصة لدعم المعلمين. اختر الملف للانتقال إلى تفاصيله وصفحة تنزيله.</p></div><div id="teacherSuppliesPublicList" class="feature-content-grid" aria-live="polite"><div class="empty">جارٍ تحميل الملفات...</div></div></div></section>
 
 <section class="content-page" id="filesPage">
   <div class="panel">
@@ -997,7 +1017,7 @@ function closeModal(){
 function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
 
 function hideAll(){
-  ['home','gradesHubPage','gradePage','listingPage','calendarPage','adminPage','filesPage','sitePagesPage','homeSectionsPage','teacherSuppliesAdminPage','featureAdminPage','setupPage'].forEach(id=>{
+  ['home','gradesHubPage','gradePage','listingPage','calendarPage','adminPage','filesPage','sitePagesPage','homeSectionsPage','teacherSuppliesAdminPage','teacherSuppliesPage','featureAdminPage','setupPage'].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.style.display='none';
   });
