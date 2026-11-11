@@ -210,11 +210,15 @@
     #dhadMaterialDirectPage .dhad-material-file-meta div{background:#333E2D;border:1px solid #596044;border-radius:10px;padding:10px}
     #dhadMaterialDirectPage .dhad-material-file-meta span{display:block;color:#D1C7A9;font-size:11px}
     #dhadMaterialDirectPage .dhad-material-file-meta b{display:block;color:#E8D39B;font-size:13px;overflow-wrap:anywhere}
+    #dhadMaterialDirectPage .dhad-related-under-actions{margin:10px 0 0;padding:12px;width:100%;box-sizing:border-box}
+    #dhadMaterialDirectPage .dhad-related-under-actions .dhad-material-related{display:grid;grid-template-columns:1fr;gap:8px}
+    #dhadMaterialDirectPage .dhad-material-stats-panel{width:100%;box-sizing:border-box;margin-top:16px}
+    #dhadMaterialDirectPage .dhad-material-stats-panel .dhad-material-stats{width:100%;box-sizing:border-box}
     #dhadMaterialDirectPage .dhad-material-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
     #dhadMaterialDirectPage .dhad-material-related button{background:#333E2D;border:1px solid #596044;border-radius:10px;padding:12px;text-align:right;color:#E8D39B;font-weight:800}
     #dhadMaterialDirectPage .dhad-direct-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;align-items:start;gap:16px}
     #dhadMaterialDirectPage .dhad-direct-download{display:grid;grid-template-columns:1fr;align-content:start;position:sticky;top:92px}
-    @media(max-width:760px){#dhadMaterialDirectPage .dhad-direct-layout{display:flex;flex-direction:column}#dhadMaterialDirectPage .dhad-direct-download{position:static;grid-template-columns:1fr;width:100%}#dhadMaterialDirectPage .dhad-material-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-file-meta{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-related{grid-template-columns:1fr}}
+    @media(max-width:760px){#dhadMaterialDirectPage .dhad-direct-layout{display:flex;flex-direction:column}#dhadMaterialDirectPage .dhad-direct-download{position:static;grid-template-columns:1fr;width:100%}#dhadMaterialDirectPage .dhad-material-stats-panel{position:relative;left:50%;transform:translateX(-50%);width:100vw;max-width:100vw;border-radius:0!important;padding:14px 12px!important;margin-top:16px}#dhadMaterialDirectPage .dhad-material-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}#dhadMaterialDirectPage .dhad-material-stat{min-width:0;padding:12px 9px;text-align:center}#dhadMaterialDirectPage .dhad-material-stat strong{font-size:clamp(20px,6vw,26px)}#dhadMaterialDirectPage .dhad-material-file-meta{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-related{grid-template-columns:1fr}}
   
   `;
 
@@ -299,20 +303,6 @@
                    class="dhad-direct-meta"></div>
 
               <div id="dhadDownloadMaterialExtra"></div>
-              <section class="dhad-direct-info-block" aria-label="إحصائيات المادة">
-                <h3>إحصائيات المادة</h3>
-                <div id="dhadMaterialStats" class="dhad-material-stats">
-                  <div class="dhad-material-stat"><span>المشاهدات</span><strong>—</strong></div>
-                  <div class="dhad-material-stat"><span>التنزيلات</span><strong>—</strong></div>
-                  <div class="dhad-material-stat"><span>المعاينات</span><strong>—</strong></div>
-                  <div class="dhad-material-stat"><span>المشاركات</span><strong>—</strong></div>
-                </div>
-              </section>
-              <section id="dhadMaterialRelatedSection" class="dhad-direct-info-block" style="display:none">
-                <h3>مواد ذات صلة</h3>
-                <div id="dhadMaterialRelated" class="dhad-material-related"></div>
-              </section>
-
             </article>
 
             <aside class="dhad-direct-card dhad-direct-download"
@@ -339,9 +329,24 @@
                 🔗 مشاركة الرابط
               </button>
 
+              <section id="dhadMaterialRelatedSection" class="dhad-direct-info-block dhad-related-under-actions" style="display:none">
+                <h3>مواد ذات صلة</h3>
+                <div id="dhadMaterialRelated" class="dhad-material-related"></div>
+              </section>
+
             </aside>
 
           </div>
+
+          <section class="dhad-direct-info-block dhad-material-stats-panel" aria-label="إحصائيات المادة">
+            <h3>إحصائيات المادة</h3>
+            <div id="dhadMaterialStats" class="dhad-material-stats">
+              <div class="dhad-material-stat"><span>المشاهدات</span><strong>—</strong></div>
+              <div class="dhad-material-stat"><span>التنزيلات</span><strong>—</strong></div>
+              <div class="dhad-material-stat"><span>المعاينات</span><strong>—</strong></div>
+              <div class="dhad-material-stat"><span>المشاركات</span><strong>—</strong></div>
+            </div>
+          </section>
 
         </div>
 
