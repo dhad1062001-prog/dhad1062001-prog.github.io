@@ -141,3 +141,83 @@ hr,.divider,.separator{border-color:#3c4c60!important}
 .page .enter{background:linear-gradient(135deg,#c99b68,#a87548)!important;color:#172235!important}
 .page .contact-link{background:#1c2d43!important;color:#eadfce!important;border-color:#8d623d!important}
 .page .contact-link svg{fill:#c99b68!important}
+
+
+/* Final page-by-page coverage: standalone admin surfaces and legacy component names */
+:root{
+ --bg:#101b2d!important;--side:#142238!important;--panel:#19283d!important;
+ --panel2:#22354b!important;--olive:#19283d!important;--olive-dark:#b7834f!important;
+ --olive-soft:#263b55!important;--gold:#b7834f!important;--gold2:#d1a875!important;
+ --gold-soft:#493a30!important;--white:#19283d!important;--ink:#eadfce!important;
+ --muted:#b8b0a4!important;--line:#3c4c60!important;--canvas:#101b2d!important;
+}
+.shell,.layout,.admin-layout,.admin-shell,.admin-center,.admin-root,.main,.main-area,
+.topbar,.topbar-start,.topbar-actions,.top-actions,.sidebar,.admin-sidebar,.admin-side,
+.admin-header,.admin-topbar,.admin-main,.content,.page-content,.content-area{
+ background-color:#101b2d!important;color:#eadfce!important;border-color:#3c4c60!important;
+}
+.sidebar,.admin-sidebar,.admin-side,.side-menu{
+ background:linear-gradient(180deg,#142238,#101b2d)!important;
+}
+.topbar,.admin-topbar,.admin-header{
+ background:#142238!important;border-bottom:1px solid #3c4c60!important;
+}
+.brand-mark,.avatar,.user-avatar,.metric-icon,.nav-icon,.nav button span{
+ background:#263b55!important;color:#d1a875!important;border:1px solid #b7834f!important;
+}
+.brand h1,.brand strong,.brand-copy strong,.heading h2,.page-head h2,.panel-head h3,
+.metric strong,.metric label,.field label,.nav-title,.nav-label,.sidebar-caption{
+ color:#d1a875!important;
+}
+.nav button,.nav-item,.navigation button,.admin-menu button,.sidebar button,
+.nav a,.sidebar a,.navigation a{
+ background:transparent!important;color:#d8c8b5!important;border-color:transparent!important;
+}
+.nav button:hover,.nav button.active,.nav-item:hover,.nav-item.active,
+.navigation button:hover,.navigation button.active,.admin-menu button:hover,
+.admin-menu button.active,.sidebar button.active{
+ background:#263b55!important;color:#edbd89!important;border-color:#b7834f!important;
+}
+.panel,.metric,.stat,.module-card,.admin-card,.admin-file-card,.field-card,.manager-card,
+.content-card,.upload-card,.table-wrap,.login-card,.modal-card,.dialog,.settings-card,
+.section-card,.feature-card,.empty-state{
+ background:#19283d!important;color:#eadfce!important;border:1px solid #3c4c60!important;
+ box-shadow:0 14px 36px rgba(0,0,0,.25)!important;
+}
+input,textarea,select,.search,.field input,.field select,.field textarea,
+.form-control,.search-input,.filter-input{
+ background:#142238!important;color:#eadfce!important;border:1px solid #45566b!important;
+}
+input::placeholder,textarea::placeholder{color:#a9a194!important}
+button,.btn,.btn.primary,.top-actions .primary,.login-btn,.submit-btn,.save-btn,
+.add-btn,.action-primary,.button-primary{
+ background:linear-gradient(135deg,#c99b68,#a87548)!important;
+ color:#172235!important;border-color:#b7834f!important;
+}
+.btn.light,.btn.secondary,.btn.ghost,.icon-btn,.icon-button,.menu-btn,
+.btn-outline,.action-secondary,.secondary-btn{
+ background:#22354b!important;color:#d1a875!important;border:1px solid #45566b!important;
+}
+.btn.danger,.danger,.delete-btn{
+ background:#49302e!important;color:#e9b6a5!important;border-color:#8d5148!important;
+}
+table,thead,tbody,tr,th,td,.table,.data-table{
+ background:transparent!important;color:#eadfce!important;border-color:#3c4c60!important;
+}
+th,.table th,.data-table th{color:#d1a875!important}
+tr:hover,tbody tr:hover{background:#22354b!important}
+select option,.dropdown-menu option{background:#19283d!important;color:#eadfce!important}
+.badge,.pill,.tag,.chip,.status,.status-badge,.environment-chip,.preview-ribbon,
+.demo-note,.nav-group-label,.side-label{
+ background:#263b55!important;color:#e5b985!important;border-color:#8d623d!important;
+}
+.alert,.notice,.safety-notice,.error,.success,.toast,.notification{
+ background:#22354b!important;color:#eadfce!important;border-color:#8d623d!important;
+}
+.modal,.modal-content,.dialog,.popover,.dropdown,.dropdown-menu,.context-menu,
+.select-menu,.select-options,.autocomplete,.search-results,.tooltip,.drawer{
+ background:#19283d!important;color:#eadfce!important;border-color:#3c4c60!important;
+}
+.modal h1,.modal h2,.modal h3,.dialog h1,.dialog h2,.dialog h3{color:#eadfce!important}
+hr,.divider,.separator{border-color:#3c4c60!important}
+body,html{background-color:#101b2d!important;color:#eadfce!important}
