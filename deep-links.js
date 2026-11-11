@@ -182,79 +182,42 @@
       white-space:nowrap;
     }
 
-    /* هوية صفحات تفاصيل الملفات والتنزيل: زيتي داكن وإطار ذهبي مفرغ */
-    #dhadMaterialDirectPage{
-      --panel:#303B27;--soft:#35432B;--line:#C3A45F;
-      --text:#FFFFFF;--muted:#D8DCCF;--accent:#D8B96E;
-      color:#FFFFFF;
-      background:#20291C!important;
-    }
-    #dhadMaterialDirectPage > .panel{
-      background:#20291C!important;
-      color:#FFFFFF!important;
-      border:2px solid #C3A45F!important;
-      border-radius:22px!important;
-      padding:clamp(14px,3vw,28px)!important;
-      box-shadow:0 14px 36px rgba(0,0,0,.28)!important;
-    }
-    #dhadMaterialDirectPage .page-title{
-      background:#303B27!important;
-      border:2px solid #C3A45F!important;
-      border-radius:16px!important;
-    }
-    #dhadMaterialDirectPage .page-title h2,
-    #dhadMaterialDirectPage .dhad-direct-card h3,
-    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#E4C982!important}
-    #dhadMaterialDirectPage .page-title p,
-    #dhadMaterialDirectPage .crumb{color:#D8DCCF!important}
-    #dhadMaterialDirectPage .dhad-direct-card{
-      background:#303B27!important;
-      color:#FFFFFF!important;
-      border:2px solid #C3A45F!important;
-      border-radius:18px!important;
-      box-shadow:0 10px 26px rgba(0,0,0,.24)!important;
-    }
-    #dhadMaterialDirectPage .dhad-direct-card p,
-    #dhadMaterialDirectPage .dhad-direct-description{color:#FFFFFF!important}
-    #dhadMaterialDirectPage .dhad-direct-info-block{
-      background:#263121!important;
-      border:1.5px solid #C3A45F!important;
-      border-radius:14px!important;
-      color:#FFFFFF!important;
-    }
-    #dhadMaterialDirectPage .dhad-direct-meta span{
-      background:#263121!important;
-      border:1px solid #C3A45F!important;
-      color:#E4C982!important;
-    }
-    #dhadMaterialDirectPage .dhad-direct-main-button,
-    #dhadMaterialDirectPage #dhadDirectDownloadButton,
-    #dhadMaterialDirectPage #dhadDirectPreviewButton,
-    #dhadMaterialDirectPage #dhadDirectShareButton,
-    #dhadMaterialDirectPage .back{
-      background:transparent!important;
-      color:#E4C982!important;
-      border:2px solid #C3A45F!important;
-      border-radius:12px!important;
-      box-shadow:inset 0 0 0 1px rgba(195,164,95,.12)!important;
-    }
-    #dhadMaterialDirectPage .dhad-direct-main-button:hover,
-    #dhadMaterialDirectPage #dhadDirectDownloadButton:hover,
-    #dhadMaterialDirectPage #dhadDirectPreviewButton:hover,
-    #dhadMaterialDirectPage #dhadDirectShareButton:hover,
-    #dhadMaterialDirectPage .back:hover{
-      background:#35432B!important;
-      border-color:#E4C982!important;
-    }
-    #dhadMaterialDirectPage .empty{
-      background:#263121!important;
-      color:#D8DCCF!important;
-      border:1px solid #C3A45F!important;
-    }
-    #dhadMaterialDirectPage .dhad-direct-card b{color:#E4C982!important}
-    @media(max-width:760px){
-      #dhadMaterialDirectPage .dhad-direct-download{grid-row:auto}
-    }
+    /* صفحة تنزيل مختصرة وواضحة: أبيض وزيتي ولمسات ذهبية */
+    #dhadMaterialDirectPage{color:#24332e;background:#20291C!important}
+    #dhadMaterialDirectPage>.panel{background:transparent!important;color:#fff!important;border:0!important;box-shadow:none!important;padding:clamp(10px,2vw,22px)!important}
+    #dhadMaterialDirectPage .page-title{background:transparent!important;border:0!important;border-bottom:2px solid #C3A45F!important;border-radius:0!important;padding:8px 0 16px!important;margin-bottom:18px}
+    #dhadMaterialDirectPage .page-title h2{color:#fff!important;font-size:clamp(24px,4vw,32px)}
+    #dhadMaterialDirectPage .page-title p,#dhadMaterialDirectPage .crumb{color:#D8DCCF!important}
+    #dhadMaterialDirectPage .dhad-direct-card{background:#fff!important;color:#24332e!important;border:1px solid #e4e9e5!important;border-radius:16px!important;box-shadow:0 10px 28px rgba(0,0,0,.14)!important}
+    #dhadMaterialDirectPage .dhad-direct-card h3{color:#173f35!important;margin:0 0 12px}
+    #dhadMaterialDirectPage .dhad-direct-card p,#dhadMaterialDirectPage .dhad-direct-description{color:#34443d!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block{background:#f4f7f4!important;border:0!important;border-right:3px solid #C3A45F!important;border-radius:8px!important;color:#24332e!important;padding:14px 16px!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#173f35!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block p{color:#34443d!important}
+    #dhadMaterialDirectPage .dhad-direct-meta span{background:#f4f7f4!important;border:1px solid #e4e9e5!important;color:#245b48!important}
+    #dhadMaterialDirectPage .dhad-direct-main-button,#dhadMaterialDirectPage #dhadDirectDownloadButton,#dhadMaterialDirectPage #dhadDirectPreviewButton,#dhadMaterialDirectPage #dhadDirectShareButton,#dhadMaterialDirectPage .back{background:#173f35!important;color:#fff!important;border:1px solid #173f35!important;border-radius:10px!important;box-shadow:none!important}
+    #dhadMaterialDirectPage #dhadDirectShareButton{background:#fff!important;color:#173f35!important;border-color:#c6a052!important}
+    #dhadMaterialDirectPage .dhad-direct-main-button:hover,#dhadMaterialDirectPage #dhadDirectDownloadButton:hover,#dhadMaterialDirectPage #dhadDirectPreviewButton:hover,#dhadMaterialDirectPage #dhadDirectShareButton:hover,#dhadMaterialDirectPage .back:hover{filter:brightness(1.08);background:#245b48!important}
+    #dhadMaterialDirectPage #dhadDirectShareButton:hover{color:#fff!important}
+    #dhadMaterialDirectPage .empty{background:#f4f7f4!important;color:#526158!important;border:1px solid #e4e9e5!important}
+    #dhadMaterialDirectPage .dhad-direct-card b{color:#173f35!important}
+    #dhadMaterialDirectPage .dhad-material-overline{color:#92712f;font-size:12px;font-weight:800;margin-bottom:8px}
+    #dhadMaterialDirectPage .dhad-material-description{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2.05;margin:0}
+    #dhadMaterialDirectPage .dhad-material-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+    #dhadMaterialDirectPage .dhad-material-stat{background:#f4f7f4;border:1px solid #e4e9e5;border-radius:11px;padding:12px}
+    #dhadMaterialDirectPage .dhad-material-stat span{display:block;color:#718078;font-size:12px}
+    #dhadMaterialDirectPage .dhad-material-stat strong{display:block;color:#173f35;font-size:24px;font-weight:900}
+    #dhadMaterialDirectPage .dhad-material-file-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+    #dhadMaterialDirectPage .dhad-material-file-meta div{background:#f4f7f4;border-radius:10px;padding:10px}
+    #dhadMaterialDirectPage .dhad-material-file-meta span{display:block;color:#718078;font-size:11px}
+    #dhadMaterialDirectPage .dhad-material-file-meta b{display:block;color:#173f35;font-size:13px;overflow-wrap:anywhere}
+    #dhadMaterialDirectPage .dhad-material-preview{margin-top:16px;background:#f4f7f4;border:1px solid #e4e9e5;border-radius:12px;overflow:hidden}
+    #dhadMaterialDirectPage .dhad-material-preview iframe{display:block;width:100%;height:min(72vh,680px);border:0;background:#fff}
+    #dhadMaterialDirectPage .dhad-material-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    #dhadMaterialDirectPage .dhad-material-related button{background:#f4f7f4;border:1px solid #e4e9e5;border-radius:10px;padding:12px;text-align:right;color:#173f35;font-weight:800}
+    #dhadMaterialDirectPage .dhad-direct-download{align-content:start}
+    @media(max-width:760px){#dhadMaterialDirectPage .dhad-direct-layout{display:flex;flex-direction:column}#dhadMaterialDirectPage .dhad-direct-download{grid-template-columns:1fr}#dhadMaterialDirectPage .dhad-material-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-file-meta{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-related{grid-template-columns:1fr}}
+  
   `;
 
   document.head.appendChild(style);
@@ -340,6 +303,23 @@
                    class="dhad-direct-meta"></div>
 
               <div id="dhadDownloadMaterialExtra"></div>
+              <section class="dhad-direct-info-block" aria-label="إحصائيات المادة">
+                <h3>إحصائيات المادة</h3>
+                <div id="dhadMaterialStats" class="dhad-material-stats">
+                  <div class="dhad-material-stat"><span>المشاهدات</span><strong>—</strong></div>
+                  <div class="dhad-material-stat"><span>التنزيلات</span><strong>—</strong></div>
+                  <div class="dhad-material-stat"><span>المعاينات</span><strong>—</strong></div>
+                  <div class="dhad-material-stat"><span>المشاركات</span><strong>—</strong></div>
+                </div>
+              </section>
+              <section id="dhadMaterialPreviewSection" class="dhad-direct-info-block" style="display:none">
+                <h3>معاينة الملف</h3>
+                <div id="dhadMaterialPreview"></div>
+              </section>
+              <section id="dhadMaterialRelatedSection" class="dhad-direct-info-block" style="display:none">
+                <h3>مواد ذات صلة</h3>
+                <div id="dhadMaterialRelated" class="dhad-material-related"></div>
+              </section>
 
             </article>
 
@@ -582,17 +562,24 @@
           url
         });
 
-        return;
+        if(kind==='material'&&typeof window.recordDhadAnalyticsEvent==='function'){
+          window.recordDhadAnalyticsEvent('share',id);
+        }
+        return true;
 
       }catch(error){
 
-        if(error?.name==='AbortError')return;
+        if(error?.name==='AbortError')return false;
 
       }
 
     }
 
     const copied=await copyText(url);
+
+    if(copied&&kind==='material'&&typeof window.recordDhadAnalyticsEvent==='function'){
+      window.recordDhadAnalyticsEvent('share',id);
+    }
 
     if(typeof showInfo==='function'){
 
@@ -604,6 +591,7 @@
       );
 
     }
+    return !!copied;
 
   };
 
@@ -979,37 +967,60 @@
       status.textContent='تم العثور على المادة التعليمية.';
 
 
-      /* إطار واحد مختصر لتفاصيل الملف */
+      /* بناء محتوى المادة من البيانات المحفوظة فعليًا */
 
       const description=String(data.description||'').trim();
-      const fileName=String(data.file_name||'').trim();
+      const summary=String(data.content_summary||'').trim();
+      const objectives=String(data.learning_objectives||'').trim();
+      const audience=String(data.target_audience||'').trim();
+      const fileName=String(data.file_name||data.title||'').trim();
+      const fileType=String(data.file_type||'').split('/').pop().toUpperCase()||'ملف';
+      const fileSize=formatFileSize(data.file_size)||'غير محدد';
+      const pageCount=data.page_count?String(data.page_count)+' صفحة':'غير محدد';
+      const dateValue=data.updated_at||data.created_at;
+      const updated=dateValue?new Date(dateValue).toLocaleDateString('ar-JO'):'غير محدد';
 
-      const descriptionHTML=
-        '<div class="dhad-direct-info-block">'+
-          '<h3>تفاصيل الملف</h3>'+
-          (description?
-            '<p class="dhad-direct-description">'+
-              safeText(description)+
-            '</p>':
-            '<p>لا يتوفر وصف إضافي لهذا الملف.</p>')+
-          (fileName?
-            '<p><b>اسم الملف:</b> '+safeText(fileName)+'</p>':
-            '')+
+      const grade=(typeof grades!=='undefined'?grades:[]).find(x=>String(x.id)===String(data.grade_id));
+      const semester=(typeof semesters!=='undefined'?semesters:[]).find(x=>String(x.id)===String(data.semester_id));
+      const category=(typeof categories!=='undefined'?categories:[]).find(x=>String(x.id)===String(data.category_id));
+      const chips=[grade?.name,data.track_name,data.field_name,semester?.name,category?.name].filter(Boolean);
+
+      const detailsHTML=
+        '<div class="dhad-material-overline">مادة تعليمية من منصة ضاد</div>'+
+        '<p class="dhad-material-description">'+(description?safeText(description):'لم يضف المشرف وصفًا تفصيليًا لهذه المادة بعد.')+'</p>'+
+        (summary?'<div class="dhad-direct-info-block"><h3>نبذة عن المحتوى</h3><p class="dhad-material-description">'+safeText(summary)+'</p></div>':'')+
+        (objectives?'<div class="dhad-direct-info-block"><h3>الأهداف التعليمية</h3><p class="dhad-material-description">'+safeText(objectives)+'</p></div>':'')+
+        (audience?'<div class="dhad-direct-info-block"><h3>الفئة المستهدفة</h3><p class="dhad-material-description">'+safeText(audience)+'</p></div>':'')+
+        (chips.length?'<div class="dhad-direct-meta">'+chips.map(x=>'<span>'+safeText(x)+'</span>').join('')+'</div>':'')+
+        (fileName?'<p><b>اسم الملف:</b> '+safeText(fileName)+'</p>':'');
+
+      body.innerHTML=detailsHTML;
+      document.getElementById('dhadDownloadMaterialDescription').innerHTML=
+        '<div class="dhad-material-overline">عن هذه المادة</div>'+detailsHTML;
+
+      document.getElementById('dhadDownloadMaterialMeta').innerHTML=
+        '<div class="dhad-material-file-meta">'+
+          '<div><span>نوع الملف</span><b>'+safeText(fileType)+'</b></div>'+
+          '<div><span>حجم الملف</span><b>'+safeText(fileSize)+'</b></div>'+
+          '<div><span>عدد الصفحات</span><b>'+safeText(pageCount)+'</b></div>'+
+          '<div><span>آخر تحديث</span><b>'+safeText(updated)+'</b></div>'+
+          '<div><span>الصف</span><b>'+safeText(grade?.name||'غير محدد')+'</b></div>'+
+          '<div><span>الفصل</span><b>'+safeText(semester?.name||'غير محدد')+'</b></div>'+
         '</div>';
 
-
-      /* عرض إطار التفاصيل نفسه في صفحتي التفاصيل والتنزيل */
-
-      body.innerHTML=descriptionHTML;
-
-      document.getElementById('dhadDownloadMaterialDescription').innerHTML=
-        descriptionHTML;
-
-      document.getElementById('dhadDownloadMaterialMeta').innerHTML='';
       document.getElementById('dhadDownloadMaterialExtra').innerHTML='';
 
       const statusBox=document.getElementById('dhadDirectMaterialStatus');
       if(statusBox)statusBox.style.display='none';
+
+      /* تحميل الإحصائيات الحقيقية المسجلة لهذه المادة */
+      loadMaterialPublicStats(data.id);
+
+      /* إظهار معاينة الملف الفعلية عند دعم صيغة PDF */
+      loadMaterialPreview(data);
+
+      /* تحميل مواد مرتبطة من نفس الصف والقسم */
+      loadRelatedMaterials(data);
 
 
       /* زر التنزيل */
@@ -1055,6 +1066,52 @@
 
   }
 
+
+  async function loadMaterialPublicStats(materialId){
+    const box=document.getElementById('dhadMaterialStats');
+    if(!box||!sb)return;
+    try{
+      const {data,error}=await sb.rpc('get_public_material_stats',{p_material_id:materialId});
+      if(error||!data?.available)throw error||new Error('stats_unavailable');
+      const labels=[['المشاهدات',data.views],['التنزيلات',data.downloads],['المعاينات',data.previews],['المشاركات',data.shares]];
+      box.innerHTML=labels.map(([label,value])=>'<div class="dhad-material-stat"><span>'+label+'</span><strong>'+Number(value||0).toLocaleString('ar')+'</strong></div>').join('');
+    }catch(error){
+      console.warn('تعذر تحميل إحصائيات المادة:',error);
+      box.innerHTML='<p>إحصائيات المادة غير متاحة حاليًا.</p>';
+    }
+  }
+
+  async function loadMaterialPreview(data){
+    const section=document.getElementById('dhadMaterialPreviewSection');
+    const target=document.getElementById('dhadMaterialPreview');
+    if(!section||!target)return;
+    const isPdf=/pdf/i.test(String(data.file_type||''))||/\.pdf$/i.test(String(data.file_name||data.file_path||''));
+    if(!isPdf)return;
+    try{
+      const resolved=await resolveStorageFile(data.file_path,'');
+      if(!resolved.url)return;
+      let previewUrl=resolved.url;
+      const drive=String(data.file_path||'').match(/^drive:([A-Za-z0-9_-]+)$/);
+      if(drive)previewUrl='https://drive.google.com/file/d/'+encodeURIComponent(drive[1])+'/preview';
+      target.innerHTML='<div class="dhad-material-preview"><iframe title="معاينة ملف PDF" loading="lazy" src="'+safeText(previewUrl)+'" allow="autoplay"></iframe></div>';
+      section.style.display='block';
+    }catch(error){console.warn('تعذرت معاينة PDF:',error);}
+  }
+
+  async function loadRelatedMaterials(data){
+    const section=document.getElementById('dhadMaterialRelatedSection');
+    const target=document.getElementById('dhadMaterialRelated');
+    if(!section||!target||!sb||!data.category_id)return;
+    try{
+      let query=sb.from('materials').select('id,title,file_type').eq('is_public',true).eq('category_id',data.category_id).neq('id',data.id).order('created_at',{ascending:false}).limit(4);
+      if(data.grade_id)query=query.eq('grade_id',data.grade_id);
+      const {data:rows,error}=await query;
+      if(error)throw error;
+      if(!rows?.length)return;
+      target.innerHTML=rows.map(row=>'<button type="button" onclick="openMaterialInfoPage(\''+safeText(row.id)+'\')">'+safeText(row.title||'مادة تعليمية')+' ←</button>').join('');
+      section.style.display='block';
+    }catch(error){console.warn('تعذر تحميل المواد المرتبطة:',error);}
+  }
 
   /* تنسيق حجم الملف */
 
