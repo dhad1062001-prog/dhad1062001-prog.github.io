@@ -1578,12 +1578,13 @@ function renderMaterialCollection(rows){
     return `
       <article class="material ui-shape">
         <div>
-          <b>${escapeHtml(m.title)}</b>
-          ${(m.content_summary||m.description)?'<div style="margin-top:6px;color:var(--muted)">'+escapeHtml(m.content_summary||m.description)+'</div>':''}
-          <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="tag ui-shape">${escapeHtml(ext)}</span><small class="dhad-download-count" data-material-count="${escapeHtml(String(m.id))}">⬇ مرات بدء التنزيل: <span data-count-value>${Number(m.download_count||0).toLocaleString('ar')}</span></small></div>
+          <b>${escapeHtml(m.file_name||m.title||'ملف تعليمي')}</b>
+          <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span class="tag ui-shape">${escapeHtml(ext)}</span>
+          </div>
         </div>
         <div style="display:flex;gap:7px;flex-wrap:wrap">
-          <button class="primary ui-shape" type="button" onclick="openMaterialInfoPage('${m.id}')">التفاصيل ←</button>
+          <button class="primary ui-shape" type="button" onclick="openMaterialInfoPage('${m.id}')">اذهب إلى صفحة التنزيل ←</button>
         </div>
       </article>`;
   }).join('');
