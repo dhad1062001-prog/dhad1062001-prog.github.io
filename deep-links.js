@@ -182,39 +182,36 @@
       white-space:nowrap;
     }
 
-    /* صفحة تنزيل مختصرة وواضحة: أبيض وزيتي ولمسات ذهبية */
-    #dhadMaterialDirectPage{color:#24332e;background:#20291C!important}
-    #dhadMaterialDirectPage>.panel{background:transparent!important;color:#fff!important;border:0!important;box-shadow:none!important;padding:clamp(10px,2vw,22px)!important}
+    /* هوية زيتية داكنة ولمسات ذهبية دون خلفيات بيضاء */
+    #dhadMaterialDirectPage{color:#E8E0C8;background:#20291C!important}
+    #dhadMaterialDirectPage>.panel{background:transparent!important;color:#E8E0C8!important;border:0!important;box-shadow:none!important;padding:clamp(10px,2vw,22px)!important}
     #dhadMaterialDirectPage .page-title{background:transparent!important;border:0!important;border-bottom:2px solid #C3A45F!important;border-radius:0!important;padding:8px 0 16px!important;margin-bottom:18px}
-    #dhadMaterialDirectPage .page-title h2{color:#fff!important;font-size:clamp(24px,4vw,32px)}
+    #dhadMaterialDirectPage .page-title h2{color:#E8D39B!important;font-size:clamp(24px,4vw,32px)}
     #dhadMaterialDirectPage .page-title p,#dhadMaterialDirectPage .crumb{color:#D8DCCF!important}
-    #dhadMaterialDirectPage .dhad-direct-card{background:#fff!important;color:#24332e!important;border:1px solid #e4e9e5!important;border-radius:16px!important;box-shadow:0 10px 28px rgba(0,0,0,.14)!important}
-    #dhadMaterialDirectPage .dhad-direct-card h3{color:#173f35!important;margin:0 0 12px}
-    #dhadMaterialDirectPage .dhad-direct-card p,#dhadMaterialDirectPage .dhad-direct-description{color:#34443d!important}
-    #dhadMaterialDirectPage .dhad-direct-info-block{background:#f4f7f4!important;border:0!important;border-right:3px solid #C3A45F!important;border-radius:8px!important;color:#24332e!important;padding:14px 16px!important}
-    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#173f35!important}
-    #dhadMaterialDirectPage .dhad-direct-info-block p{color:#34443d!important}
-    #dhadMaterialDirectPage .dhad-direct-meta span{background:#f4f7f4!important;border:1px solid #e4e9e5!important;color:#245b48!important}
-    #dhadMaterialDirectPage .dhad-direct-main-button,#dhadMaterialDirectPage #dhadDirectDownloadButton,#dhadMaterialDirectPage #dhadDirectPreviewButton,#dhadMaterialDirectPage #dhadDirectShareButton,#dhadMaterialDirectPage .back{background:#173f35!important;color:#fff!important;border:1px solid #173f35!important;border-radius:10px!important;box-shadow:none!important}
-    #dhadMaterialDirectPage #dhadDirectShareButton{background:#fff!important;color:#173f35!important;border-color:#c6a052!important}
-    #dhadMaterialDirectPage .dhad-direct-main-button:hover,#dhadMaterialDirectPage #dhadDirectDownloadButton:hover,#dhadMaterialDirectPage #dhadDirectPreviewButton:hover,#dhadMaterialDirectPage #dhadDirectShareButton:hover,#dhadMaterialDirectPage .back:hover{filter:brightness(1.08);background:#245b48!important}
-    #dhadMaterialDirectPage #dhadDirectShareButton:hover{color:#fff!important}
-    #dhadMaterialDirectPage .empty{background:#f4f7f4!important;color:#526158!important;border:1px solid #e4e9e5!important}
-    #dhadMaterialDirectPage .dhad-direct-card b{color:#173f35!important}
-    #dhadMaterialDirectPage .dhad-material-overline{color:#92712f;font-size:12px;font-weight:800;margin-bottom:8px}
+    #dhadMaterialDirectPage .dhad-direct-card{background:#2B3527!important;color:#E8E0C8!important;border:1px solid #596044!important;border-radius:16px!important;box-shadow:0 10px 28px rgba(0,0,0,.22)!important}
+    #dhadMaterialDirectPage .dhad-direct-card h3{color:#D8B968!important;margin:0 0 12px}
+    #dhadMaterialDirectPage .dhad-direct-card p,#dhadMaterialDirectPage .dhad-direct-description{color:#E8E0C8!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block{background:#333E2D!important;border:1px solid #596044!important;border-right:3px solid #C3A45F!important;border-radius:8px!important;color:#E8E0C8!important;padding:14px 16px!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block h3{color:#D8B968!important}
+    #dhadMaterialDirectPage .dhad-direct-info-block p{color:#E8E0C8!important}
+    #dhadMaterialDirectPage .dhad-direct-meta span{background:#333E2D!important;border:1px solid #596044!important;color:#E8D39B!important}
+    #dhadMaterialDirectPage .dhad-direct-main-button,#dhadMaterialDirectPage #dhadDirectDownloadButton,#dhadMaterialDirectPage #dhadDirectPreviewButton,#dhadMaterialDirectPage #dhadDirectShareButton,#dhadMaterialDirectPage .back{background:#46543A!important;color:#F1E5C5!important;border:1px solid #C3A45F!important;border-radius:10px!important;box-shadow:none!important}
+    #dhadMaterialDirectPage #dhadDirectShareButton{background:#333E2D!important;color:#E8D39B!important;border-color:#C3A45F!important}
+    #dhadMaterialDirectPage .dhad-direct-main-button:hover,#dhadMaterialDirectPage #dhadDirectDownloadButton:hover,#dhadMaterialDirectPage #dhadDirectPreviewButton:hover,#dhadMaterialDirectPage #dhadDirectShareButton:hover,#dhadMaterialDirectPage .back:hover{filter:brightness(1.12);background:#596847!important}
+    #dhadMaterialDirectPage .empty{background:#333E2D!important;color:#E8E0C8!important;border:1px solid #596044!important}
+    #dhadMaterialDirectPage .dhad-direct-card b{color:#E8D39B!important}
+    #dhadMaterialDirectPage .dhad-material-overline{color:#D8B968;font-size:12px;font-weight:800;margin-bottom:8px}
     #dhadMaterialDirectPage .dhad-material-description{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2.05;margin:0}
     #dhadMaterialDirectPage .dhad-material-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
-    #dhadMaterialDirectPage .dhad-material-stat{background:#f4f7f4;border:1px solid #e4e9e5;border-radius:11px;padding:12px}
-    #dhadMaterialDirectPage .dhad-material-stat span{display:block;color:#718078;font-size:12px}
-    #dhadMaterialDirectPage .dhad-material-stat strong{display:block;color:#173f35;font-size:24px;font-weight:900}
+    #dhadMaterialDirectPage .dhad-material-stat{background:#333E2D;border:1px solid #596044;border-radius:11px;padding:12px}
+    #dhadMaterialDirectPage .dhad-material-stat span{display:block;color:#D1C7A9;font-size:12px}
+    #dhadMaterialDirectPage .dhad-material-stat strong{display:block;color:#E8D39B;font-size:24px;font-weight:900}
     #dhadMaterialDirectPage .dhad-material-file-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
-    #dhadMaterialDirectPage .dhad-material-file-meta div{background:#f4f7f4;border-radius:10px;padding:10px}
-    #dhadMaterialDirectPage .dhad-material-file-meta span{display:block;color:#718078;font-size:11px}
-    #dhadMaterialDirectPage .dhad-material-file-meta b{display:block;color:#173f35;font-size:13px;overflow-wrap:anywhere}
-    #dhadMaterialDirectPage .dhad-material-preview{margin-top:16px;background:#f4f7f4;border:1px solid #e4e9e5;border-radius:12px;overflow:hidden}
-    #dhadMaterialDirectPage .dhad-material-preview iframe{display:block;width:100%;height:min(72vh,680px);border:0;background:#fff}
+    #dhadMaterialDirectPage .dhad-material-file-meta div{background:#333E2D;border:1px solid #596044;border-radius:10px;padding:10px}
+    #dhadMaterialDirectPage .dhad-material-file-meta span{display:block;color:#D1C7A9;font-size:11px}
+    #dhadMaterialDirectPage .dhad-material-file-meta b{display:block;color:#E8D39B;font-size:13px;overflow-wrap:anywhere}
     #dhadMaterialDirectPage .dhad-material-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-    #dhadMaterialDirectPage .dhad-material-related button{background:#f4f7f4;border:1px solid #e4e9e5;border-radius:10px;padding:12px;text-align:right;color:#173f35;font-weight:800}
+    #dhadMaterialDirectPage .dhad-material-related button{background:#333E2D;border:1px solid #596044;border-radius:10px;padding:12px;text-align:right;color:#E8D39B;font-weight:800}
     #dhadMaterialDirectPage .dhad-direct-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;align-items:start;gap:16px}
     #dhadMaterialDirectPage .dhad-direct-download{display:grid;grid-template-columns:1fr;align-content:start;position:sticky;top:92px}
     @media(max-width:760px){#dhadMaterialDirectPage .dhad-direct-layout{display:flex;flex-direction:column}#dhadMaterialDirectPage .dhad-direct-download{position:static;grid-template-columns:1fr;width:100%}#dhadMaterialDirectPage .dhad-material-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-file-meta{grid-template-columns:repeat(2,minmax(0,1fr))}#dhadMaterialDirectPage .dhad-material-related{grid-template-columns:1fr}}
@@ -310,10 +307,6 @@
                   <div class="dhad-material-stat"><span>المعاينات</span><strong>—</strong></div>
                   <div class="dhad-material-stat"><span>المشاركات</span><strong>—</strong></div>
                 </div>
-              </section>
-              <section id="dhadMaterialPreviewSection" class="dhad-direct-info-block" style="display:none">
-                <h3>معاينة الملف</h3>
-                <div id="dhadMaterialPreview"></div>
               </section>
               <section id="dhadMaterialRelatedSection" class="dhad-direct-info-block" style="display:none">
                 <h3>مواد ذات صلة</h3>
@@ -1008,9 +1001,6 @@
 
       /* تحميل الإحصائيات الحقيقية المسجلة لهذه المادة */
       loadMaterialPublicStats(data.id);
-
-      /* إظهار معاينة الملف الفعلية عند دعم صيغة PDF */
-      loadMaterialPreview(data);
 
       /* تحميل مواد مرتبطة من نفس الصف والقسم */
       loadRelatedMaterials(data);
