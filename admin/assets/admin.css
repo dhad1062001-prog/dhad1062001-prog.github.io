@@ -1,4 +1,4 @@
-@import url("../prototype/academic-navy-bronze.css?v=20261111c");
+@import url("../../prototype/academic-navy-bronze.css?v=20261111c");
 :root{color-scheme:dark;--bg:#20291C;--bg-deep:#171E15;--surface:#2D3829;--surface-2:#34412F;--surface-3:#3B4935;--gold:#C3A45F;--gold-light:#E4C982;--white:#fff;--muted:#C8CEBF;--line:#59654D;--shadow:0 16px 38px #0d130b55;--danger:#b87565}
 *{box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:smooth}
