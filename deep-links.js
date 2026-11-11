@@ -54,11 +54,11 @@
     }
 
     #dhadMaterialDirectPage .dhad-direct-layout{
-      display:grid;
-      direction:ltr;
-      grid-template-columns:minmax(0,1fr) minmax(220px,280px);
-      gap:18px;
-      align-items:start;
+      display:flex;
+      flex-direction:column;
+      direction:rtl;
+      gap:22px;
+      align-items:stretch;
     }
 
     #dhadMaterialDirectPage .dhad-direct-card{
@@ -66,10 +66,11 @@
     }
 
     #dhadMaterialDirectPage .dhad-direct-download{
-      position:sticky;
-      top:72px;
+      position:static;
       display:grid;
-      gap:10px;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:8px;
     }
 
     #dhadMaterialDirectPage .dhad-direct-download h3{
@@ -138,13 +139,8 @@
     }
 
     @media(max-width:760px){
-      #dhadMaterialDirectPage .dhad-direct-layout{
-        grid-template-columns:1fr;
-      }
-
       #dhadMaterialDirectPage .dhad-direct-download{
-        position:static;
-        grid-row:2;
+        grid-template-columns:1fr;
       }
     }
 
