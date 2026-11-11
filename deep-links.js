@@ -980,9 +980,6 @@
       const dateValue=data.updated_at||data.created_at;
       const updated=dateValue?new Date(dateValue).toLocaleDateString('ar-JO'):'غير محدد';
 
-      const grade=(typeof grades!=='undefined'?grades:[]).find(x=>String(x.id)===String(data.grade_id));
-      const semester=(typeof semesters!=='undefined'?semesters:[]).find(x=>String(x.id)===String(data.semester_id));
-      const category=(typeof categories!=='undefined'?categories:[]).find(x=>String(x.id)===String(data.category_id));
       const chips=[grade?.name,data.track_name,data.field_name,semester?.name,category?.name].filter(Boolean);
 
       const detailsHTML=
