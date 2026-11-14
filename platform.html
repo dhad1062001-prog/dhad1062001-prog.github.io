@@ -3363,6 +3363,9 @@ async function initSupabase(){
       }else if(requestedHash==='admin'){
         if(isFileManager())await showAdminPage();
         else{hideAll();document.getElementById('home').style.display='block';await loadHomeSectionsPublic();showInfo('لوحة الإدارة','سجّل الدخول بحساب الإدارة المصرّح له من زر دخول Google أعلى الموقع.');}
+      }else if(requestedHash==='feature-admin'){
+        if(isOwner())await showFeatureAdminPage();
+        else{hideAll();document.getElementById('home').style.display='block';await loadHomeSectionsPublic();showInfo('إدارة محتوى الأقسام','هذه الصفحة متاحة لمالك المنصة فقط.');}
       }else if(requestedUrl.searchParams.has('homeSection')){
         const directSectionId=requestedUrl.searchParams.get('homeSection');
         await loadHomeSectionsPublic(directSectionId);
