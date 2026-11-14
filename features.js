@@ -73,7 +73,7 @@ function renderDhadHomeCards(){
   const normalized=dhadNormalizeCards(dhadFeatureData.homeCards);
   const labels={teacher_supplies:['لوازم المعلمين','ملفات وموارد تعليمية للمعلمين','📚'],additional:['التعليم الإضافي','دروس وموارد إضافية لتعزيز مهاراتك','✏️'],games:['استديو الألعاب التفاعلية','تعلّم بطريقة ممتعة ومشوّقة','🎮'],certificate:['شهادات التقدير','أنشئ شهادة تقدير واحتفل بالإنجاز','🏅'],grades:['الصفوف الدراسية','جميع الصفوف والمناهج في مكان واحد','🎓']};
   const cards=fixedOrder.map((id,index)=>{const base=normalized.find(item=>item.id===id)||DHAD_HOME_CARD_DEFAULTS.find(item=>item.id===id);const label=labels[id];return {...base,title:label[0],description:label[1],icon:label[2],order:index+1,visible:true,target:id,url:''};}).filter(Boolean);
-  container.innerHTML=cards.map(card=>'<button class="platform-card size-'+(card.size==='compact'?'compact':card.size==='large'?'large':'normal')+'" type="button" data-home-card="'+escapeHtml(card.id)+'" style="--card-accent:'+dhadSafeColor(card.color,card.color)+'"><span class="platform-card-icon" aria-hidden="true">'+escapeHtml(card.icon||'📘')+'</span><strong class="platform-card-title">'+escapeHtml(card.title||'قسم تعليمي')+'</strong><span class="platform-card-description">'+escapeHtml(card.description||'')+'</span><span class="platform-card-arrow" aria-hidden="true">←</span></button>').join('');
+  container.innerHTML=cards.map(card=>'<button class="platform-card size-'+(card.size==='compact'?'compact':card.size==='large'?'large':'normal')+'" type="button" data-home-card="'+escapeHtml(card.id)+'" onclick="openDhadHomeCard(\''+escapeHtml(card.id)+'\')" style="--card-accent:'+dhadSafeColor(card.color,card.color)+'"><span class="platform-card-icon" aria-hidden="true">'+escapeHtml(card.icon||'📘')+'</span><strong class="platform-card-title">'+escapeHtml(card.title||'قسم تعليمي')+'</strong><span class="platform-card-description">'+escapeHtml(card.description||'')+'</span><span class="platform-card-arrow" aria-hidden="true">←</span></button>').join('');
   container.querySelectorAll('[data-home-card]').forEach(button=>{
     const card=cards.find(item=>item.id===button.getAttribute('data-home-card'));
     const imageUrl=card?.imagePath?getMaterialUrl(card.imagePath):'';
@@ -82,10 +82,11 @@ function renderDhadHomeCards(){
   });
 }
 function openDhadHomeCard(id){
-  const card=dhadFeatureData.homeCards.find(item=>item.id===id);if(!card)return;
-  const url=dhadPublicUrl(card.url);if(url){window.open(url,'_blank','noopener,noreferrer');return;}
-  const target=card.target||id;
-  if(target==='grades')showGradesPage();else if(target==='teacher_supplies'||target==='games'||target==='additional'||target==='calendar'||target==='certificate')showDhadFeaturePage(target);
+  const card=(dhadFeatureData.homeCards||[]).find(item=>item.id===id)||null;
+  const url=dhadPublicUrl(card?.url);if(url){window.open(url,'_blank','noopener,noreferrer');return;}
+  const target=card?.target||id;
+  if(target==='grades')showGradesPage();
+  else if(target==='teacher_supplies'||target==='games'||target==='additional'||target==='calendar'||target==='certificate')showDhadFeaturePage(target);
 }
 function renderHomeCardsAdmin(){
   const list=document.getElementById('homeCardAdminList');if(!list)return;
