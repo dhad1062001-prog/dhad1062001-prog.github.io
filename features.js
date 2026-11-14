@@ -85,7 +85,7 @@ function openDhadHomeCard(id){
   const card=dhadFeatureData.homeCards.find(item=>item.id===id);if(!card)return;
   const url=dhadPublicUrl(card.url);if(url){window.open(url,'_blank','noopener,noreferrer');return;}
   const target=card.target||id;
-  if(target==='grades')showGradesPage();else if(target==='games'||target==='additional'||target==='calendar'||target==='certificate')showDhadFeaturePage(target);
+  if(target==='grades')showGradesPage();else if(target==='teacher_supplies'||target==='games'||target==='additional'||target==='calendar'||target==='certificate')showDhadFeaturePage(target);
 }
 function renderHomeCardsAdmin(){
   const list=document.getElementById('homeCardAdminList');if(!list)return;
