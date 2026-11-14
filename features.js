@@ -165,7 +165,7 @@ async function renderDhadTeacherSupplies(){
     const byId=new Map((materialsResult.data||[]).map(row=>[String(row.id),row]));
     const rows=(linksResult.data||[]).map(link=>byId.get(String(link.material_id))).filter(Boolean);
     if(!rows.length){list.innerHTML='<div class="empty">لا توجد ملفات منشورة في قسم لوازم المعلمين حتى الآن.</div>';return;}
-    list.innerHTML=rows.map(row=>'<article class="feature-content-card teacher-supply-public-card"><h3>'+escapeHtml(row.title||row.file_name||'ملف تعليمي')+'</h3>'+(row.description?'<p>'+escapeHtml(row.description)+'</p>':'')+'<div class="feature-card-meta">'+escapeHtml((row.file_type||'ملف').split('/').pop().toUpperCase())+' · '+escapeHtml(typeof formatBytes==='function'?formatBytes(row.file_size):'')+'</div><div class="game-card-actions"><button class="primary" type="button" onclick="openMaterialInfoPage(\''+escapeHtml(String(row.id))+'\')">تفاصيل الملف والذهاب إلى التنزيل ←</button></div></article>').join('');
+    list.innerHTML=rows.map(row=>'<article class="feature-content-card teacher-supply-public-card teacher-supply-compact"><button class="teacher-supply-file-link" type="button" onclick="openMaterialInfoPage(\''+escapeHtml(String(row.id))+'\')">'+escapeHtml(row.title||row.file_name||'ملف تعليمي')+'</button></article>').join('');
   }catch(error){console.warn('تعذر تحميل ملفات لوازم المعلمين:',error);list.innerHTML='<div class="empty">تعذر تحميل ملفات القسم حاليًا. حاول تحديث الصفحة.</div>';}
 }
 async function renderDhadGames(){
