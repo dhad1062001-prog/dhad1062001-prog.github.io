@@ -240,6 +240,12 @@ body.dark .top{background:rgba(23,31,21,.97)!important}
 #home .search-result-group>h3{color:#C3A45F}
 #home .home-empty{background:#2D3829;color:#C8CEBF;border-color:#59654D}
 
+
+/* قوائم الملفات: الاسم فقط، والتفاصيل عند الفتح */
+.material-compact{display:block;padding:0!important}
+.material-title-link,.teacher-supply-file-link{display:block;width:100%;padding:17px 18px;border:0;background:transparent;color:inherit;text-align:right;font:inherit;font-weight:800;cursor:pointer;border-radius:inherit}
+.material-title-link:hover,.teacher-supply-file-link:hover{background:rgba(195,164,95,.10);color:var(--gold,#c3a45f)}
+.teacher-supply-compact{padding:0!important}
 </style>
 <style>
 @supports not (color:color-mix(in srgb,red,white)){
@@ -1675,18 +1681,10 @@ function renderMaterialCollection(rows){
   window.__materials=rows;
   if(!rows.length)return '<div class="empty">لا توجد ملفات مضافة لهذا القسم حاليًا.</div>';
   return rows.map(m=>{
-    const ext=(m.file_type||'FILE').split('/').pop().toUpperCase();
+    const label=escapeHtml(m.file_name||m.title||'ملف تعليمي');
     return `
-      <article class="material ui-shape">
-        <div>
-          <b>${escapeHtml(m.file_name||m.title||'ملف تعليمي')}</b>
-          <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <span class="tag ui-shape">${escapeHtml(ext)}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:7px;flex-wrap:wrap">
-          <button class="primary ui-shape" type="button" onclick="openMaterialInfoPage('${m.id}')">اذهب إلى صفحة التنزيل ←</button>
-        </div>
+      <article class="material ui-shape material-compact">
+        <button class="material-title-link" type="button" onclick="openMaterialInfoPage('${m.id}')" aria-label="عرض تفاصيل الملف: ${label}">${label}</button>
       </article>`;
   }).join('');
 }
@@ -3440,7 +3438,7 @@ setTimeout(()=>{
   }
 },8000);
 </script>
-<script src="features.js?v=20261114b"></script>
+<script src="features.js?v=20261114c"></script>
 <script src="deep-links.js?v=20261111d"></script>
 <script src="analytics.js?v=20261111a"></script>
 <script src="floating-back.js?v=20261110a"></script>
